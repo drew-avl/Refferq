@@ -3,9 +3,14 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
 
-    // Get user from database to ensure they still exist and get latest data
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
 
     // Get user from database to ensure they still exist and get latest data
     const user = await prisma.user.findUnique({

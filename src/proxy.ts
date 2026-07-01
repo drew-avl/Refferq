@@ -9,8 +9,10 @@ export async function proxy(request: NextRequest) {
 
   const isAdminRoute = pathname.startsWith('/api/admin') || pathname.startsWith('/admin');
   const isAffiliateRoute = pathname.startsWith('/api/affiliate') || pathname.startsWith('/affiliate');
+  const isAuthMeRoute = pathname === '/api/auth/me';
+  const isProtectedRoute = isAdminRoute || isAffiliateRoute || isAuthMeRoute;
 
-  if (!isAdminRoute && !isAffiliateRoute) {
+  if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
@@ -29,7 +31,22 @@ export async function proxy(request: NextRequest) {
 
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userRole = payload.role as string;
+    const userId = payload.userId;
+    const userRole = payload.role;
+
+    if (typeof userId !== 'string' || !userId) {
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      );
+    }
+
+    if (typeof userRole !== 'string' || !userRole) {
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      );
+    }
 
     if (isAdminRoute && userRole !== 'ADMIN') {
       if (pathname.startsWith('/api/')) {
@@ -53,12 +70,18 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const response = NextResponse.next();
-    response.headers.set('x-user-id', payload.userId as string);
-    response.headers.set('x-user-role', userRole);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id', userId);
+    requestHeaders.set('x-user-role', userRole);
 
-    return response;
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   } catch (error) {
+    console.error('Authentication proxy error:', error);
+
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
