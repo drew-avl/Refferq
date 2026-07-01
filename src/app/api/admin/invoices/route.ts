@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -28,7 +29,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, invoices });
+    const currencySettings = await getCurrencySettings();
+
+    return NextResponse.json({ success: true, invoices, ...currencySettings });
   } catch (error) {
     console.error('Admin invoices GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
 
     const tax = taxCents || 0;
     const total = amountCents + tax;
+    const { currency } = await getCurrencySettings();
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -64,6 +68,7 @@ export async function POST(request: NextRequest) {
         amountCents,
         taxCents: tax,
         totalCents: total,
+        currency,
         lineItems: lineItems || [{ description: 'Affiliate commission payout', qty: 1, unitPrice: amountCents, total: amountCents }],
         billingInfo: billingInfo || {},
         notes: notes || null,

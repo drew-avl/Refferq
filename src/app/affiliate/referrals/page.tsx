@@ -55,6 +55,10 @@ interface Referral {
   id: string;
   leadName: string;
   leadEmail: string;
+  leadPhone: string | null;
+  address: string;
+  address2: string;
+  moveInDate: string;
   company?: string;
   estimatedValue: number;
   status: string;
@@ -70,9 +74,14 @@ export default function ReferralsPage() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
+    leadPhone: '',
+    address: '',
+    address2: '',
+    moveInDate: '',
     estimatedValue: '0',
   });
 
@@ -85,7 +94,10 @@ export default function ReferralsPage() {
       setLoading(true);
       const res = await fetch('/api/affiliate/referrals');
       const data = await res.json();
-      if (data.success) setReferrals(data.referrals || []);
+      if (data.success) {
+        setReferrals(data.referrals || []);
+        setCurrencySymbol(data.currencySymbol || '$');
+      }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
     } finally {
@@ -101,16 +113,28 @@ export default function ReferralsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lead_name: submitForm.leadName,
-          lead_email: submitForm.leadEmail,
-          estimated_value: submitForm.estimatedValue,
+          leadName: submitForm.leadName,
+          leadEmail: submitForm.leadEmail,
+          leadPhone: submitForm.leadPhone,
+          address: submitForm.address,
+          address2: submitForm.address2,
+          moveInDate: submitForm.moveInDate,
+          estimatedValue: submitForm.estimatedValue,
         }),
       });
       const data = await res.json();
       if (data.success) {
         showNotification('success', 'Lead submitted successfully!');
         setShowSubmitModal(false);
-        setSubmitForm({ leadName: '', leadEmail: '', estimatedValue: '0' });
+        setSubmitForm({
+          leadName: '',
+          leadEmail: '',
+          leadPhone: '',
+          address: '',
+          address2: '',
+          moveInDate: '',
+          estimatedValue: '0',
+        });
         fetchReferrals();
       } else {
         showNotification('error', data.error || 'Failed to submit lead');
@@ -149,7 +173,9 @@ export default function ReferralsPage() {
     const matchesSearch =
       !searchQuery ||
       r.leadName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.leadEmail.toLowerCase().includes(searchQuery.toLowerCase());
+      r.leadEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.leadPhone || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.address || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -162,11 +188,14 @@ export default function ReferralsPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Company', 'Status', 'Value', 'Date'];
+    const headers = ['Name', 'Email', 'Phone', 'Address', 'Address 2', 'Move-In Date', 'Status', 'Value', 'Date'];
     const rows = filteredReferrals.map((r) => [
       r.leadName,
       r.leadEmail,
-      r.company || '',
+      r.leadPhone || '',
+      r.address || '',
+      r.address2 || '',
+      r.moveInDate || '',
       r.status,
       (Number(r.estimatedValue) || 0).toFixed(2),
       formatDate(r.createdAt),
@@ -290,7 +319,8 @@ export default function ReferralsPage() {
                 <TableRow>
                   <TableHead>Lead Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Company</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Est. Value</TableHead>
@@ -301,11 +331,12 @@ export default function ReferralsPage() {
                   <TableRow key={ref.id}>
                     <TableCell className="font-medium">{ref.leadName}</TableCell>
                     <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.company || '\u2014'}</TableCell>
+                    <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
                     <TableCell className="text-right font-semibold">
-                      {`\u20B9${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
+                      {`${currencySymbol}${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -317,7 +348,7 @@ export default function ReferralsPage() {
 
       {/* Submit Lead Modal */}
       <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Submit Lead</DialogTitle>
             <DialogDescription>
@@ -345,7 +376,45 @@ export default function ReferralsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Estimated Deal Size (₹) *</Label>
+              <Label>Phone Number *</Label>
+              <Input
+                type="tel"
+                required
+                value={submitForm.leadPhone}
+                onChange={(e) => setSubmitForm({ ...submitForm, leadPhone: e.target.value })}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address *</Label>
+              <Input
+                required
+                value={submitForm.address}
+                onChange={(e) => setSubmitForm({ ...submitForm, address: e.target.value })}
+                placeholder="Street address"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Apt, Suite, or Address 2</Label>
+                <Input
+                  value={submitForm.address2}
+                  onChange={(e) => setSubmitForm({ ...submitForm, address2: e.target.value })}
+                  placeholder="Apt 4B"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Move-In Date *</Label>
+                <Input
+                  type="date"
+                  required
+                  value={submitForm.moveInDate}
+                  onChange={(e) => setSubmitForm({ ...submitForm, moveInDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Estimated Deal Size ({currencySymbol}) *</Label>
               <Input
                 type="number"
                 required

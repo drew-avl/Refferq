@@ -72,10 +72,11 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
   };
 
   const accentColor = brand.brandButtonColor || '#059669';
+  const textColor = brand.brandTextColor || undefined;
   const brandName = brand.companyName || 'Refferq';
 
   return (
-    <Sidebar variant="inset">
+    <Sidebar variant="inset" style={textColor ? { color: textColor } : undefined}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -237,7 +238,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider>
       <AffiliateSidebar brand={brand} />
-      <SidebarInset>
+      <SidebarInset style={{ backgroundColor: brand.brandBackgroundColor || undefined, color: brand.brandTextColor || undefined }}>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />

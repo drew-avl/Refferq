@@ -33,7 +33,6 @@ import {
   Mail,
   Phone,
   Building2,
-  IndianRupee,
   User,
   Calendar,
   CheckCircle2,
@@ -52,6 +51,9 @@ interface Referral {
   leadEmail: string;
   leadName: string;
   leadPhone: string | null;
+  address: string;
+  address2: string;
+  moveInDate: string;
   status: string;
   notes: string | null;
   createdAt: string;
@@ -89,7 +91,12 @@ export default function CustomerDetailPage() {
   // Editable fields
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editAddress2, setEditAddress2] = useState('');
+  const [editMoveInDate, setEditMoveInDate] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   useEffect(() => {
     fetchReferral();
@@ -105,7 +112,12 @@ export default function CustomerDetailPage() {
           setReferral(found);
           setEditName(found.leadName);
           setEditEmail(found.leadEmail);
+          setEditPhone(found.leadPhone || '');
+          setEditAddress(found.address || '');
+          setEditAddress2(found.address2 || '');
+          setEditMoveInDate(found.moveInDate || '');
         }
+        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to fetch referral:', error);
@@ -124,6 +136,10 @@ export default function CustomerDetailPage() {
         body: JSON.stringify({
           leadName: editName,
           leadEmail: editEmail,
+          leadPhone: editPhone,
+          address: editAddress,
+          address2: editAddress2,
+          moveInDate: editMoveInDate,
         }),
       });
       if (res.ok) {
@@ -317,7 +333,11 @@ export default function CustomerDetailPage() {
                   <Label>Phone</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" value={referral.leadPhone || '—'} readOnly disabled />
+                    <Input
+                      className="pl-9"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -327,6 +347,33 @@ export default function CustomerDetailPage() {
                     <Input className="pl-9" value={referral.company || '—'} readOnly disabled />
                   </div>
                 </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address2">Apt, Suite, or Address 2</Label>
+                  <Input
+                    id="address2"
+                    value={editAddress2}
+                    onChange={(e) => setEditAddress2(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="moveInDate">Move-In Date</Label>
+                <Input
+                  id="moveInDate"
+                  type="date"
+                  value={editMoveInDate}
+                  onChange={(e) => setEditMoveInDate(e.target.value)}
+                />
               </div>
               {referral.notes && (
                 <div className="grid gap-2">
@@ -399,8 +446,8 @@ export default function CustomerDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Estimated Value</span>
                 <span className="flex items-center gap-1 font-semibold">
-                  <IndianRupee className="h-3.5 w-3.5" />
-                  {referral.estimatedValue.toLocaleString('en-IN')}
+                  {currencySymbol}
+                  {referral.estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -411,8 +458,8 @@ export default function CustomerDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Est. Commission</span>
                 <span className="flex items-center gap-1 text-lg font-bold text-primary">
-                  <IndianRupee className="h-4 w-4" />
-                  {estimatedCommission.toLocaleString('en-IN')}
+                  {currencySymbol}
+                  {estimatedCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </CardContent>

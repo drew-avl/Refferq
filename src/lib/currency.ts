@@ -12,13 +12,25 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export async function getCurrencySymbol(): Promise<string> {
     try {
-        const settings = await prisma.programSettings.findFirst();
-        const currency = settings?.currency || 'USD';
-        return CURRENCY_SYMBOLS[currency] || currency;
+        const { currencySymbol } = await getCurrencySettings();
+        return currencySymbol;
     } catch (error) {
         console.error('Failed to fetch currency symbol:', error);
         return '$';
     }
+}
+
+export async function getCurrencySettings(): Promise<{ currency: string; currencySymbol: string }> {
+    const settings = await prisma.programSettings.findFirst({
+        select: {
+            currency: true,
+        },
+    });
+    const currency = settings?.currency || 'USD';
+    return {
+        currency,
+        currencySymbol: CURRENCY_SYMBOLS[currency] || currency,
+    };
 }
 
 export function formatCurrency(cents: number, symbol: string): string {

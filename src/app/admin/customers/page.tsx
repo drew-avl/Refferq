@@ -40,7 +40,6 @@ import {
   Building2,
   Mail,
   Phone,
-  IndianRupee,
   Eye,
 } from 'lucide-react';
 
@@ -49,6 +48,9 @@ interface Referral {
   leadEmail: string;
   leadName: string;
   leadPhone: string | null;
+  address: string;
+  address2: string;
+  moveInDate: string;
   status: string;
   notes: string | null;
   createdAt: string;
@@ -77,6 +79,7 @@ export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   useEffect(() => {
     fetchReferrals();
@@ -88,6 +91,7 @@ export default function CustomersPage() {
       const data = await res.json();
       if (data.success) {
         setReferrals(data.referrals);
+        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
@@ -119,6 +123,8 @@ export default function CustomersPage() {
     const matchesSearch =
       r.leadName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.leadEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.leadPhone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.company?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -266,6 +272,12 @@ export default function CustomersPage() {
                               {referral.leadPhone}
                             </div>
                           )}
+                          <div className="text-xs text-muted-foreground">
+                            {[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -287,8 +299,8 @@ export default function CustomersPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm font-medium">
-                        <IndianRupee className="h-3.5 w-3.5" />
-                        {referral.estimatedValue.toLocaleString('en-IN')}
+                        {currencySymbol}
+                        {referral.estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </TableCell>
                     <TableCell>

@@ -240,7 +240,7 @@ class EmailService {
     `;
   }
 
-  private generateReferralNotificationHTML(data: ReferralNotificationData, _symbol?: string): string {
+  private generateReferralNotificationHTML(data: ReferralNotificationData, symbol?: string): string {
     return `
     <!DOCTYPE html>
     <html>
@@ -269,7 +269,7 @@ class EmailService {
           <p><strong>Lead Name:</strong> ${this.escapeHtml(data.leadName)}</p>
           <p><strong>Lead Email:</strong> ${this.escapeHtml(data.leadEmail)}</p>
           ${data.company ? `<p><strong>Company:</strong> ${this.escapeHtml(data.company)}</p>` : ''}
-          ${data.estimatedValue ? `<p><strong>Estimated Value:</strong> $${(data.estimatedValue / 100).toFixed(2)}</p>` : ''}
+          ${data.estimatedValue ? `<p><strong>Estimated Value:</strong> ${this.formatAmount(data.estimatedValue, symbol || '$')}</p>` : ''}
         </div>
         
         <div style="text-align: center;">
@@ -724,11 +724,11 @@ class EmailService {
     }
   ): Promise<{ success: boolean; message: string }> {
     const symbol = await this.getCurrencySymbol();
-    const amount = (data.amountCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const amount = this.formatAmount(data.amountCents, symbol);
     return this.sendTemplatedEmail({
       to: affiliateEmail,
       templateType: 'PAYOUT_GENERATED',
-      fallbackSubject: `🎉 Payout Initiated: ₹${amount}`,
+      fallbackSubject: `Payout Initiated: ${amount}`,
       variables: { ...data, amount: this.formatAmount(data.amountCents, symbol), symbol },
       generateFallbackHtml: () => `
       <!DOCTYPE html>
@@ -757,7 +757,7 @@ class EmailService {
           
           <div class="amount-box">
             <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Payout Amount</div>
-            <div class="amount">₹${amount}</div>
+            <div class="amount">${amount}</div>
             <div style="margin-top: 15px;">
               <span class="status-badge">PENDING</span>
             </div>
@@ -805,7 +805,7 @@ class EmailService {
     }
   ): Promise<{ success: boolean; message: string }> {
     const symbol = await this.getCurrencySymbol();
-    const amount = (data.amountCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const amount = this.formatAmount(data.amountCents, symbol);
     const date = new Date(data.processedAt).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'long',
@@ -814,7 +814,7 @@ class EmailService {
     return this.sendTemplatedEmail({
       to: affiliateEmail,
       templateType: 'PARTNER_PAID',
-      fallbackSubject: `✅ Payment Completed: ₹${amount} Paid!`,
+      fallbackSubject: `Payment Completed: ${amount} Paid`,
       variables: { ...data, amount: this.formatAmount(data.amountCents, symbol), date, symbol },
       generateFallbackHtml: () => `
       <!DOCTYPE html>
@@ -846,7 +846,7 @@ class EmailService {
           
           <div class="amount-box">
             <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Amount Paid</div>
-            <div class="amount">₹${amount}</div>
+            <div class="amount">${amount}</div>
             <div style="margin-top: 15px;">
               <span class="status-badge">✓ COMPLETED</span>
             </div>

@@ -52,7 +52,6 @@ import {
   Pencil,
   Trash2,
   Percent,
-  IndianRupee,
   CheckCircle2,
   Globe,
   Code2,
@@ -70,6 +69,12 @@ interface ProgramSettings {
   websiteUrl: string;
   currency: string;
   portalSubdomain: string;
+  companyName?: string;
+  companyLogo?: string;
+  favicon?: string;
+  brandBackgroundColor: string;
+  brandButtonColor: string;
+  brandTextColor: string;
   minimumPayoutThreshold: number;
   payoutTerm: string;
   commissionHoldDays: number;
@@ -145,6 +150,12 @@ export default function ProgramSettingsPage() {
           websiteUrl: settings.websiteUrl,
           currency: settings.currency,
           portalSubdomain: settings.portalSubdomain,
+          companyName: settings.companyName || '',
+          companyLogo: settings.companyLogo || '',
+          favicon: settings.favicon || '',
+          brandBackgroundColor: settings.brandBackgroundColor,
+          brandButtonColor: settings.brandButtonColor,
+          brandTextColor: settings.brandTextColor,
           minimumPayoutThreshold: settings.minimumPayoutThreshold,
           payoutTerm: settings.payoutTerm,
           commissionHoldDays: settings.commissionHoldDays,
@@ -380,6 +391,68 @@ export default function ProgramSettingsPage() {
               Program ID: <span className="font-mono">{settings.programId}</span>
             </p>
           </div>
+          <Separator />
+          <div className="grid gap-4">
+            <div>
+              <h3 className="text-sm font-semibold">Custom Branding</h3>
+              <p className="text-xs text-muted-foreground">These values control the affiliate portal branding.</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="companyName">Company Name</Label>
+                <Input
+                  id="companyName"
+                  value={settings.companyName || ''}
+                  onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="companyLogo">Logo URL</Label>
+                <Input
+                  id="companyLogo"
+                  value={settings.companyLogo || ''}
+                  onChange={(e) => setSettings({ ...settings, companyLogo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="brandBackgroundColor">Background Color</Label>
+                <Input
+                  id="brandBackgroundColor"
+                  type="color"
+                  value={settings.brandBackgroundColor || '#f8fafc'}
+                  onChange={(e) => setSettings({ ...settings, brandBackgroundColor: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="brandButtonColor">Button Color</Label>
+                <Input
+                  id="brandButtonColor"
+                  type="color"
+                  value={settings.brandButtonColor || '#059669'}
+                  onChange={(e) => setSettings({ ...settings, brandButtonColor: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="brandTextColor">Text Color</Label>
+                <Input
+                  id="brandTextColor"
+                  type="color"
+                  value={settings.brandTextColor || '#0f172a'}
+                  onChange={(e) => setSettings({ ...settings, brandTextColor: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="favicon">Favicon URL</Label>
+                <Input
+                  id="favicon"
+                  value={settings.favicon || ''}
+                  onChange={(e) => setSettings({ ...settings, favicon: e.target.value })}
+                  placeholder="https://example.com/favicon.ico"
+                />
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -426,7 +499,7 @@ export default function ProgramSettingsPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PERCENTAGE">Percentage</SelectItem>
-                          <SelectItem value="FLAT">Flat Amount</SelectItem>
+                          <SelectItem value="FIXED">Flat Amount</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -436,11 +509,13 @@ export default function ProgramSettingsPage() {
                         {ruleForm.type === 'PERCENTAGE' ? (
                           <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <span className="absolute left-3 top-2.5 text-xs font-semibold text-muted-foreground">
+                            {settings.currency}
+                          </span>
                         )}
                         <Input
                           type="number"
-                          className={ruleForm.type === 'FLAT' ? 'pl-9' : ''}
+                          className={ruleForm.type === 'FIXED' ? 'pl-16' : ''}
                           value={ruleForm.value}
                           onChange={(e) => setRuleForm({ ...ruleForm, value: e.target.value })}
                           placeholder={ruleForm.type === 'PERCENTAGE' ? '10' : '500'}
@@ -493,7 +568,7 @@ export default function ProgramSettingsPage() {
                       <Badge variant="outline">{rule.type}</Badge>
                     </TableCell>
                     <TableCell>
-                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `₹${rule.value}`}
+                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `${settings.currency} ${rule.value}`}
                     </TableCell>
                     <TableCell>
                       {rule.isDefault && <Badge variant="default">Default</Badge>}
@@ -584,7 +659,7 @@ export default function ProgramSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Call this when a visitor completes a conversion event</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. paise / cents)\n  currency: '${settings.currency || 'INR'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. cents)\n  currency: '${settings.currency || 'USD'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
                     {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
                   </Button>
                 </div>
@@ -594,7 +669,7 @@ Refferq.trackConversion({
   email: customer.email,
   name: customer.name,
   amount: 4999,        // amount in smallest unit (e.g. paise / cents)
-  currency: '${settings.currency || 'INR'}',
+  currency: '${settings.currency || 'USD'}',
   orderId: 'ORD-12345' // optional
 });`}
                 </div>

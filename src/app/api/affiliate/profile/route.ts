@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getReferralMetadataDetails } from '@/lib/referrals';
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,13 +87,16 @@ export async function GET(request: NextRequest) {
       conversionRate
     };
 
-    // Map referrals to include estimatedValue from metadata
+    // Map referrals to include lead details from metadata
     const mappedReferrals = referrals.map(ref => {
-      const metadata = ref.metadata as any;
+      const metadata = getReferralMetadataDetails(ref.metadata);
       return {
         ...ref,
-        estimatedValue: Number(metadata?.estimated_value) || 0,
-        company: metadata?.company || '',
+        estimatedValue: metadata.estimatedValue,
+        company: metadata.company,
+        address: metadata.address,
+        address2: metadata.address2,
+        moveInDate: metadata.moveInDate,
       };
     });
 

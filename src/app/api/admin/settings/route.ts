@@ -30,8 +30,12 @@ export async function GET(request: NextRequest) {
           productName: 'BsBot',
           programName: "BsBot's Affiliate Program",
           websiteUrl: 'https://kyns.com',
-          currency: 'INR',
+          currency: 'USD',
           portalSubdomain: 'bsbot.tolt.io',
+          companyName: 'Refferq',
+          brandBackgroundColor: '#f8fafc',
+          brandButtonColor: '#059669',
+          brandTextColor: '#0f172a',
           minimumPayoutThreshold: 0,
           payoutTerm: 'NET-15',
           commissionHoldDays: 30
@@ -99,8 +103,12 @@ export async function PUT(request: NextRequest) {
           productName: 'BsBot',
           programName: "BsBot's Affiliate Program",
           websiteUrl: 'https://kyns.com',
-          currency: 'INR',
-          portalSubdomain: 'bsbot.tolt.io'
+          currency: 'USD',
+          portalSubdomain: 'bsbot.tolt.io',
+          companyName: 'Refferq',
+          brandBackgroundColor: '#f8fafc',
+          brandButtonColor: '#059669',
+          brandTextColor: '#0f172a'
         }
       });
     }
@@ -108,9 +116,9 @@ export async function PUT(request: NextRequest) {
     // Update program settings — only allow specific fields (prevent mass assignment)
     const allowedFields = [
       'programName', 'productName', 'websiteUrl', 'currency', 'portalSubdomain',
-      'companyName', 'companyLogo', 'primaryColor', 'secondaryColor',
-      'cookieDuration', 'minimumPayout', 'payoutFrequency', 'autoApprove',
-      'commissionType', 'commissionValue', 'brandingEnabled', 'commissionHoldDays'
+      'companyName', 'companyLogo', 'favicon', 'brandBackgroundColor', 'brandButtonColor',
+      'brandTextColor', 'cookieDuration', 'minimumPayoutThreshold', 'payoutTerm',
+      'payoutFrequency', 'commissionHoldDays', 'minPayoutCents'
     ];
     const sanitizedData: Record<string, any> = {};
     for (const key of allowedFields) {

@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/table';
 import {
   BarChart3,
-  IndianRupee,
   TrendingUp,
   Target,
   Users,
@@ -55,6 +54,7 @@ export default function ReportsPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('6months');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [stats, setStats] = useState<ReportStats>({
     totalEarnings: 0,
     totalClicks: 0,
@@ -74,6 +74,7 @@ export default function ReportsPage() {
       const res = await fetch('/api/affiliate/profile');
       const data = await res.json();
       if (data.success) {
+        setCurrencySymbol(data.currencySymbol || '$');
         const referrals = data.referrals || [];
         const commissions = data.commissions || [];
         const conversions = data.conversions || [];
@@ -135,10 +136,10 @@ export default function ReportsPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const exportCSV = () => {
-    const headers = ['Month', 'Referrals', 'Conversions', 'Earnings (₹)'];
+    const headers = ['Month', 'Referrals', 'Conversions', `Earnings (${currencySymbol})`];
     const rows = monthlyData.map((m) => [m.month, m.referrals, m.conversions, (m.earnings / 100).toFixed(2)]);
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -195,7 +196,7 @@ export default function ReportsPage() {
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <IndianRupee className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm font-bold text-emerald-600">{currencySymbol}</span>
               </div>
               <div>
                 <p className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalEarnings)}</p>

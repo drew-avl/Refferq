@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
+import { getReferralMetadataDetails } from '@/lib/referrals';
+
+function estimatedValueToCents(metadata: unknown): number {
+  const details = getReferralMetadataDetails(metadata);
+  return Math.round(details.estimatedValue * 100) || 10000;
+}
 
 
 export async function PUT(
@@ -48,8 +55,8 @@ export async function PUT(
     }
 
     // Get estimated value from referral metadata
-    const metadata = referral.metadata as Record<string, any> || {};
-    const estimatedValueCents = Number(metadata?.estimated_value) * 100 || 10000;
+    const estimatedValueCents = estimatedValueToCents(referral.metadata);
+    const { currency } = await getCurrencySettings();
 
     const updatedReferral = await prisma.referral.update({
       where: { id: params.id },
@@ -74,6 +81,7 @@ export async function PUT(
           referralId: referral.id,
           eventType: 'PURCHASE',
           amountCents: estimatedValueCents,
+          currency,
           status: 'PENDING'
         }
       });
@@ -128,7 +136,20 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { action, leadName, leadEmail, status, reviewNotes } = body;
+    const {
+      action,
+      leadName,
+      leadEmail,
+      leadPhone,
+      address,
+      address2,
+      moveInDate,
+      estimatedValue,
+      company,
+      notes,
+      status,
+      reviewNotes
+    } = body;
 
     // Check if referral exists
     const referral = await prisma.referral.findUnique({
@@ -157,8 +178,8 @@ export async function PATCH(
 
       // If approved, create conversion and commission
       if (action === 'approve') {
-        const refMetadata = referral.metadata as Record<string, any> || {};
-        const estValueCents = Number(refMetadata?.estimated_value) * 100 || 10000;
+        const estValueCents = estimatedValueToCents(referral.metadata);
+        const { currency } = await getCurrencySettings();
         const commissionRate = referral.affiliate.partnerGroup?.commissionRate
           ? referral.affiliate.partnerGroup.commissionRate / 100
           : 0.1;
@@ -169,6 +190,7 @@ export async function PATCH(
             referralId: referral.id,
             eventType: 'PURCHASE',
             amountCents: estValueCents,
+            currency,
             status: 'PENDING'
           }
         });
@@ -199,11 +221,27 @@ export async function PATCH(
     
     if (leadName !== undefined) updateData.leadName = leadName;
     if (leadEmail !== undefined) updateData.leadEmail = leadEmail;
+    if (leadPhone !== undefined) updateData.leadPhone = leadPhone;
     if (status !== undefined) {
       // Map status values
       updateData.status = status;
       updateData.reviewedBy = user.id;
       updateData.reviewedAt = new Date();
+    }
+
+    const metadataUpdates: Record<string, unknown> = {};
+    if (address !== undefined) metadataUpdates.address = address;
+    if (address2 !== undefined) metadataUpdates.address2 = address2;
+    if (moveInDate !== undefined) metadataUpdates.move_in_date = moveInDate;
+    if (estimatedValue !== undefined) metadataUpdates.estimated_value = Number(estimatedValue) || 0;
+    if (company !== undefined) metadataUpdates.company = company;
+    if (notes !== undefined) metadataUpdates.notes = notes;
+
+    if (Object.keys(metadataUpdates).length > 0) {
+      updateData.metadata = {
+        ...((referral.metadata as Record<string, unknown>) || {}),
+        ...metadataUpdates,
+      };
     }
 
     const updatedReferral = await prisma.referral.update({

@@ -32,13 +32,9 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  IndianRupee,
   MousePointerClick,
   Target,
   Users,
-  Copy,
-  Check,
-  Link,
   Plus,
   Loader2,
   Clock,
@@ -59,8 +55,6 @@ interface AffiliateStats {
   totalReferredCustomers: number;
   totalConversions: number;
   conversionRate: number;
-  referralLink: string;
-  referralCode: string;
   currencySymbol: string;
   nextMaturesAt: string | null;
 }
@@ -69,6 +63,10 @@ interface Referral {
   id: string;
   leadName: string;
   leadEmail: string;
+  leadPhone: string | null;
+  address: string;
+  address2: string;
+  moveInDate: string;
   company?: string;
   estimatedValue: number;
   status: string;
@@ -79,10 +77,9 @@ export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [copied, setCopied] = useState<'link' | 'code' | null>(null);
 
   // Referral form state
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -90,6 +87,10 @@ export default function AffiliateDashboard() {
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
+    leadPhone: '',
+    address: '',
+    address2: '',
+    moveInDate: '',
     estimatedValue: '0',
   });
 
@@ -114,13 +115,11 @@ export default function AffiliateDashboard() {
           totalReferredCustomers: data.referrals?.filter((r: any) => r.status === 'APPROVED').length || 0,
           totalConversions: data.stats?.totalConversions || 0,
           conversionRate: data.stats?.conversionRate || 0,
-          referralLink: `${window.location.origin}/r/${data.affiliate?.referralCode}`,
-          referralCode: data.affiliate?.referralCode || '',
-          currencySymbol: data.currencySymbol || '₹',
+          currencySymbol: data.currencySymbol || '$',
           nextMaturesAt: data.stats?.nextMaturesAt || null,
         });
         setReferrals(data.referrals || []);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -138,9 +137,13 @@ export default function AffiliateDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lead_name: submitForm.leadName,
-          lead_email: submitForm.leadEmail,
-          estimated_value: submitForm.estimatedValue,
+          leadName: submitForm.leadName,
+          leadEmail: submitForm.leadEmail,
+          leadPhone: submitForm.leadPhone,
+          address: submitForm.address,
+          address2: submitForm.address2,
+          moveInDate: submitForm.moveInDate,
+          estimatedValue: submitForm.estimatedValue,
         }),
       });
 
@@ -149,7 +152,15 @@ export default function AffiliateDashboard() {
       if (data.success) {
         showNotification('success', 'Lead submitted successfully! Waiting for admin approval.');
         setShowSubmitModal(false);
-        setSubmitForm({ leadName: '', leadEmail: '', estimatedValue: '0' });
+        setSubmitForm({
+          leadName: '',
+          leadEmail: '',
+          leadPhone: '',
+          address: '',
+          address2: '',
+          moveInDate: '',
+          estimatedValue: '0',
+        });
         loadDashboardData();
       } else {
         showNotification('error', data.error || 'Failed to submit lead');
@@ -161,29 +172,9 @@ export default function AffiliateDashboard() {
     }
   };
 
-  const handleGenerateCode = async () => {
-    try {
-      const response = await fetch('/api/affiliate/generate-code', { method: 'POST' });
-      const data = await response.json();
-      if (data.success) {
-        window.location.reload();
-      } else {
-        showNotification('error', 'Failed to generate code: ' + data.error);
-      }
-    } catch (_e) {
-      showNotification('error', 'Failed to generate code. Please try again.');
-    }
-  };
-
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 5000);
-  };
-
-  const copyToClipboard = (text: string, type: 'link' | 'code') => {
-    navigator.clipboard.writeText(text);
-    setCopied(type);
-    setTimeout(() => setCopied(null), 2000);
   };
 
   const formatDate = (date: string) =>
@@ -243,8 +234,8 @@ export default function AffiliateDashboard() {
                 <span className="text-2xl font-bold">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-sm text-white/90 font-medium tracking-wide">Earn 20% commission on all paid customers</p>
-                <p className="text-xl font-bold mt-1 tracking-tight">Start referring today and grow your wealth!</p>
+                <p className="text-sm text-white/90 font-medium tracking-wide">Submit qualified leads for review</p>
+                <p className="text-xl font-bold mt-1 tracking-tight">Manual lead entry keeps every handoff clean.</p>
               </div>
             </div>
             <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="gap-2 hidden sm:flex bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95">
@@ -313,61 +304,6 @@ export default function AffiliateDashboard() {
         ))}
       </div>
 
-      {/* Referral Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Link className="h-4 w-4" />
-            Your Referral Links
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!stats?.referralCode ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                <Link className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <p className="font-medium">No referral code found</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Generate your referral code to start earning commissions
-              </p>
-              <Button className="mt-4" onClick={handleGenerateCode}>
-                Generate Referral Code
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label>Referral Link</Label>
-                <div className="flex gap-2">
-                  <Input readOnly value={stats?.referralLink || ''} className="font-mono text-sm" />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(stats?.referralLink || '', 'link')}
-                  >
-                    {copied === 'link' ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Referral Code</Label>
-                <div className="flex gap-2">
-                  <Input readOnly value={stats?.referralCode || ''} className="font-mono text-sm" />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(stats?.referralCode || '', 'code')}
-                  >
-                    {copied === 'code' ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Recent Referrals */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -392,6 +328,8 @@ export default function AffiliateDashboard() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Value</TableHead>
@@ -402,6 +340,10 @@ export default function AffiliateDashboard() {
                   <TableRow key={ref.id}>
                     <TableCell className="font-medium">{ref.leadName}</TableCell>
                     <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                    <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
+                    </TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
                     <TableCell className="text-right font-semibold">
@@ -451,7 +393,7 @@ export default function AffiliateDashboard() {
 
       {/* Submit Lead Modal */}
       <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Submit Lead</DialogTitle>
             <DialogDescription>
@@ -478,6 +420,44 @@ export default function AffiliateDashboard() {
                 onChange={(e) => setSubmitForm({ ...submitForm, leadEmail: e.target.value })}
                 placeholder="email@example.com"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number *</Label>
+              <Input
+                type="tel"
+                required
+                value={submitForm.leadPhone}
+                onChange={(e) => setSubmitForm({ ...submitForm, leadPhone: e.target.value })}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address *</Label>
+              <Input
+                required
+                value={submitForm.address}
+                onChange={(e) => setSubmitForm({ ...submitForm, address: e.target.value })}
+                placeholder="Street address"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Apt, Suite, or Address 2</Label>
+                <Input
+                  value={submitForm.address2}
+                  onChange={(e) => setSubmitForm({ ...submitForm, address2: e.target.value })}
+                  placeholder="Apt 4B"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Move-In Date *</Label>
+                <Input
+                  type="date"
+                  required
+                  value={submitForm.moveInDate}
+                  onChange={(e) => setSubmitForm({ ...submitForm, moveInDate: e.target.value })}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Estimated Deal Size ({currencySymbol}) *</Label>

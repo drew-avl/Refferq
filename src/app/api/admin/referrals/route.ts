@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
+import { getReferralMetadataDetails } from '@/lib/referrals';
 
 
 export async function GET(request: NextRequest) {
@@ -45,10 +47,12 @@ export async function GET(request: NextRequest) {
       partnerGroups.map(pg => [pg.id, { name: pg.name, rate: pg.commissionRate }])
     );
 
+    const currencySettings = await getCurrencySettings();
+
     return NextResponse.json({
       success: true,
       referrals: referrals.map(referral => {
-        const metadata = referral.metadata as any;
+        const metadata = getReferralMetadataDetails(referral.metadata);
         const affiliate = referral.affiliate as any;
         const pgId = affiliate.partnerGroupId;
         const pgData = pgId ? partnerGroupMap.get(pgId) : null;
@@ -61,8 +65,11 @@ export async function GET(request: NextRequest) {
           status: referral.status,
           notes: referral.notes,
           createdAt: referral.createdAt,
-          estimatedValue: Number(metadata?.estimated_value) || 0,
-          company: metadata?.company || '',
+          estimatedValue: metadata.estimatedValue,
+          company: metadata.company,
+          address: metadata.address,
+          address2: metadata.address2,
+          moveInDate: metadata.moveInDate,
           affiliate: {
             id: affiliate.id,
             name: affiliate.user.name,
@@ -73,7 +80,8 @@ export async function GET(request: NextRequest) {
             commissionRate: pgData?.rate || 0.20
           }
         };
-      })
+      }),
+      ...currencySettings,
     });
 
   } catch (error) {

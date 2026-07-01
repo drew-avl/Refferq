@@ -170,6 +170,8 @@ export async function POST(request: NextRequest) {
     const amountCents = Math.floor(Number(amount) * 100);
     const commissionCents = Math.floor(amountCents * commissionRate);
 
+    const { currency } = await import('@/lib/currency').then(m => m.getCurrencySettings());
+
     // Create transaction
     const transaction = await (prisma as any).transaction.create({
       data: {
@@ -198,7 +200,7 @@ export async function POST(request: NextRequest) {
         eventType: 'PURCHASE',
         amountCents,
         status: 'APPROVED',
-        currency: 'INR',
+        currency,
         eventMetadata: {
           transactionId: transaction.id,
           commissionCents,

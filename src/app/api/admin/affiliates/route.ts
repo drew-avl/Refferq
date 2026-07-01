@@ -91,11 +91,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password } = data;
+    const {
+      name,
+      email,
+      password,
+      company,
+      payoutMethod,
+      paypalEmail,
+      sendWelcomeEmail = true,
+    } = data;
+    const normalizedEmail = email.toLowerCase().trim();
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     });
 
     if (existingUser) {
@@ -116,7 +125,7 @@ export async function POST(request: NextRequest) {
     const newUser = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         role: 'AFFILIATE',
         status: 'ACTIVE',
         password: hashedPassword
@@ -129,13 +138,37 @@ export async function POST(request: NextRequest) {
         userId: newUser.id,
         referralCode: `AF${Date.now()}${(await import('crypto')).randomBytes(3).toString('hex').toUpperCase().slice(0, 4)}`,
         balanceCents: 0,
-        payoutDetails: {}
+        payoutDetails: {
+          company: company?.trim() || '',
+          paymentMethod: payoutMethod || '',
+          paymentEmail: paypalEmail?.trim() || normalizedEmail,
+        }
       }
     });
 
+    let welcomeEmailSent = false;
+    if (sendWelcomeEmail) {
+      try {
+        const { emailService } = await import('@/lib/email');
+        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com'}/login`;
+        const emailResult = await emailService.sendWelcomeEmail({
+          name: newUser.name,
+          email: newUser.email,
+          role: 'affiliate',
+          loginUrl,
+          password: userPassword,
+        });
+        welcomeEmailSent = emailResult.success;
+      } catch (emailError) {
+        console.error('Failed to send affiliate welcome email:', emailError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'Affiliate created successfully',
+      message: welcomeEmailSent
+        ? 'Affiliate created and welcome email sent successfully'
+        : 'Affiliate created successfully',
       affiliate: {
         id: affiliate.id,
         userId: newUser.id,
@@ -147,7 +180,8 @@ export async function POST(request: NextRequest) {
       },
       // Note: Password is sent to admin once and should be communicated
       // securely to the affiliate. It is not stored in logs.
-      temporaryPassword: userPassword
+      temporaryPassword: userPassword,
+      welcomeEmailSent
     });
   } catch (error) {
     console.error('Create affiliate API error:', error);

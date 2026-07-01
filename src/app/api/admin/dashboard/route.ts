@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
+import { getReferralMetadataDetails } from '@/lib/referrals';
 
 
 export async function GET(request: NextRequest) {
@@ -61,8 +63,8 @@ export async function GET(request: NextRequest) {
     let totalEstimatedCommission = 0;
     
     referrals.forEach((ref) => {
-      const metadata = ref.metadata as any;
-      const estimatedValue = Number(metadata?.estimated_value) || 0;
+      const metadata = getReferralMetadataDetails(ref.metadata);
+      const estimatedValue = metadata.estimatedValue;
       const valueInCents = estimatedValue * 100;
       
       // Get commission rate from partner group or default to 20%
@@ -89,7 +91,9 @@ export async function GET(request: NextRequest) {
       totalEstimatedCommission, // Total commission to be paid
     };
 
-    return NextResponse.json({ success: true, stats });
+    const currencySettings = await getCurrencySettings();
+
+    return NextResponse.json({ success: true, stats, ...currencySettings });
 
   } catch (error) {
     console.error('Admin dashboard API error:', error);
