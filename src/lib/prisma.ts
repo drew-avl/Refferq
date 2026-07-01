@@ -484,10 +484,12 @@ export class DatabaseService {
         return;
       }
 
+      const seededPassword = await bcrypt.hash('password', 12);
+
       // Create admin user
       const adminUser = await this.createUser({
         email: 'admin@example.com',
-        password: 'password',
+        password: seededPassword,
         name: 'Admin User',
         role: 'ADMIN',
       });
@@ -495,14 +497,14 @@ export class DatabaseService {
       // Create affiliate users
       const affiliate1User = await this.createUser({
         email: 'sarah.johnson@example.com',
-        password: 'password',
+        password: seededPassword,
         name: 'Sarah Johnson',
         role: 'AFFILIATE',
       });
 
       const affiliate2User = await this.createUser({
         email: 'david.lee@example.com',
-        password: 'password',
+        password: seededPassword,
         name: 'David Lee',
         role: 'AFFILIATE',
       });
