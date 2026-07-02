@@ -1,11 +1,11 @@
 ---
-title: "🎉 Refferq v1.0.0 Released - Open Source Affiliate Management Platform"
+title: "🎉 ReferConnect v1.0.0 Released - Open Source Affiliate Management Platform"
 labels: ["announcement", "release"]
 ---
 
-# 🎉 Refferq v1.0.0 is Now Available!
+# 🎉 ReferConnect v1.0.0 is Now Available!
 
-We're incredibly excited to announce the **first stable release** of Refferq - a comprehensive, open-source affiliate management platform!
+We're incredibly excited to announce the **first stable release** of ReferConnect - a comprehensive, open-source affiliate management platform!
 
 ## 🚀 What's New in v1.0.0
 
@@ -37,16 +37,16 @@ We're incredibly excited to announce the **first stable release** of Refferq - a
 
 ## 📖 Resources
 
-- **Quick Start:** [5-minute setup guide](https://github.com/refferq/refferq/wiki/Quick-Start-Guide)
-- **Documentation:** [Complete wiki](https://github.com/refferq/refferq/wiki)
-- **API Reference:** [API documentation](https://github.com/refferq/refferq/wiki/API-Overview)
-- **Roadmap:** [Future features](https://github.com/refferq/refferq/wiki/Roadmap)
+- **Quick Start:** [5-minute setup guide](https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide)
+- **Documentation:** [Complete wiki](https://github.com/referconnect/referconnect/wiki)
+- **API Reference:** [API documentation](https://github.com/referconnect/referconnect/wiki/API-Overview)
+- **Roadmap:** [Future features](https://github.com/referconnect/referconnect/wiki/Roadmap)
 
 ## 🎯 Quick Start
 
 ```bash
-git clone https://github.com/refferq/refferq.git
-cd refferq
+git clone https://github.com/referconnect/referconnect.git
+cd referconnect
 npm install
 cp .env.example .env.local
 npm run db:generate && npm run db:push
@@ -67,14 +67,14 @@ This is our first release, and we'd love to hear from you:
 ## 🤝 Get Involved
 
 - ⭐ Star the repository
-- 🐛 Report bugs via [Issues](https://github.com/refferq/refferq/issues)
-- 💻 Contribute code via [Pull Requests](https://github.com/refferq/refferq/pulls)
+- 🐛 Report bugs via [Issues](https://github.com/referconnect/referconnect/issues)
+- 💻 Contribute code via [Pull Requests](https://github.com/referconnect/referconnect/pulls)
 - 💬 Join discussions and help others
 - 📝 Improve documentation
 
 ## 🗺️ What's Next?
 
-Check our [Roadmap](https://github.com/refferq/refferq/wiki/Roadmap) for upcoming features:
+Check our [Roadmap](https://github.com/referconnect/referconnect/wiki/Roadmap) for upcoming features:
 
 - **v1.1.0 (Q4 2025)** - Enhanced analytics & webhooks
 - **v1.2.0 (Q1 2026)** - White-label customization
@@ -88,5 +88,5 @@ Let's build something amazing together! 🚀
 
 ---
 
-**Made with ❤️ by the Refferq Team**  
+**Made with ❤️ by the ReferConnect Team**
 **MIT Licensed • Open Source • Community Driven**

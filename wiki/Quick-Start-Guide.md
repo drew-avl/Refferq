@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get Refferq up and running in **5 minutes**! ⚡
+Get ReferConnect up and running in **5 minutes**! ⚡
 
 ---
 
@@ -18,8 +18,8 @@ Before you begin, ensure you have:
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/refferq/refferq.git
-cd refferq
+git clone https://github.com/referconnect/referconnect.git
+cd referconnect
 ```
 
 ---
@@ -50,14 +50,14 @@ Edit `.env.local` with your configuration:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/refferq"
+DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 
 # JWT Secret (generate a random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
 # Email (Resend)
 RESEND_API_KEY="re_xxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -87,11 +87,11 @@ Create PostgreSQL database:
 
 ```bash
 # Using psql
-createdb refferq
+createdb referconnect
 
 # Or manually
 psql -U postgres
-CREATE DATABASE refferq;
+CREATE DATABASE referconnect;
 \q
 ```
 
@@ -136,7 +136,7 @@ npm run dev
 
 ```bash
 # Connect to database
-psql -U postgres -d refferq
+psql -U postgres -d referconnect
 
 # Update user role
 UPDATE users 
@@ -166,7 +166,7 @@ npm run test:email admin@example.com
 
 ## 🎉 You're All Set!
 
-Your Refferq instance is now running at **http://localhost:3000**
+Your ReferConnect instance is now running at **http://localhost:3000**
 
 ### What's Next?
 
@@ -325,9 +325,9 @@ npx prisma studio              # Open Prisma Studio at localhost:5555
 
 - **[FAQ](FAQ)** - Common questions
 - **[Troubleshooting](Troubleshooting)** - Common issues
-- **[GitHub Issues](https://github.com/refferq/refferq/issues)** - Report bugs
-- **[GitHub Discussions](https://github.com/refferq/refferq/discussions)** - Ask questions
-- **Email:** hello@refferq.com
+- **[GitHub Issues](https://github.com/referconnect/referconnect/issues)** - Report bugs
+- **[GitHub Discussions](https://github.com/referconnect/referconnect/discussions)** - Ask questions
+- **Email:** hello@referconnect.com
 
 ---
 

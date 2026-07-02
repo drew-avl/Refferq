@@ -1,6 +1,6 @@
 # API Overview
 
-Complete reference for the Refferq REST API.
+Complete reference for the ReferConnect REST API.
 
 ---
 
@@ -19,7 +19,7 @@ Complete reference for the Refferq REST API.
 
 ## Introduction
 
-The Refferq API is a RESTful API that allows you to programmatically interact with your affiliate program. All API endpoints return JSON responses.
+The ReferConnect API is a RESTful API that allows you to programmatically interact with your affiliate program. All API endpoints return JSON responses.
 
 ### Base URL
 
@@ -36,11 +36,11 @@ Current version: **v1.3.0**
 
 ## Authentication
 
-Refferq uses **JWT (JSON Web Tokens)** for authentication.
+ReferConnect uses **JWT (JSON Web Tokens)** for authentication.
 
 ### Authentication Flow (OTP-Based)
 
-Refferq uses a passwordless OTP (One-Time Password) authentication flow:
+ReferConnect uses a passwordless OTP (One-Time Password) authentication flow:
 
 **Step 1: Request OTP**
 
@@ -528,7 +528,7 @@ Coming soon:
 
 ### Community SDKs
 
-Have you built an SDK? [Let us know!](https://github.com/refferq/refferq/discussions)
+Have you built an SDK? [Let us know!](https://github.com/referconnect/referconnect/discussions)
 
 ---
 
@@ -608,9 +608,9 @@ See [Webhook API](Webhook-API) for details.
 
 Need help with the API?
 
-- **[GitHub Issues](https://github.com/refferq/refferq/issues)** - Report bugs
-- **[GitHub Discussions](https://github.com/refferq/refferq/discussions)** - Ask questions
-- **Email:** hello@refferq.com
+- **[GitHub Issues](https://github.com/referconnect/referconnect/issues)** - Report bugs
+- **[GitHub Discussions](https://github.com/referconnect/referconnect/discussions)** - Ask questions
+- **Email:** hello@referconnect.com
 
 ---
 

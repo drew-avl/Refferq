@@ -1,8 +1,8 @@
-# Deploying Refferq to Vercel
+# Deploying ReferConnect to Vercel
 
-**Author: Refferq Team**
+**Author: ReferConnect Team**
 
-Complete guide for deploying Refferq to Vercel with PostgreSQL database.
+Complete guide for deploying ReferConnect to Vercel with PostgreSQL database.
 
 ## Prerequisites
 
@@ -19,9 +19,9 @@ Complete guide for deploying Refferq to Vercel with PostgreSQL database.
 ```bash
 git init
 git add .
-git commit -m "Initial commit - Refferq by Refferq Team"
+git commit -m "Initial commit - ReferConnect by ReferConnect Team"
 git branch -M main
-git remote add origin https://github.com/yourusername/refferq.git
+git remote add origin https://github.com/yourusername/referconnect.git
 git push -u origin main
 ```
 
@@ -103,7 +103,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASSWORD=your-app-password
-EMAIL_FROM=Refferq <noreply@refferq.com>
+EMAIL_FROM=ReferConnect <noreply@referconnect.com>
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 # Optional: Payment Integration
@@ -193,7 +193,7 @@ Connect to your database and run:
 INSERT INTO users (id, email, name, password, role, status, created_at, updated_at)
 VALUES (
   'admin_' || gen_random_uuid()::text,
-  'admin@refferq.com',
+  'admin@referconnect.com',
   'Admin User',
   '$2a$10$hashed_password_here', -- Use bcrypt hash
   'ADMIN',
@@ -224,8 +224,8 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'your-email@example.com';
 ### 6.1 Add Domain to Vercel
 
 1. Go to Project Settings → Domains
-2. Add your domain: `refferq.com`
-3. Add subdomain: `app.refferq.com`
+2. Add your domain: `referconnect.com`
+3. Add subdomain: `app.referconnect.com`
 
 ### 6.2 Update DNS Records
 
@@ -246,7 +246,7 @@ Value: cname.vercel-dns.com
 Update `NEXT_PUBLIC_APP_URL`:
 
 ```env
-NEXT_PUBLIC_APP_URL=https://refferq.com
+NEXT_PUBLIC_APP_URL=https://referconnect.com
 ```
 
 ---
@@ -411,11 +411,11 @@ export const runtime = 'edge';
 ## Support
 
 - **Documentation**: [docs/](../docs/)
-- **Issues**: [GitHub Issues](https://github.com/refferq/refferq/issues)
+- **Issues**: [GitHub Issues](https://github.com/referconnect/referconnect/issues)
 - **Vercel Docs**: [vercel.com/docs](https://vercel.com/docs)
 
 ---
 
-**Deployment Guide by Refferq Team**
+**Deployment Guide by ReferConnect Team**
 
 *Last Updated: October 2025*

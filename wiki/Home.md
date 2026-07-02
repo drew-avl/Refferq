@@ -1,7 +1,7 @@
-# Welcome to the Refferq Wiki! 🎉
+# Welcome to the ReferConnect Wiki! 🎉
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/refferq/refferq/main/public/images/logo/refferq-logo.svg" alt="Refferq Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/referconnect/referconnect/main/public/images/logo/referconnect-logo.svg" alt="ReferConnect Logo" width="200"/>
 </p>
 
 <p align="center">
@@ -38,7 +38,7 @@
 - **[Development Setup](Development-Setup)** - Local development environment
 - **[Database Schema](Database-Schema)** - Database structure and relationships
 - **[Architecture](Architecture)** - System architecture and design
-- **[Contributing](Contributing)** - How to contribute to Refferq
+- **[Contributing](Contributing)** - How to contribute to ReferConnect
 - **[Code Style Guide](Code-Style-Guide)** - Coding standards and conventions
 - **[Testing Guide](Testing-Guide)** - Testing strategies and tools
 
@@ -71,9 +71,9 @@
 
 ---
 
-## 🎯 What is Refferq?
+## 🎯 What is ReferConnect?
 
-**Refferq** is a comprehensive, open-source affiliate management platform built with modern web technologies. It provides everything you need to create, manage, and scale your affiliate marketing program.
+**ReferConnect** is a comprehensive, open-source affiliate management platform built with modern web technologies. It provides everything you need to create, manage, and scale your affiliate marketing program.
 
 ### Key Features
 
@@ -116,7 +116,7 @@
 
 ## 💡 Use Cases
 
-Refferq is perfect for:
+ReferConnect is perfect for:
 
 - **SaaS Companies** - Grow through affiliate partnerships
 - **E-commerce Stores** - Reward customer referrals
@@ -127,7 +127,7 @@ Refferq is perfect for:
 
 ---
 
-## 🌟 Why Choose Refferq?
+## 🌟 Why Choose ReferConnect?
 
 ### Open Source & Free
 - MIT Licensed - use commercially without restrictions
@@ -185,7 +185,7 @@ See our **[Roadmap](Roadmap)** for planned features and timeline.
 - **Wiki Documentation** - You're reading it!
 - **GitHub Issues** - Report bugs and request features
 - **GitHub Discussions** - Ask questions and share ideas
-- **Email Support** - hello@refferq.com
+- **Email Support** - hello@referconnect.com
 
 ### Contributing
 We welcome contributions! See our **[Contributing Guide](Contributing)** to get started.
@@ -218,7 +218,7 @@ Please read our **[Code of Conduct](Code-of-Conduct)** before participating in t
 
 ### Recommended Reading Order
 
-#### New to Refferq?
+#### New to ReferConnect?
 1. Quick Start Guide
 2. Installation
 3. Configuration
@@ -240,25 +240,25 @@ Please read our **[Code of Conduct](Code-of-Conduct)** before participating in t
 
 ## 📝 License
 
-Refferq is open source software licensed under the **[MIT License](https://github.com/refferq/refferq/blob/main/LICENSE)**.
+ReferConnect is open source software licensed under the **[MIT License](https://github.com/referconnect/referconnect/blob/main/LICENSE)**.
 
-Copyright © 2025 Refferq Team
+Copyright © 2025 ReferConnect Team
 
 ---
 
 ## 🎓 Learn More
 
-- **[GitHub Repository](https://github.com/refferq/refferq)** - Source code
-- **[Live Demo](https://demo.refferq.com)** - Try it out (coming soon)
+- **[GitHub Repository](https://github.com/referconnect/referconnect)** - Source code
+- **[Live Demo](https://demo.referconnect.com)** - Try it out (coming soon)
 - **[API Documentation](API-Overview)** - REST API reference
-- **[Blog](https://blog.refferq.com)** - Tutorials and updates (coming soon)
+- **[Blog](https://blog.referconnect.com)** - Tutorials and updates (coming soon)
 
 ---
 
 <p align="center">
-  Made with ❤️ by the Refferq Team
+  Made with ❤️ by the ReferConnect Team
 </p>
 
 <p align="center">
-  <a href="https://github.com/refferq/refferq">⭐ Star us on GitHub</a>
+  <a href="https://github.com/referconnect/referconnect">⭐ Star us on GitHub</a>
 </p>

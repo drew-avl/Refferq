@@ -83,21 +83,21 @@ export async function POST(request: NextRequest) {
         </p>
       </div>
       <div class="footer">
-        <p>This report was sent from Refferq by ${user.name} (${user.email})</p>
-        <p>© ${new Date().getFullYear()} Refferq. All rights reserved.</p>
+        <p>This report was sent from ReferConnect by ${user.name} (${user.email})</p>
+        <p>© ${new Date().getFullYear()} ReferConnect. All rights reserved.</p>
       </div>
     </body>
     </html>
     `;
 
     // Send to all recipients
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Refferq <noreply@refferq.com>';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'ReferConnect <noreply@referconnect.com>';
     const results = await Promise.allSettled(
       recipients.map((email: string) =>
         resend.emails.send({
           from: fromEmail,
           to: email.trim(),
-          subject: `[Refferq] ${reportData.type || 'Report'} — ${reportDate}`,
+          subject: `[ReferConnect] ${reportData.type || 'Report'} — ${reportDate}`,
           html,
           attachments: [
             {

@@ -1,8 +1,8 @@
-# Refferq API Documentation
+# ReferConnect API Documentation
 
-**Author: Refferq Team**
+**Author: ReferConnect Team**
 
-Complete API reference for Refferq affiliate management platform.
+Complete API reference for ReferConnect affiliate management platform.
 
 ## Table of Contents
 
@@ -500,5 +500,5 @@ Webhook support for external integrations is planned for future releases.
 
 ---
 
-**Documentation by Refferq Team**
+**Documentation by ReferConnect Team**
 *Last Updated: October 2025*

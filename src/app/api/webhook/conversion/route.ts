@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // ─── Authentication: Require API key OR webhook signature ───
     const rawBody = await request.text();
     const webhookSecret = process.env.WEBHOOK_SECRET;
-    const signature = request.headers.get('x-webhook-signature') || request.headers.get('x-refferq-signature');
+    const signature = request.headers.get('x-webhook-signature') || request.headers.get('x-referconnect-signature');
 
     let authenticated = false;
 

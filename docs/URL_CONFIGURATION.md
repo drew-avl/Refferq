@@ -5,19 +5,19 @@
 All application URLs have been updated from localhost to production domains:
 
 ### Domain Structure
-- **Marketing Website**: `https://refferq.com`
-- **Application**: `https://app.refferq.com`
+- **Marketing Website**: `https://referconnect.com`
+- **Application**: `https://app.referconnect.com`
 
 ---
 
 ## ✅ Files Successfully Updated
 
 ### 1. Environment Configuration
-- **`.env.example`** - Updated `NEXT_PUBLIC_APP_URL` to `https://app.refferq.com`
+- **`.env.example`** - Updated `NEXT_PUBLIC_APP_URL` to `https://app.referconnect.com`
 
 ### 2. Application Code
 - **`src/app/api/auth/register/route.ts`** - Updated default login URL fallback
-  - Changed: `http://localhost:3000` → `https://app.refferq.com`
+  - Changed: `http://localhost:3000` → `https://app.referconnect.com`
 
 ### 3. Documentation
 - **`README.md`** - Updated app URL examples and curl commands
@@ -27,7 +27,7 @@ All application URLs have been updated from localhost to production domains:
 All frontend HTML files have been updated with production URLs:
 - **`frontend/index.html`**
   - Meta tags: Open Graph and Twitter Cards
-  - Navigation links point to `app.refferq.com`
+  - Navigation links point to `app.referconnect.com`
   - Hero CTAs updated
   
 - **`frontend/features.html`**
@@ -43,8 +43,8 @@ All frontend HTML files have been updated with production URLs:
 
 ### 5. SEO & Configuration Files
 - **`frontend/sitemap.xml`**
-  - Marketing pages: `https://refferq.com/*`
-  - App pages: `https://app.refferq.com/*`
+  - Marketing pages: `https://referconnect.com/*`
+  - App pages: `https://app.referconnect.com/*`
   
 - **`frontend/robots.txt`** - Marketing site sitemap URL
 - **`public/robots.txt`** - App sitemap URL
@@ -62,14 +62,14 @@ Update your `.env` file with the production URL:
 
 ```bash
 # Copy from .env.example
-NEXT_PUBLIC_APP_URL="https://app.refferq.com"
+NEXT_PUBLIC_APP_URL="https://app.referconnect.com"
 
 # Database (use production credentials)
-DATABASE_URL="postgresql://user:password@host:5432/refferq"
+DATABASE_URL="postgresql://user:password@host:5432/referconnect"
 
 # Email
 RESEND_API_KEY="re_xxxxxxxxxxxxx"
-EMAIL_FROM="noreply@refferq.com"
+EMAIL_FROM="noreply@referconnect.com"
 
 # JWT
 JWT_SECRET="your-production-secret-min-32-chars"
@@ -79,19 +79,19 @@ JWT_SECRET="your-production-secret-min-32-chars"
 
 1. **Add Custom Domains** in Vercel Dashboard:
    ```
-   Primary Domain: refferq.com → Frontend
-   App Domain: app.refferq.com → Next.js App
+   Primary Domain: referconnect.com → Frontend
+   App Domain: app.referconnect.com → Next.js App
    ```
 
 2. **Environment Variables** in Vercel:
-   - Add `NEXT_PUBLIC_APP_URL=https://app.refferq.com`
+   - Add `NEXT_PUBLIC_APP_URL=https://app.referconnect.com`
    - Add all other production environment variables
 
 3. **DNS Configuration**:
    ```
    A     @                  → Vercel IP
-   CNAME app.refferq.com    → cname.vercel-dns.com
-   CNAME www.refferq.com    → cname.vercel-dns.com (optional)
+   CNAME app.referconnect.com    → cname.vercel-dns.com
+   CNAME www.referconnect.com    → cname.vercel-dns.com (optional)
    ```
 
 ---
@@ -136,8 +136,8 @@ Some documentation files still reference localhost for development purposes. The
 - [ ] Test deployment preview
 
 ### Post-Deployment Testing
-- [ ] Visit https://refferq.com (marketing site)
-- [ ] Visit https://app.refferq.com (application)
+- [ ] Visit https://referconnect.com (marketing site)
+- [ ] Visit https://app.referconnect.com (application)
 - [ ] Test user registration flow
 - [ ] Verify emails are sent with correct URLs
 - [ ] Check all internal links work
@@ -160,23 +160,23 @@ Some documentation files still reference localhost for development purposes. The
 ### Application URLs
 | Purpose | URL |
 |---------|-----|
-| Marketing Homepage | https://refferq.com |
-| Features Page | https://refferq.com/features.html |
-| Pricing Page | https://refferq.com/pricing.html |
-| Documentation | https://refferq.com/docs.html |
-| User Registration | https://app.refferq.com/register |
-| User Login | https://app.refferq.com/login |
-| Admin Dashboard | https://app.refferq.com/admin |
-| Affiliate Dashboard | https://app.refferq.com/affiliate |
+| Marketing Homepage | https://referconnect.com |
+| Features Page | https://referconnect.com/features.html |
+| Pricing Page | https://referconnect.com/pricing.html |
+| Documentation | https://referconnect.com/docs.html |
+| User Registration | https://app.referconnect.com/register |
+| User Login | https://app.referconnect.com/login |
+| Admin Dashboard | https://app.referconnect.com/admin |
+| Affiliate Dashboard | https://app.referconnect.com/affiliate |
 
 ### API Endpoints
 | Purpose | URL |
 |---------|-----|
-| Base API URL | https://app.refferq.com/api |
-| Authentication | https://app.refferq.com/api/auth/* |
-| Admin APIs | https://app.refferq.com/api/admin/* |
-| Affiliate APIs | https://app.refferq.com/api/affiliate/* |
-| Tracking APIs | https://app.refferq.com/api/track/* |
+| Base API URL | https://app.referconnect.com/api |
+| Authentication | https://app.referconnect.com/api/auth/* |
+| Admin APIs | https://app.referconnect.com/api/admin/* |
+| Affiliate APIs | https://app.referconnect.com/api/affiliate/* |
+| Tracking APIs | https://app.referconnect.com/api/track/* |
 
 ---
 
@@ -205,9 +205,9 @@ If you encounter issues:
 1. Check environment variables are set correctly
 2. Verify DNS propagation (can take up to 48 hours)
 3. Review Vercel deployment logs
-4. Consult the [GitHub Discussions](https://github.com/Refferq/Refferq/discussions)
+4. Consult the [GitHub Discussions](https://github.com/ReferConnect/ReferConnect/discussions)
 
 ---
 
 **Last Updated**: October 12, 2025  
-**Applies To**: Refferq v1.0.0+
+**Applies To**: ReferConnect v1.0.0+

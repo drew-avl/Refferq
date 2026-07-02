@@ -1,12 +1,12 @@
 # Database Schema Documentation
 
-**Author: Refferq Team**
+**Author: ReferConnect Team**
 
-Complete reference for Refferq's PostgreSQL database schema using Prisma ORM.
+Complete reference for ReferConnect's PostgreSQL database schema using Prisma ORM.
 
 ## Overview
 
-Refferq uses PostgreSQL with Prisma ORM for type-safe database access. The schema is designed for a multi-tenant affiliate marketing platform.
+ReferConnect uses PostgreSQL with Prisma ORM for type-safe database access. The schema is designed for a multi-tenant affiliate marketing platform.
 
 **Schema Location**: `prisma/schema.prisma`
 
@@ -356,9 +356,9 @@ model ProgramSettings {
 | Field | Type | Description | Default | Example |
 |-------|------|-------------|---------|---------|
 | `id` | String | Settings ID | cuid() | - |
-| `productName` | String | Product/service name | "Product Name" | "Refferq" |
-| `programName` | String | Program display name | "Affiliate Program" | "Refferq Partners" |
-| `websiteUrl` | String | Main website URL | "https://example.com" | "https://refferq.com" |
+| `productName` | String | Product/service name | "Product Name" | "ReferConnect" |
+| `programName` | String | Program display name | "Affiliate Program" | "ReferConnect Partners" |
+| `websiteUrl` | String | Main website URL | "https://example.com" | "https://referconnect.com" |
 | `subdomain` | String? | Custom subdomain | null | "affiliates" |
 | `currency` | String | Currency code | "USD" | "USD", "EUR" |
 | `cookieDuration` | Int | Tracking cookie days | 30 | 60 |
@@ -485,7 +485,7 @@ async function main() {
   // Create admin user
   const adminUser = await prisma.user.create({
     data: {
-      email: 'admin@refferq.com',
+      email: 'admin@referconnect.com',
       name: 'Admin User',
       password: await bcrypt.hash('admin123', 10),
       role: 'ADMIN',
@@ -497,9 +497,9 @@ async function main() {
   // Create default settings
   await prisma.programSettings.create({
     data: {
-      productName: 'Refferq',
-      programName: 'Refferq Partners',
-      websiteUrl: 'https://refferq.com',
+      productName: 'ReferConnect',
+      programName: 'ReferConnect Partners',
+      websiteUrl: 'https://referconnect.com',
       currency: 'USD',
       payoutThreshold: 50.0
     }
@@ -649,6 +649,6 @@ npx prisma migrate deploy
 
 ---
 
-**Database Documentation by Refferq Team**
+**Database Documentation by ReferConnect Team**
 
 *Last Updated: October 2025*

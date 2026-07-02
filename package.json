@@ -1,12 +1,12 @@
 {
-  "name": "refferq",
+  "name": "referconnect",
   "version": "1.1.0",
   "description": "Open-source affiliate marketing platform with comprehensive tracking, commission management, and payout automation. Built with Next.js, TypeScript, and PostgreSQL.",
-  "author": "Refferq Team <hello@refferq.com>",
+  "author": "ReferConnect Team <hello@referconnect.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/refferq/refferq.git"
+    "url": "https://github.com/referconnect/referconnect.git"
   },
   "keywords": [
     "affiliate",
@@ -20,9 +20,9 @@
     "postgresql",
     "prisma"
   ],
-  "homepage": "https://github.com/refferq/refferq#readme",
+  "homepage": "https://github.com/referconnect/referconnect#readme",
   "bugs": {
-    "url": "https://github.com/refferq/refferq/issues"
+    "url": "https://github.com/referconnect/referconnect/issues"
   },
   "scripts": {
     "dev": "next dev",

@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap outlines the planned features and improvements for Refferq. Items are subject to change based on community feedback and priorities.
+This roadmap outlines the planned features and improvements for ReferConnect. Items are subject to change based on community feedback and priorities.
 
 ---
 
@@ -443,17 +443,17 @@ These features are being considered but not yet scheduled:
 We value community feedback! Here's how you can influence the roadmap:
 
 ### Vote on Features
-- **[GitHub Discussions](https://github.com/refferq/refferq/discussions)** - Vote on feature requests
-- **[Feature Request Form](https://github.com/refferq/refferq/issues/new?template=feature_request.md)** - Suggest new features
+- **[GitHub Discussions](https://github.com/referconnect/referconnect/discussions)** - Vote on feature requests
+- **[Feature Request Form](https://github.com/referconnect/referconnect/issues/new?template=feature_request.md)** - Suggest new features
 
 ### Contribute
-- **[Open Issues](https://github.com/refferq/refferq/issues)** - Pick up an issue
-- **[Pull Requests](https://github.com/refferq/refferq/pulls)** - Submit improvements
+- **[Open Issues](https://github.com/referconnect/referconnect/issues)** - Pick up an issue
+- **[Pull Requests](https://github.com/referconnect/referconnect/pulls)** - Submit improvements
 - **[Contributing Guide](Contributing)** - Learn how to contribute
 
 ### Sponsor Features
 Want a feature prioritized? Consider sponsoring development:
-- Email: hello@refferq.com
+- Email: hello@referconnect.com
 - GitHub Sponsors: Coming soon
 
 ---
@@ -504,11 +504,11 @@ Want a feature prioritized? Consider sponsoring development:
 
 ## 📣 Stay Updated
 
-- **[GitHub Releases](https://github.com/refferq/refferq/releases)** - Version updates
+- **[GitHub Releases](https://github.com/referconnect/referconnect/releases)** - Version updates
 - **[Changelog](Changelog)** - Detailed changes
-- **[Blog](https://blog.refferq.com)** - Announcements (coming soon)
-- **[Twitter](https://twitter.com/refferq)** - Quick updates (coming soon)
-- **[Newsletter](https://refferq.com/newsletter)** - Monthly digest (coming soon)
+- **[Blog](https://blog.referconnect.com)** - Announcements (coming soon)
+- **[Twitter](https://twitter.com/referconnect)** - Quick updates (coming soon)
+- **[Newsletter](https://referconnect.com/newsletter)** - Monthly digest (coming soon)
 
 ---
 
@@ -536,7 +536,7 @@ Want a feature prioritized? Consider sponsoring development:
 
 <p align="center">
   <strong>Have ideas for the roadmap?</strong><br>
-  Share your thoughts in <a href="https://github.com/refferq/refferq/discussions">GitHub Discussions</a>
+  Share your thoughts in <a href="https://github.com/referconnect/referconnect/discussions">GitHub Discussions</a>
 </p>
 
 <p align="center">

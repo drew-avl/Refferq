@@ -138,7 +138,7 @@ function CustomersPage() {
           name: 'Default',
           commissionRate: 20,  // ← Admin configures this
           description: 'Earn 20% on all paid customers.',
-          signupUrl: 'https://refferq.vercel.app',
+          signupUrl: 'https://referconnect.vercel.app',
           memberCount: 0,
           createdAt: new Date().toISOString()
         }
@@ -500,7 +500,7 @@ const display = {
   name: 'Default',
   commissionRate: 20,  // ← Admin can edit this
   description: 'Earn 20% on all paid customers.',
-  signupUrl: 'https://refferq.vercel.app',
+  signupUrl: 'https://referconnect.vercel.app',
   memberCount: 0
 }
 ```

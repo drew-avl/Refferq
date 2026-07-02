@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully integrated welcome email functionality into the Refferq affiliate platform. New affiliates and admins now receive automated welcome emails upon registration using the Resend email service.
+Successfully integrated welcome email functionality into the ReferConnect affiliate platform. New affiliates and admins now receive automated welcome emails upon registration using the Resend email service.
 
 ## What Was Done
 
@@ -50,25 +50,25 @@ Found existing comprehensive email service with:
 
 ### 3. Email Branding Updates (✅ Complete)
 
-Updated all email templates to use "Refferq" branding:
+Updated all email templates to use "ReferConnect" branding:
 
 **Changes:**
 - ❌ "Welcome to Our Affiliate Platform" 
-- ✅ "Welcome to Refferq"
+- ✅ "Welcome to ReferConnect"
 - ❌ Purple gradient (#667eea to #764ba2)
 - ✅ Green gradient (#10b981 to #059669) - matches login/register pages
 - ❌ "The Affiliate Platform Team"
-- ✅ "The Refferq Team"
+- ✅ "The ReferConnect Team"
 - ❌ "noreply@yourdomain.com"
-- ✅ "Refferq <noreply@refferq.com>"
+- ✅ "ReferConnect <noreply@referconnect.com>"
 
 **Email Templates Updated:**
-1. Welcome Email - Green branding, Refferq name
-2. Referral Notification - Refferq System name
-3. Approval Email - Refferq Team signature
-4. Payout Notification - Refferq Team signature
-5. Password Reset - Refferq branding
-6. Email Verification - Refferq branding
+1. Welcome Email - Green branding, ReferConnect name
+2. Referral Notification - ReferConnect System name
+3. Approval Email - ReferConnect Team signature
+4. Payout Notification - ReferConnect Team signature
+5. Password Reset - ReferConnect branding
+6. Email Verification - ReferConnect branding
 
 ### 4. Environment Configuration (✅ Complete)
 
@@ -79,7 +79,7 @@ Created comprehensive environment variable template:
 ```env
 # Email Service (Resend)
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 ADMIN_EMAILS="admin@yourdomain.com"
 
 # Application URL
@@ -257,7 +257,7 @@ User's Email Inbox
 ### Development
 ```env
 RESEND_API_KEY="re_xxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 ADMIN_EMAILS="admin@example.com"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
@@ -265,9 +265,9 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ### Production
 ```env
 RESEND_API_KEY="re_xxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <noreply@refferq.com>"
-ADMIN_EMAILS="admin@refferq.com,support@refferq.com"
-NEXT_PUBLIC_APP_URL="https://refferq.com"
+RESEND_FROM_EMAIL="ReferConnect <noreply@referconnect.com>"
+ADMIN_EMAILS="admin@referconnect.com,support@referconnect.com"
+NEXT_PUBLIC_APP_URL="https://referconnect.com"
 ```
 
 ## Testing Steps
@@ -292,7 +292,7 @@ npm run test:email your-email@example.com
 
 📋 Checking Environment Variables:
   ✅ RESEND_API_KEY - re_BbhH...v5VZ
-  ✅ RESEND_FROM_EMAIL - Refferq <onboarding@resend.dev>
+  ✅ RESEND_FROM_EMAIL - ReferConnect <onboarding@resend.dev>
   ✅ NEXT_PUBLIC_APP_URL - http://localhost:3000
 
 📧 Sending test email to: your-email@example.com
@@ -301,7 +301,7 @@ npm run test:email your-email@example.com
 
 Details:
   Message ID: abc123...
-  From: Refferq <onboarding@resend.dev>
+  From: ReferConnect <onboarding@resend.dev>
   To: your-email@example.com
 
 📬 Check your inbox (and spam folder) for the test email.
@@ -342,7 +342,7 @@ npm run dev
 - ✅ README updated with correct Resend info
 - ✅ Complete .env.example with all email variables
 - ✅ npm run test:email script for testing
-- ✅ Refferq branding throughout all emails
+- ✅ ReferConnect branding throughout all emails
 - ✅ Comprehensive EMAIL.md documentation (300+ lines)
 - ✅ Test script with detailed error handling
 - ✅ Non-blocking email (registration succeeds if email fails)
@@ -408,7 +408,7 @@ To enable these, add email sending calls to:
 
 ### Modified Files (4)
 1. ✅ `src/app/api/auth/register/route.ts` - Added welcome email sending
-2. ✅ `src/lib/email.ts` - Updated branding to Refferq
+2. ✅ `src/lib/email.ts` - Updated branding to ReferConnect
 3. ✅ `README.md` - Added email configuration section
 4. ✅ `package.json` - Added test:email script
 
@@ -456,9 +456,9 @@ To enable these, add email sending calls to:
 
 ## Conclusion
 
-The welcome email functionality has been successfully integrated into the Refferq platform. Users will now receive automated welcome emails upon registration with:
+The welcome email functionality has been successfully integrated into the ReferConnect platform. Users will now receive automated welcome emails upon registration with:
 
-- ✅ Professional Refferq branding
+- ✅ Professional ReferConnect branding
 - ✅ Personalized content based on role
 - ✅ Account status information
 - ✅ Login link for easy access

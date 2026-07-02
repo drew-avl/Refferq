@@ -1,10 +1,10 @@
-# Contributing to Refferq
+# Contributing to ReferConnect
 
-First off, thank you for considering contributing to Refferq! It's people like you that make Refferq such a great tool.
+First off, thank you for considering contributing to ReferConnect! It's people like you that make ReferConnect such a great tool.
 
 ## Author Attribution
 
-**This project is developed and maintained by the Refferq Team.**
+**This project is developed and maintained by the ReferConnect Team.**
 
 All contributions must respect the original authorship and include proper attribution.
 
@@ -95,7 +95,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ## Attribution
 
-All contributors will be recognized in our [Contributors](https://github.com/refferq/refferq/graphs/contributors) page.
+All contributors will be recognized in our [Contributors](https://github.com/referconnect/referconnect/graphs/contributors) page.
 
 ## Questions?
 
@@ -103,6 +103,6 @@ Feel free to open an issue with your question or reach out to the maintainers.
 
 ---
 
-**Remember**: This project is maintained by the Refferq Team. All contributions become part of this open-source project under the MIT License while respecting the original authorship.
+**Remember**: This project is maintained by the ReferConnect Team. All contributions become part of this open-source project under the MIT License while respecting the original authorship.
 
 Thank you for contributing! 🎉

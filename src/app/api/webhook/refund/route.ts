@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         // ─── Authentication ────────────────────────────────────────
         const rawBody = await request.text();
         const webhookSecret = process.env.WEBHOOK_SECRET;
-        const signature = request.headers.get('x-webhook-signature') || request.headers.get('x-refferq-signature');
+        const signature = request.headers.get('x-webhook-signature') || request.headers.get('x-referconnect-signature');
         const apiKey = request.headers.get('x-api-key');
 
         let authenticated = false;

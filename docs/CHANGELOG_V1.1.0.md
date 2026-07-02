@@ -144,4 +144,4 @@ Thanks to everyone who contributed to this release!
 
 ## 📦 Full Changelog
 
-See [GitHub Releases](https://github.com/Refferq/Refferq/releases) for complete details.
+See [GitHub Releases](https://github.com/ReferConnect/ReferConnect/releases) for complete details.

@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
         event: 'test',
         timestamp: new Date().toISOString(),
         data: { 
-          message: 'This is a test webhook from Refferq',
+          message: 'This is a test webhook from ReferConnect',
           testId: crypto.randomBytes(8).toString('hex')
         }
       };
@@ -273,9 +273,9 @@ export async function POST(request: NextRequest) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Refferq-Event': 'test',
-            'X-Refferq-Signature': generateSignature(testPayload, webhookSecret),
-            'X-Refferq-Delivery': `test_${Date.now()}`
+            'X-ReferConnect-Event': 'test',
+            'X-ReferConnect-Signature': generateSignature(testPayload, webhookSecret),
+            'X-ReferConnect-Delivery': `test_${Date.now()}`
           },
           body: JSON.stringify(testPayload)
         });

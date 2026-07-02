@@ -39,6 +39,22 @@ export async function GET(request: NextRequest) {
           select: {
             referrals: true
           }
+        },
+        programAssignments: {
+          include: {
+            program: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                isActive: true,
+                isDefault: true,
+                referralPayoutCents: true,
+                currency: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: {
@@ -156,7 +172,7 @@ export async function POST(request: NextRequest) {
     if (sendWelcomeEmail) {
       try {
         const { emailService } = await import('@/lib/email');
-        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com'}/login`;
+        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com'}/login`;
         const emailResult = await emailService.sendWelcomeEmail({
           name: newUser.name,
           email: newUser.email,

@@ -72,7 +72,7 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
   };
 
   const accentColor = brand.brandButtonColor || '#059669';
-  const brandName = brand.companyName || 'Refferq';
+  const brandName = brand.companyName || 'ReferConnect';
 
   return (
     <Sidebar variant="inset">

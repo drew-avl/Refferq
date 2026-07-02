@@ -1,10 +1,10 @@
 # Code of Conduct
 
-**Author: Refferq Team**
+**Author: ReferConnect Team**
 
 ## Our Pledge
 
-We as members, contributors, and leaders of the Refferq community pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We as members, contributors, and leaders of the ReferConnect community pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
@@ -36,7 +36,7 @@ Examples of unacceptable behavior:
 
 ## Enforcement Responsibilities
 
-Community leaders (Refferq Team) are responsible for clarifying and enforcing our standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful.
+Community leaders (ReferConnect Team) are responsible for clarifying and enforcing our standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful.
 
 Community leaders have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
 
@@ -90,7 +90,7 @@ Community leaders will follow these Community Impact Guidelines in determining t
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at:
 
-**Email**: conduct@refferq.com
+**Email**: conduct@referconnect.com
 
 All complaints will be reviewed and investigated promptly and fairly.
 
@@ -123,17 +123,17 @@ Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcem
 
 For questions about this Code of Conduct:
 
-- **Email**: conduct@refferq.com
-- **GitHub Issues**: [refferq/refferq/issues](https://github.com/refferq/refferq/issues)
+- **Email**: conduct@referconnect.com
+- **GitHub Issues**: [referconnect/referconnect/issues](https://github.com/referconnect/referconnect/issues)
 
 ---
 
 ## Commitment
 
-The Refferq Team is committed to providing a welcoming and inspiring community for all. We believe that a diverse and inclusive community is a stronger community. We welcome contributions from everyone who shares our values and wants to contribute in a respectful and positive way.
+The ReferConnect Team is committed to providing a welcoming and inspiring community for all. We believe that a diverse and inclusive community is a stronger community. We welcome contributions from everyone who shares our values and wants to contribute in a respectful and positive way.
 
 ---
 
-**Code of Conduct by Refferq Team**
+**Code of Conduct by ReferConnect Team**
 
 *Last Updated: October 2025*

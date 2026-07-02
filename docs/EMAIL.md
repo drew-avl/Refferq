@@ -1,8 +1,8 @@
-# Email Configuration Guide for Refferq
+# Email Configuration Guide for ReferConnect
 
 ## Overview
 
-Refferq uses [Resend](https://resend.com) for sending transactional emails. Resend is a modern email API designed for developers with:
+ReferConnect uses [Resend](https://resend.com) for sending transactional emails. Resend is a modern email API designed for developers with:
 
 - **3,000 free emails/month** on the free tier
 - Easy integration with Next.js
@@ -22,7 +22,7 @@ Refferq uses [Resend](https://resend.com) for sending transactional emails. Rese
 ### Step 2: Generate API Key
 
 1. Click **"Create API Key"**
-2. Give it a name (e.g., "Refferq Production")
+2. Give it a name (e.g., "ReferConnect Production")
 3. Select permissions: **Full Access** or **Sending Access**
 4. Copy the API key (starts with `re_...`)
 5. **Important:** Save this key securely - you won't be able to see it again
@@ -33,14 +33,14 @@ For production, you should verify your domain:
 
 1. Go to **Domains** in Resend dashboard
 2. Click **"Add Domain"**
-3. Enter your domain (e.g., `refferq.com`)
+3. Enter your domain (e.g., `referconnect.com`)
 4. Add the DNS records provided by Resend to your domain registrar
 5. Wait for verification (usually takes 1-48 hours)
 
 Once verified, you can send emails from addresses like:
-- `noreply@refferq.com`
-- `support@refferq.com`
-- `hello@refferq.com`
+- `noreply@referconnect.com`
+- `support@referconnect.com`
+- `hello@referconnect.com`
 
 ### Step 4: Environment Variables
 
@@ -53,7 +53,7 @@ RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # From Email Address
 # For development: Use "onboarding@resend.dev"
 # For production: Use your verified domain
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 
 # Admin Notification Emails (comma-separated)
 ADMIN_EMAILS="admin@yourdomain.com,support@yourdomain.com"
@@ -68,7 +68,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 For development, you can use Resend's default sending address:
 
 ```env
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 ```
 
 This works immediately without domain verification.
@@ -77,14 +77,14 @@ This works immediately without domain verification.
 For production, use your verified domain:
 
 ```env
-RESEND_FROM_EMAIL="Refferq <noreply@refferq.com>"
+RESEND_FROM_EMAIL="ReferConnect <noreply@referconnect.com>"
 ```
 
 Make sure your domain is verified in Resend dashboard before deploying.
 
 ## Email Templates
 
-Refferq includes the following email templates:
+ReferConnect includes the following email templates:
 
 ### 1. Welcome Email
 **Trigger:** When a new affiliate or admin registers  
@@ -281,8 +281,8 @@ If you exceed free tier limits:
 - Discord Community: [https://discord.gg/resend](https://discord.gg/resend)
 - Email: support@resend.com
 
-### Refferq Support
-For issues specific to Refferq's email implementation:
+### ReferConnect Support
+For issues specific to ReferConnect's email implementation:
 - Check server logs for error messages
 - Review `src/lib/email.ts` for email service code
 - Test with `POST /api/admin/emails/test` endpoint
@@ -305,7 +305,7 @@ ADMIN_EMAILS=""                # Comma-separated admin emails
 ```env
 # Development
 RESEND_API_KEY="re_123abc456def789ghi"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 ADMIN_EMAILS="admin@example.com"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```

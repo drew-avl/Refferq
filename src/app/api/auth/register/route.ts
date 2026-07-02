@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Send welcome email (non-blocking - don't fail registration if email fails)
     try {
       // Send welcome email with login URL
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com'}/login`;
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com'}/login`;
       await emailService.sendWelcomeEmail({
         name: result.user!.name,
         email: result.user!.email,

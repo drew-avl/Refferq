@@ -40,7 +40,7 @@ export async function GET(
     const { code } = await params;
     const referralCode = code;
     const searchParams = request.nextUrl.searchParams;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com';
 
     // Support both 'target' and 'dest' (Plan called it 'dest')
     const rawTarget = searchParams.get('dest') || searchParams.get('target');
@@ -167,7 +167,7 @@ export async function GET(
     console.error('Referral tracking error:', error);
 
     // Fallback redirect on error (safe — always redirects to app URL)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com';
     return NextResponse.redirect(appUrl);
   }
 }

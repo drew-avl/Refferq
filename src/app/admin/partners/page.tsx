@@ -63,7 +63,22 @@ import {
   Trash2,
   UserPlus,
   ArrowUpDown,
+  Edit,
 } from 'lucide-react';
+
+interface AssignedProgram {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  isDefault: boolean;
+  referralPayoutCents: number;
+  currency: string;
+}
+
+interface Program extends AssignedProgram {
+  assignedAffiliates?: { id: string; name: string; email: string; status?: string }[];
+}
 
 interface Partner {
   id: string;
@@ -79,16 +94,25 @@ interface Partner {
   revenue: number;
   earnings: number;
   groupName?: string;
+  company?: string;
+  payoutMethod?: string;
+  payoutEmail?: string;
+  assignedPrograms: AssignedProgram[];
+  assignedProgramIds: string[];
 }
 
 export default function PartnersPage() {
   const router = useRouter();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [filteredPartners, setFilteredPartners] = useState<Partner[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [activeTab, setActiveTab] = useState('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [savingPartner, setSavingPartner] = useState(false);
   const [selectedPartners, setSelectedPartners] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [currencySymbol, setCurrencySymbol] = useState('$');
@@ -114,8 +138,19 @@ export default function PartnersPage() {
     inviteType: 'single',
   });
 
+  const [editPartner, setEditPartner] = useState({
+    name: '',
+    email: '',
+    status: 'ACTIVE',
+    company: '',
+    payoutMethod: 'PayPal',
+    payoutEmail: '',
+    assignedProgramIds: [] as string[],
+  });
+
   useEffect(() => {
     fetchPartners();
+    fetchPrograms();
   }, []);
 
   useEffect(() => {
@@ -129,21 +164,34 @@ export default function PartnersPage() {
       const data = await response.json();
 
       if (data.success) {
-        const formattedPartners = data.affiliates.map((aff: any) => ({
-          id: aff.id,
-          userId: aff.userId,
-          name: aff.user.name,
-          email: aff.user.email,
-          referralCode: aff.referralCode,
-          status: aff.user.status,
-          createdAt: aff.createdAt,
-          clicks: 0,
-          leads: aff._count?.referrals || 0,
-          customers: aff._count?.referrals || 0,
-          revenue: 0,
-          earnings: aff.balanceCents || 0,
-          groupName: '',
-        }));
+        const formattedPartners = data.affiliates.map((aff: any) => {
+          const payoutDetails =
+            aff.payoutDetails && typeof aff.payoutDetails === 'object'
+              ? aff.payoutDetails
+              : {};
+          const assignedPrograms = aff.programAssignments?.map((assignment: any) => assignment.program) || [];
+
+          return {
+            id: aff.id,
+            userId: aff.userId,
+            name: aff.user.name,
+            email: aff.user.email,
+            referralCode: aff.referralCode,
+            status: aff.user.status,
+            createdAt: aff.createdAt,
+            clicks: 0,
+            leads: aff._count?.referrals || 0,
+            customers: aff._count?.referrals || 0,
+            revenue: 0,
+            earnings: aff.balanceCents || 0,
+            groupName: '',
+            company: payoutDetails.company || '',
+            payoutMethod: payoutDetails.paymentMethod || 'PayPal',
+            payoutEmail: payoutDetails.paymentEmail || aff.user.email,
+            assignedPrograms,
+            assignedProgramIds: assignedPrograms.map((program: AssignedProgram) => program.id),
+          };
+        });
         setPartners(formattedPartners);
         setCurrencySymbol(data.currencySymbol || '$');
       }
@@ -151,6 +199,18 @@ export default function PartnersPage() {
       console.error('Failed to fetch partners:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch('/api/admin/programs');
+      const data = await response.json();
+      if (data.success) {
+        setPrograms(data.programs || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch programs:', error);
     }
   };
 
@@ -235,6 +295,66 @@ export default function PartnersPage() {
     } catch (error) {
       console.error('Failed to create partner:', error);
       alert('Failed to create partner');
+    }
+  };
+
+  const openEditPartner = (partner: Partner) => {
+    setEditingPartner(partner);
+    setEditPartner({
+      name: partner.name,
+      email: partner.email,
+      status: partner.status,
+      company: partner.company || '',
+      payoutMethod: partner.payoutMethod || 'PayPal',
+      payoutEmail: partner.payoutEmail || partner.email,
+      assignedProgramIds: partner.assignedProgramIds || [],
+    });
+    setShowEditModal(true);
+  };
+
+  const toggleEditProgram = (programId: string) => {
+    setEditPartner((current) => ({
+      ...current,
+      assignedProgramIds: current.assignedProgramIds.includes(programId)
+        ? current.assignedProgramIds.filter((id) => id !== programId)
+        : [...current.assignedProgramIds, programId],
+    }));
+  };
+
+  const handleUpdatePartner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPartner) return;
+
+    try {
+      setSavingPartner(true);
+      const response = await fetch(`/api/admin/affiliates/${editingPartner.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editPartner.name,
+          email: editPartner.email,
+          status: editPartner.status,
+          company: editPartner.company,
+          payoutMethod: editPartner.payoutMethod,
+          paypalEmail: editPartner.payoutEmail,
+          assignedProgramIds: editPartner.assignedProgramIds,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setShowEditModal(false);
+        setEditingPartner(null);
+        await fetchPartners();
+      } else {
+        alert(data.error || 'Failed to update partner');
+      }
+    } catch (error) {
+      console.error('Failed to update partner:', error);
+      alert('Failed to update partner');
+    } finally {
+      setSavingPartner(false);
     }
   };
 
@@ -499,6 +619,7 @@ export default function PartnersPage() {
                       Signed Up <SortIcon field="createdAt" />
                     </div>
                   </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -525,6 +646,11 @@ export default function PartnersPage() {
                           <div>
                             <p className="text-sm font-medium">{partner.name}</p>
                             <p className="text-xs text-muted-foreground">{partner.email}</p>
+                            {partner.assignedPrograms.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                {partner.assignedPrograms.map((program) => program.name).join(', ')}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </TableCell>
@@ -546,11 +672,21 @@ export default function PartnersPage() {
                           year: 'numeric',
                         })}
                       </TableCell>
+                      <TableCell className="text-right" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditPartner(partner)}
+                          aria-label={`Edit ${partner.name}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8}>
+                    <TableCell colSpan={9}>
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <Users className="h-10 w-10 text-muted-foreground/50 mb-3" />
                         <p className="text-sm font-medium text-muted-foreground">No partners found</p>
@@ -673,6 +809,136 @@ export default function PartnersPage() {
               <Button type="submit">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Create Partner
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Partner Dialog */}
+      <Dialog
+        open={showEditModal}
+        onOpenChange={(open) => {
+          setShowEditModal(open);
+          if (!open) setEditingPartner(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Partner</DialogTitle>
+            <DialogDescription>Update partner details, payout information, and property program access</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdatePartner}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editName">Name</Label>
+                  <Input
+                    id="editName"
+                    value={editPartner.name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditPartner({ ...editPartner, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select
+                    value={editPartner.status}
+                    onValueChange={(value: string) => setEditPartner({ ...editPartner, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="PENDING">Pending</SelectItem>
+                      <SelectItem value="INACTIVE">Inactive</SelectItem>
+                      <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editEmail">Email</Label>
+                <Input
+                  id="editEmail"
+                  type="email"
+                  value={editPartner.email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditPartner({ ...editPartner, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editCompany">Company</Label>
+                <Input
+                  id="editCompany"
+                  value={editPartner.company}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditPartner({ ...editPartner, company: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Payout Method</Label>
+                  <Select
+                    value={editPartner.payoutMethod}
+                    onValueChange={(value: string) => setEditPartner({ ...editPartner, payoutMethod: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PayPal">PayPal</SelectItem>
+                      <SelectItem value="Wise">Wise</SelectItem>
+                      <SelectItem value="Bank">Bank Transfer</SelectItem>
+                      <SelectItem value="Crypto">Crypto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editPayoutEmail">Payout Email</Label>
+                  <Input
+                    id="editPayoutEmail"
+                    type="email"
+                    value={editPartner.payoutEmail}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditPartner({ ...editPartner, payoutEmail: e.target.value })}
+                    placeholder="defaults to partner email"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Property Programs</Label>
+                <div className="max-h-52 overflow-y-auto rounded-md border p-3">
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No property programs available yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((program) => (
+                        <label key={program.id} className="flex cursor-pointer items-start gap-3">
+                          <Checkbox
+                            checked={editPartner.assignedProgramIds.includes(program.id)}
+                            onCheckedChange={() => toggleEditProgram(program.id)}
+                          />
+                          <span className="grid gap-1 text-sm leading-none">
+                            <span className="font-medium">{program.name}</span>
+                            <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                              <span>/{program.slug}</span>
+                              {program.isDefault && <Badge variant="secondary" className="text-[10px]">Default</Badge>}
+                              {!program.isActive && <Badge variant="outline" className="text-[10px]">Inactive</Badge>}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={savingPartner || !editPartner.name || !editPartner.email}>
+                {savingPartner ? 'Saving...' : 'Save Changes'}
               </Button>
             </DialogFooter>
           </form>

@@ -629,13 +629,13 @@ export default function ProgramSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">1. Add this script before <code className="rounded bg-muted px-1.5 py-0.5 text-xs">&lt;/body&gt;</code> on every page</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('script', `<script src="${appUrl}/scripts/refferq-tracker.js" data-api-url="${appUrl}"></script>`)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('script', `<script src="${appUrl}/scripts/referconnect-tracker.js" data-api-url="${appUrl}"></script>`)}>
                     {copiedSnippet === 'script' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
                   </Button>
                 </div>
                 <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto">
                   <span className="text-blue-600">&lt;script</span>
-                  {' '}<span className="text-purple-600">src</span>=<span className="text-green-600">&quot;{appUrl}/scripts/refferq-tracker.js&quot;</span><br />
+                  {' '}<span className="text-purple-600">src</span>=<span className="text-green-600">&quot;{appUrl}/scripts/referconnect-tracker.js&quot;</span><br />
                   {'  '}<span className="text-purple-600">data-api-url</span>=<span className="text-green-600">&quot;{appUrl}&quot;</span>
                   <span className="text-blue-600">&gt;&lt;/script&gt;</span>
                 </div>
@@ -648,7 +648,7 @@ export default function ProgramSettingsPage() {
                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
                   <li>A visitor arrives on <strong>{settings.websiteUrl || 'your site'}</strong> via a referral link (e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs">?ref=CODE</code>)</li>
                   <li>The script automatically detects the <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> parameter and stores a 30-day cookie</li>
-                  <li>When the visitor converts (signup, purchase, etc.), you call <code className="rounded bg-muted px-1 py-0.5 text-xs">Refferq.trackConversion()</code></li>
+                  <li>When the visitor converts (signup, purchase, etc.), you call <code className="rounded bg-muted px-1 py-0.5 text-xs">ReferConnect.trackConversion()</code></li>
                   <li>The referral and commission are recorded in your dashboard automatically</li>
                 </ol>
               </div>
@@ -659,13 +659,13 @@ export default function ProgramSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Call this when a visitor completes a conversion event</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. cents)\n  currency: '${settings.currency || 'USD'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nReferConnect.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. cents)\n  currency: '${settings.currency || 'USD'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
                     {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
                   </Button>
                 </div>
                 <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
                   {`// Track a conversion (e.g. after signup or purchase)
-Refferq.trackConversion({
+ReferConnect.trackConversion({
   email: customer.email,
   name: customer.name,
   amount: 4999,        // amount in smallest unit (e.g. paise / cents)
@@ -680,16 +680,16 @@ Refferq.trackConversion({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Other helpers</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('helpers', `// Get the current referral code (or null)\nconst code = Refferq.getReferralCode();\n\n// Clear the stored referral code\nRefferq.clearReferralCode();`)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('helpers', `// Get the current referral code (or null)\nconst code = ReferConnect.getReferralCode();\n\n// Clear the stored referral code\nReferConnect.clearReferralCode();`)}>
                     {copiedSnippet === 'helpers' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
                   </Button>
                 </div>
                 <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
                   {`// Get the current referral code (or null)
-const code = Refferq.getReferralCode();
+const code = ReferConnect.getReferralCode();
 
 // Clear the stored referral code
-Refferq.clearReferralCode();`}
+ReferConnect.clearReferralCode();`}
                 </div>
               </div>
             </TabsContent>
@@ -713,7 +713,7 @@ Refferq.clearReferralCode();`}
               <div className="rounded-md border p-4 space-y-3">
                 <h4 className="text-sm font-medium">Direct referral route</h4>
                 <p className="text-sm text-muted-foreground">
-                  You can also use the built-in redirect route to send visitors through Refferq first:
+                  You can also use the built-in redirect route to send visitors through ReferConnect first:
                 </p>
                 <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">
                   {appUrl}/<span className="text-blue-600">r/</span><span className="text-green-600">PARTNER-CODE</span>

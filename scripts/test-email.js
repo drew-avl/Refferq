@@ -49,7 +49,7 @@ async function testEmailConfiguration() {
     console.log('Please add the missing variables to your .env.local file:');
     console.log('');
     console.log('  RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"');
-    console.log('  RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"');
+    console.log('  RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"');
     console.log('  NEXT_PUBLIC_APP_URL="http://localhost:3000"');
     console.log('');
     console.log('Get your Resend API key from: https://resend.com/api-keys');
@@ -90,7 +90,7 @@ async function testEmailConfiguration() {
     const result = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL,
       to: recipientEmail,
-      subject: 'Refferq Email Configuration Test',
+      subject: 'ReferConnect Email Configuration Test',
       html: `
         <!DOCTYPE html>
         <html>
@@ -112,9 +112,9 @@ async function testEmailConfiguration() {
           <div class="content">
             <h2>Success!</h2>
             <div class="success-box">
-              <strong>Your Refferq email configuration is working correctly!</strong>
+              <strong>Your ReferConnect email configuration is working correctly!</strong>
             </div>
-            <p>This is a test email sent from your Refferq application to verify that:</p>
+            <p>This is a test email sent from your ReferConnect application to verify that:</p>
             <ul>
               <li>✅ Resend API key is valid</li>
               <li>✅ Email service is properly configured</li>
@@ -129,7 +129,7 @@ async function testEmailConfiguration() {
             </ul>
           </div>
           <div class="footer">
-            <p>© ${new Date().getFullYear()} Refferq. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} ReferConnect. All rights reserved.</p>
           </div>
         </body>
         </html>
@@ -169,7 +169,7 @@ async function testEmailConfiguration() {
     } else if (error.message.includes('from')) {
       console.log('💡 Tips:');
       console.log('  - Check RESEND_FROM_EMAIL format: "Name <email@domain.com>"');
-      console.log('  - For development, use: "Refferq <onboarding@resend.dev>"');
+      console.log('  - For development, use: "ReferConnect <onboarding@resend.dev>"');
       console.log('  - For production, verify your domain in Resend dashboard');
     } else {
       console.log('💡 Tips:');

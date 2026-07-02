@@ -2,7 +2,7 @@
 
 ## 🚨 Error Message
 ```
-Application error: a client-side exception has occurred while loading app.refferq.com
+Application error: a client-side exception has occurred while loading app.referconnect.com
 (see the browser console for more information)
 ```
 

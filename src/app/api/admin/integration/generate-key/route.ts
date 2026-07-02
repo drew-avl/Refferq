@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         data: {
           publicKey,
           apiKey,
-          provider: 'refferq',
+          provider: 'referconnect',
           isActive: true,
         }
       });
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           publicKey,
           apiKey,
-          provider: 'refferq',
+          provider: 'referconnect',
           isActive: true,
           config: {},
         }

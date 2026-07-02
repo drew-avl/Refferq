@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Refferq will be documented in this file.
+All notable changes to ReferConnect will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -304,7 +304,7 @@ This release focuses on modernizing the user interface, adding comprehensive ana
 
 ### 🎉 Initial Release
 
-The first stable release of Refferq - a comprehensive open-source affiliate management platform.
+The first stable release of ReferConnect - a comprehensive open-source affiliate management platform.
 
 ### ✨ Added
 
@@ -362,7 +362,7 @@ The first stable release of Refferq - a comprehensive open-source affiliate mana
   - Payout confirmation emails
   - Password reset emails
   - Email verification
-  - Professional HTML templates with Refferq branding
+  - Professional HTML templates with ReferConnect branding
 
 - **User Management**
   - Role-based access (ADMIN, AFFILIATE)
@@ -567,7 +567,7 @@ No migration needed - this is the first stable release.
 
 Special thanks to everyone who contributed to the initial release:
 
-- **Refferq Team** - Core development
+- **ReferConnect Team** - Core development
 - **Community** - Testing and feedback
 
 Want to contribute? See our [Contributing Guide](Contributing).
@@ -600,7 +600,7 @@ Security improvements
 
 ## Semantic Versioning
 
-Refferq follows [Semantic Versioning](https://semver.org/):
+ReferConnect follows [Semantic Versioning](https://semver.org/):
 
 - **MAJOR** (X.0.0) - Breaking changes
 - **MINOR** (1.X.0) - New features (backwards compatible)
@@ -620,10 +620,10 @@ Refferq follows [Semantic Versioning](https://semver.org/):
 
 Stay informed about new releases:
 
-- **[GitHub Releases](https://github.com/refferq/refferq/releases)** - Official releases
-- **[GitHub Watch](https://github.com/refferq/refferq)** - Get notifications
+- **[GitHub Releases](https://github.com/referconnect/referconnect/releases)** - Official releases
+- **[GitHub Watch](https://github.com/referconnect/referconnect)** - Get notifications
 - **[Roadmap](Roadmap)** - See what's coming
-- **Email:** hello@refferq.com - Contact for updates
+- **Email:** hello@referconnect.com - Contact for updates
 
 ---
 
@@ -645,7 +645,7 @@ Stay informed about new releases:
 
 <p align="center">
   <strong>Have feedback on a release?</strong><br>
-  Share it in <a href="https://github.com/refferq/refferq/discussions">GitHub Discussions</a>
+  Share it in <a href="https://github.com/referconnect/referconnect/discussions">GitHub Discussions</a>
 </p>
 
 <p align="center">

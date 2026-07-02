@@ -3,14 +3,18 @@ import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 
-// Update affiliate status
+// Update affiliate details
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     const user = await prisma.user.findUnique({
       where: { id: userId }
@@ -24,28 +28,31 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { status, notes } = body;
+    const { success, data, error: validationError } = await import('@/lib/validations')
+      .then(m => m.affiliateUpdateSchema.safeParse(body));
 
-    if (!status) {
+    if (!success) {
       return NextResponse.json(
-        { error: 'Status is required' },
+        { error: 'Validation failed', details: validationError.issues },
         { status: 400 }
       );
     }
 
-    // Validate status
-    const validStatuses = ['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED'];
-    if (!validStatuses.includes(status)) {
+    if (Object.keys(data).length === 0) {
       return NextResponse.json(
-        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { error: 'At least one editable field is required' },
         { status: 400 }
       );
     }
 
-    // Get affiliate to find userId
     const affiliate = await prisma.affiliate.findUnique({
       where: { id: params.id },
-      include: { user: true }
+      include: {
+        user: true,
+        programAssignments: {
+          include: { program: true }
+        }
+      }
     });
 
     if (!affiliate) {
@@ -55,44 +62,170 @@ export async function PATCH(
       );
     }
 
-    // Update user status
-    const updatedUser = await prisma.user.update({
-      where: { id: affiliate.userId },
-      data: {
-        status: status as UserStatus
-      }
-    });
+    const normalizedEmail = data.email?.toLowerCase().trim();
+    if (normalizedEmail && normalizedEmail !== affiliate.user.email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: normalizedEmail }
+      });
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        actorId: user.id,
-        action: 'UPDATE_AFFILIATE_STATUS',
-        objectType: 'AFFILIATE',
-        objectId: params.id,
-        payload: {
-          oldStatus: affiliate.user.status,
-          newStatus: status,
-          notes: notes || null,
-          affiliateEmail: affiliate.user.email
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const assignedProgramIds = Array.isArray(data.assignedProgramIds)
+      ? Array.from(new Set(data.assignedProgramIds.filter(Boolean)))
+      : null;
+
+    if (assignedProgramIds) {
+      const programs = await prisma.program.findMany({
+        where: { id: { in: assignedProgramIds } },
+        select: { id: true }
+      });
+
+      if (programs.length !== assignedProgramIds.length) {
+        return NextResponse.json(
+          { error: 'One or more selected programs do not exist' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const currentPayoutDetails =
+      affiliate.payoutDetails &&
+      typeof affiliate.payoutDetails === 'object' &&
+      !Array.isArray(affiliate.payoutDetails)
+        ? affiliate.payoutDetails as Record<string, unknown>
+        : {};
+
+    const updatedAffiliate = await prisma.$transaction(async (tx) => {
+      const userUpdates: Record<string, unknown> = {};
+      if (data.name !== undefined) userUpdates.name = data.name.trim();
+      if (normalizedEmail) userUpdates.email = normalizedEmail;
+      if (data.status !== undefined) userUpdates.status = data.status as UserStatus;
+
+      if (Object.keys(userUpdates).length > 0) {
+        await tx.user.update({
+          where: { id: affiliate.userId },
+          data: userUpdates
+        });
+      }
+
+      const affiliateUpdates: Record<string, unknown> = {};
+      if (
+        data.company !== undefined ||
+        data.payoutMethod !== undefined ||
+        data.paypalEmail !== undefined
+      ) {
+        affiliateUpdates.payoutDetails = {
+          ...currentPayoutDetails,
+          ...(data.company !== undefined && { company: data.company.trim() }),
+          ...(data.payoutMethod !== undefined && { paymentMethod: data.payoutMethod }),
+          ...(data.paypalEmail !== undefined && {
+            paymentEmail: data.paypalEmail.trim() || normalizedEmail || affiliate.user.email
+          })
+        };
+      }
+
+      if (Object.keys(affiliateUpdates).length > 0) {
+        await tx.affiliate.update({
+          where: { id: params.id },
+          data: affiliateUpdates
+        });
+      }
+
+      if (assignedProgramIds) {
+        await tx.affiliateProgram.deleteMany({
+          where: { affiliateId: params.id }
+        });
+
+        if (assignedProgramIds.length > 0) {
+          await tx.affiliateProgram.createMany({
+            data: assignedProgramIds.map((programId) => ({
+              affiliateId: params.id,
+              programId
+            })),
+            skipDuplicates: true
+          });
         }
       }
+
+      await tx.auditLog.create({
+        data: {
+          actorId: user.id,
+          action: 'UPDATE_AFFILIATE',
+          objectType: 'AFFILIATE',
+          objectId: params.id,
+          payload: {
+            previous: {
+              name: affiliate.user.name,
+              email: affiliate.user.email,
+              status: affiliate.user.status,
+              assignedProgramIds: affiliate.programAssignments.map((assignment) => assignment.programId)
+            },
+            updated: {
+              name: data.name,
+              email: normalizedEmail,
+              status: data.status,
+              company: data.company,
+              payoutMethod: data.payoutMethod,
+              assignedProgramIds
+            }
+          }
+        }
+      });
+
+      return tx.affiliate.findUnique({
+        where: { id: params.id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              status: true,
+              createdAt: true
+            }
+          },
+          programAssignments: {
+            include: {
+              program: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  isActive: true,
+                  isDefault: true,
+                  referralPayoutCents: true,
+                  currency: true
+                }
+              }
+            },
+            orderBy: { createdAt: 'asc' }
+          },
+          _count: {
+            select: {
+              referrals: true
+            }
+          }
+        }
+      });
     });
 
     return NextResponse.json({
       success: true,
-      message: `Affiliate status updated to ${status}`,
-      affiliate: {
-        id: affiliate.id,
-        userId: updatedUser.id,
-        status: updatedUser.status
-      }
+      message: 'Affiliate updated successfully',
+      affiliate: updatedAffiliate
     });
 
   } catch (error) {
-    console.error('Update affiliate status error:', error);
+    console.error('Update affiliate error:', error);
     return NextResponse.json(
-      { error: 'Failed to update affiliate status' },
+      { error: 'Failed to update affiliate' },
       { status: 500 }
     );
   }

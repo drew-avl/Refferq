@@ -9,7 +9,7 @@ Ready-to-use announcements for various platforms.
 ### Main Announcement (280 chars)
 
 ```
-🎉 Refferq v1.0.0 is LIVE!
+🎉 ReferConnect v1.0.0 is LIVE!
 
 Open-source affiliate management platform built with Next.js & TypeScript
 
@@ -18,7 +18,7 @@ Open-source affiliate management platform built with Next.js & TypeScript
 ✅ Production ready
 ✅ Self-hosted
 
-Star ⭐ https://github.com/refferq/refferq
+Star ⭐ https://github.com/referconnect/referconnect
 
 #opensource #nextjs #affiliate #webdev
 ```
@@ -26,7 +26,7 @@ Star ⭐ https://github.com/refferq/refferq
 ### Feature Highlight
 
 ```
-Why choose Refferq? 🚀
+Why choose ReferConnect? 🚀
 
 💰 Free (no monthly fees)
 🔓 No vendor lock-in
@@ -37,7 +37,7 @@ Why choose Refferq? 🚀
 
 Perfect for SaaS, e-commerce & digital products
 
-Get started: https://github.com/refferq/refferq
+Get started: https://github.com/referconnect/referconnect
 
 #buildinpublic #saas
 ```
@@ -45,7 +45,7 @@ Get started: https://github.com/refferq/refferq
 ### Technical Deep Dive
 
 ```
-Tech stack for Refferq:
+Tech stack for ReferConnect:
 
 • Next.js 15 + React 19
 • TypeScript 5.8
@@ -58,7 +58,7 @@ Tech stack for Refferq:
 Zero build errors ✅
 Production ready ✅
 
-https://github.com/refferq/refferq
+https://github.com/referconnect/referconnect
 
 #typescript #postgresql
 ```
@@ -66,7 +66,7 @@ https://github.com/refferq/refferq
 ### Community Call
 
 ```
-Just launched Refferq v1.0.0! 🎉
+Just launched ReferConnect v1.0.0! 🎉
 
 Looking for:
 👥 Contributors
@@ -76,7 +76,7 @@ Looking for:
 
 First open-source affiliate platform with MIT license
 
-Join us: https://github.com/refferq/refferq
+Join us: https://github.com/referconnect/referconnect
 
 #opensource #community #firstissue
 ```
@@ -88,9 +88,9 @@ Join us: https://github.com/refferq/refferq
 ### Professional Announcement
 
 ```
-🚀 Introducing Refferq v1.0.0 - Open Source Affiliate Management Platform
+🚀 Introducing ReferConnect v1.0.0 - Open Source Affiliate Management Platform
 
-After months of development, I'm excited to announce the release of Refferq - a comprehensive affiliate management platform that's:
+After months of development, I'm excited to announce the release of ReferConnect - a comprehensive affiliate management platform that's:
 
 ✅ 100% Open Source (MIT License)
 ✅ Production Ready
@@ -117,8 +117,8 @@ Next.js 15, TypeScript, PostgreSQL, Prisma ORM, Tailwind CSS
 SaaS companies, e-commerce stores, digital product creators, service businesses, marketplaces, and membership sites.
 
 **Get Started:**
-⭐ Star: https://github.com/refferq/refferq
-📖 Docs: https://github.com/refferq/refferq/wiki
+⭐ Star: https://github.com/referconnect/referconnect
+📖 Docs: https://github.com/referconnect/referconnect/wiki
 🚀 Deploy: One-click Vercel deployment available
 
 We'd love your feedback and contributions!
@@ -129,7 +129,7 @@ We'd love your feedback and contributions!
 ### Short Update
 
 ```
-🎉 Big news! Just launched Refferq v1.0.0 - an open-source affiliate management platform.
+🎉 Big news! Just launched ReferConnect v1.0.0 - an open-source affiliate management platform.
 
 • Free & self-hosted
 • Production ready
@@ -139,7 +139,7 @@ We'd love your feedback and contributions!
 
 Perfect for anyone building an affiliate program without the SaaS fees.
 
-Check it out: https://github.com/refferq/refferq
+Check it out: https://github.com/referconnect/referconnect
 
 Thoughts? I'd love your feedback! 💬
 ```
@@ -151,14 +151,14 @@ Thoughts? I'd love your feedback! 💬
 ### Community Post
 
 ```
-🎉 Exciting News! Refferq v1.0.0 is Now Available
+🎉 Exciting News! ReferConnect v1.0.0 is Now Available
 
-We've just released Refferq - a comprehensive, open-source affiliate management platform that's completely free to use!
+We've just released ReferConnect - a comprehensive, open-source affiliate management platform that's completely free to use!
 
-**What is Refferq?**
+**What is ReferConnect?**
 A self-hosted affiliate management system that helps businesses create, manage, and scale their affiliate programs without expensive SaaS subscriptions.
 
-**Why Choose Refferq?**
+**Why Choose ReferConnect?**
 💰 Free (MIT Licensed)
 🔓 No Vendor Lock-in
 ⚡ Quick Setup (5 minutes)
@@ -184,9 +184,9 @@ A self-hosted affiliate management system that helps businesses create, manage, 
 ✅ And much more!
 
 **Get Started:**
-👉 GitHub: https://github.com/refferq/refferq
-👉 Documentation: https://github.com/refferq/refferq/wiki
-👉 Quick Start: https://github.com/refferq/refferq/wiki/Quick-Start-Guide
+👉 GitHub: https://github.com/referconnect/referconnect
+👉 Documentation: https://github.com/referconnect/referconnect/wiki
+👉 Quick Start: https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide
 
 We'd love your feedback! Comment below or join our GitHub Discussions.
 
@@ -199,12 +199,12 @@ We'd love your feedback! Comment below or join our GitHub Discussions.
 
 ### r/opensource
 
-**Title:** [Release] Refferq v1.0.0 - Open Source Affiliate Management Platform
+**Title:** [Release] ReferConnect v1.0.0 - Open Source Affiliate Management Platform
 
 ```markdown
 Hey r/opensource! 👋
 
-I'm excited to share **Refferq v1.0.0** - an open-source affiliate management platform I've been working on.
+I'm excited to share **ReferConnect v1.0.0** - an open-source affiliate management platform I've been working on.
 
 ## What is it?
 
@@ -263,8 +263,8 @@ I've put a lot of effort into documentation:
 ## Quick Start
 
 ```bash
-git clone https://github.com/refferq/refferq.git
-cd refferq
+git clone https://github.com/referconnect/referconnect.git
+cd referconnect
 npm install
 cp .env.example .env.local
 npm run db:generate && npm run db:push
@@ -273,8 +273,8 @@ npm run dev
 
 ## Links
 
-- **GitHub:** https://github.com/refferq/refferq
-- **Wiki:** https://github.com/refferq/refferq/wiki
+- **GitHub:** https://github.com/referconnect/referconnect
+- **Wiki:** https://github.com/referconnect/referconnect/wiki
 - **License:** MIT
 
 ## Looking For
@@ -290,12 +290,12 @@ Would love to hear your thoughts! Happy to answer any questions.
 
 ### r/webdev
 
-**Title:** Built an open-source affiliate platform with Next.js 15 - Refferq v1.0.0
+**Title:** Built an open-source affiliate platform with Next.js 15 - ReferConnect v1.0.0
 
 ```markdown
 Hey r/webdev!
 
-Just released **Refferq v1.0.0** - an open-source affiliate management platform.
+Just released **ReferConnect v1.0.0** - an open-source affiliate management platform.
 
 ## Stack
 
@@ -350,9 +350,9 @@ Just released **Refferq v1.0.0** - an open-source affiliate management platform.
 
 ## Links
 
-- **GitHub:** https://github.com/refferq/refferq
+- **GitHub:** https://github.com/referconnect/referconnect
 - **Demo:** Coming soon
-- **Docs:** https://github.com/refferq/refferq/wiki
+- **Docs:** https://github.com/referconnect/referconnect/wiki
 
 ## Looking For
 
@@ -367,12 +367,12 @@ Open to suggestions and contributions!
 
 ### r/SaaS
 
-**Title:** Free alternative to expensive affiliate platforms - Refferq (open source)
+**Title:** Free alternative to expensive affiliate platforms - ReferConnect (open source)
 
 ```markdown
 Tired of paying $99-999/month for affiliate platforms? 
 
-I built **Refferq** - an open-source alternative that you can self-host for free.
+I built **ReferConnect** - an open-source alternative that you can self-host for free.
 
 ## Problem
 
@@ -384,7 +384,7 @@ Affiliate SaaS platforms are expensive:
 
 ## Solution
 
-Refferq is:
+ReferConnect is:
 - ✅ Free (MIT License)
 - ✅ Self-hosted
 - ✅ No per-affiliate fees
@@ -410,7 +410,7 @@ Everything you need:
 - 3% transaction fee
 = **$500-1000/mo** for 100 affiliates
 
-**Refferq:**
+**ReferConnect:**
 - $0 software
 - $20/mo Vercel hosting
 - $0 email (3000/mo free)
@@ -422,8 +422,8 @@ Built with Next.js, TypeScript, PostgreSQL. Production ready.
 
 ## Links
 
-- GitHub: https://github.com/refferq/refferq
-- Docs: https://github.com/refferq/refferq/wiki
+- GitHub: https://github.com/referconnect/referconnect
+- Docs: https://github.com/referconnect/referconnect/wiki
 
 Perfect for bootstrapped startups looking to save money while building an affiliate program.
 
@@ -437,21 +437,21 @@ Questions? AMA!
 ### Video Title Ideas
 
 1. "Building an Open Source Affiliate Platform with Next.js 15"
-2. "How to Set Up a Free Affiliate Program (Refferq Tutorial)"
-3. "Refferq vs. Expensive SaaS: Save $1000/month"
+2. "How to Set Up a Free Affiliate Program (ReferConnect Tutorial)"
+3. "ReferConnect vs. Expensive SaaS: Save $1000/month"
 4. "Self-Hosted Affiliate Management: Complete Guide"
-5. "Next.js 15 Full Stack Project: Refferq Walkthrough"
+5. "Next.js 15 Full Stack Project: ReferConnect Walkthrough"
 
 ### Video Description Template
 
 ```
-🎉 Introducing Refferq v1.0.0 - an open-source affiliate management platform!
+🎉 Introducing ReferConnect v1.0.0 - an open-source affiliate management platform!
 
-In this video, I'll show you how to set up a complete affiliate program using Refferq, a free and open-source alternative to expensive SaaS platforms.
+In this video, I'll show you how to set up a complete affiliate program using ReferConnect, a free and open-source alternative to expensive SaaS platforms.
 
 ⏱️ TIMESTAMPS
 00:00 - Introduction
-01:30 - Why Refferq?
+01:30 - Why ReferConnect?
 03:00 - Features Overview
 05:00 - Installation Guide
 10:00 - Admin Dashboard Tour
@@ -461,9 +461,9 @@ In this video, I'll show you how to set up a complete affiliate program using Re
 30:00 - Wrap Up
 
 🔗 LINKS
-GitHub: https://github.com/refferq/refferq
-Documentation: https://github.com/refferq/refferq/wiki
-Quick Start: https://github.com/refferq/refferq/wiki/Quick-Start-Guide
+GitHub: https://github.com/referconnect/referconnect
+Documentation: https://github.com/referconnect/referconnect/wiki
+Quick Start: https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide
 
 💻 TECH STACK
 • Next.js 15
@@ -480,8 +480,8 @@ Quick Start: https://github.com/refferq/refferq/wiki/Quick-Start-Guide
 • Email Setup Guide
 
 ⭐ SUPPORT THE PROJECT
-Star on GitHub: https://github.com/refferq/refferq
-Contribute: https://github.com/refferq/refferq/blob/main/CONTRIBUTING.md
+Star on GitHub: https://github.com/referconnect/referconnect
+Contribute: https://github.com/referconnect/referconnect/blob/main/CONTRIBUTING.md
 
 #nextjs #typescript #opensource #affiliate #saas #webdev
 ```
@@ -492,8 +492,8 @@ Contribute: https://github.com/refferq/refferq/blob/main/CONTRIBUTING.md
 
 ### Subject Line Options
 
-1. "🎉 Refferq v1.0.0 is Live - Free Affiliate Management"
-2. "Introducing Refferq: Open Source Affiliate Platform"
+1. "🎉 ReferConnect v1.0.0 is Live - Free Affiliate Management"
+2. "Introducing ReferConnect: Open Source Affiliate Platform"
 3. "Save $1000/mo on Affiliate Software"
 4. "We Built an Open Source Alternative to [Expensive Platform]"
 
@@ -502,9 +502,9 @@ Contribute: https://github.com/refferq/refferq/blob/main/CONTRIBUTING.md
 ```html
 Hi there! 👋
 
-Big news: **Refferq v1.0.0 is now available!**
+Big news: **ReferConnect v1.0.0 is now available!**
 
-## What is Refferq?
+## What is ReferConnect?
 
 An open-source affiliate management platform that helps you create and manage your affiliate program without expensive SaaS subscriptions.
 
@@ -531,7 +531,7 @@ An open-source affiliate management platform that helps you create and manage yo
 3. Configure environment
 4. Run the application
 
-Full guide: https://github.com/refferq/refferq/wiki/Quick-Start-Guide
+Full guide: https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide
 
 ## What's Included
 
@@ -553,12 +553,12 @@ Built with Next.js 15, TypeScript, PostgreSQL, and Prisma ORM. Production ready 
 💻 Contribute code
 💬 Join discussions
 
-GitHub: https://github.com/refferq/refferq
+GitHub: https://github.com/referconnect/referconnect
 
 Questions? Just reply to this email!
 
 Cheers,
-The Refferq Team
+The ReferConnect Team
 
 ---
 
@@ -571,18 +571,18 @@ P.S. We'd love your feedback! What features would you like to see next?
 
 ### Title
 
-**Refferq Launches Open Source Affiliate Management Platform, Democratizing Affiliate Marketing for Businesses of All Sizes**
+**ReferConnect Launches Open Source Affiliate Management Platform, Democratizing Affiliate Marketing for Businesses of All Sizes**
 
 ### Body
 
 ```
 FOR IMMEDIATE RELEASE
 
-[Your City, State] – October 10, 2025 – The Refferq Team today announced the release of Refferq v1.0.0, a comprehensive open-source affiliate management platform that enables businesses to create and manage affiliate programs without expensive SaaS subscriptions.
+[Your City, State] – October 10, 2025 – The ReferConnect Team today announced the release of ReferConnect v1.0.0, a comprehensive open-source affiliate management platform that enables businesses to create and manage affiliate programs without expensive SaaS subscriptions.
 
-"Most affiliate platforms cost $99-999 per month plus per-affiliate fees," said [Your Name], founder of Refferq. "We wanted to democratize affiliate marketing by providing a world-class platform that anyone can use for free."
+"Most affiliate platforms cost $99-999 per month plus per-affiliate fees," said [Your Name], founder of ReferConnect. "We wanted to democratize affiliate marketing by providing a world-class platform that anyone can use for free."
 
-Refferq provides a complete solution including admin dashboards, affiliate portals, commission management, payout processing, and email notifications. Built with modern technologies like Next.js, TypeScript, and PostgreSQL, the platform is production-ready and fully documented.
+ReferConnect provides a complete solution including admin dashboards, affiliate portals, commission management, payout processing, and email notifications. Built with modern technologies like Next.js, TypeScript, and PostgreSQL, the platform is production-ready and fully documented.
 
 Key features include:
 • Real-time analytics dashboard
@@ -594,16 +594,16 @@ Key features include:
 
 "The response from early testers has been overwhelmingly positive," added [Your Name]. "Businesses love having full control over their data and the ability to customize every aspect of the platform."
 
-Refferq is released under the MIT License, allowing businesses to use, modify, and distribute the software freely. The platform is available now on GitHub and can be deployed to Vercel, AWS, or self-hosted infrastructure.
+ReferConnect is released under the MIT License, allowing businesses to use, modify, and distribute the software freely. The platform is available now on GitHub and can be deployed to Vercel, AWS, or self-hosted infrastructure.
 
-For more information, visit https://github.com/refferq/refferq
+For more information, visit https://github.com/referconnect/referconnect
 
-About Refferq:
-Refferq is an open-source affiliate management platform designed to help businesses of all sizes create and scale their affiliate programs. Built by developers for developers, it provides a modern, secure, and scalable solution with complete documentation and community support.
+About ReferConnect:
+ReferConnect is an open-source affiliate management platform designed to help businesses of all sizes create and scale their affiliate programs. Built by developers for developers, it provides a modern, secure, and scalable solution with complete documentation and community support.
 
 Contact:
-Email: hello@refferq.com
-GitHub: https://github.com/refferq/refferq
+Email: hello@referconnect.com
+GitHub: https://github.com/referconnect/referconnect
 
 ###
 ```
@@ -626,7 +626,7 @@ Self-hosted affiliate platform with admin dashboard, affiliate portal, commissio
 ```
 👋 Hey Product Hunt!
 
-I'm [Your Name], creator of Refferq, and I'm excited to share what we've built!
+I'm [Your Name], creator of ReferConnect, and I'm excited to share what we've built!
 
 ## The Problem
 
@@ -639,7 +639,7 @@ Affiliate platforms are expensive:
 
 ## The Solution
 
-Refferq is a completely free, open-source affiliate management platform that you can self-host.
+ReferConnect is a completely free, open-source affiliate management platform that you can self-host.
 
 ## What Makes It Special
 
@@ -664,7 +664,7 @@ SaaS companies, e-commerce stores, course creators, digital products, service bu
 
 ## Quick Start
 
-5-minute setup with our guide: https://github.com/refferq/refferq/wiki/Quick-Start-Guide
+5-minute setup with our guide: https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide
 
 ## What's Next
 

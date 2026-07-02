@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
           websiteUrl: 'https://kyns.com',
           currency: 'USD',
           portalSubdomain: 'bsbot.tolt.io',
-          companyName: 'Refferq',
+          companyName: 'ReferConnect',
           brandBackgroundColor: '#f8fafc',
           brandButtonColor: '#059669',
           brandTextColor: '#0f172a',
@@ -111,7 +111,7 @@ export async function PUT(request: NextRequest) {
           websiteUrl: 'https://kyns.com',
           currency: 'USD',
           portalSubdomain: 'bsbot.tolt.io',
-          companyName: 'Refferq',
+          companyName: 'ReferConnect',
           brandBackgroundColor: '#f8fafc',
           brandButtonColor: '#059669',
           brandTextColor: '#0f172a'

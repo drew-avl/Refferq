@@ -5,14 +5,14 @@ export async function GET(request: NextRequest) {
     const spec = {
         openapi: '3.0.3',
         info: {
-            title: 'Refferq API',
+            title: 'ReferConnect API',
             version: '1.1.0',
             description: 'Open-source affiliate marketing platform API. Manage affiliates, referrals, conversions, commissions, and payouts.',
-            contact: { email: 'hello@refferq.com' },
+            contact: { email: 'hello@referconnect.com' },
             license: { name: 'MIT', url: 'https://opensource.org/licenses/MIT' },
         },
         servers: [
-            { url: process.env.NEXT_PUBLIC_APP_URL || 'https://app.refferq.com', description: 'Production' },
+            { url: process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com', description: 'Production' },
         ],
         tags: [
             { name: 'Auth', description: 'Authentication endpoints' },

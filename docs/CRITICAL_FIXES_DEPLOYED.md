@@ -6,7 +6,7 @@
 The previous commit (5ef3fec) **only contained documentation files** and **NO actual code changes**. This was caused by a git rebase that lost all the code modifications, leaving only the REFERRAL_CODE_FIX.md file.
 
 ### Impact
-All bug fixes discussed in the conversation were NOT deployed to the live site (https://refferq.vercel.app/), causing:
+All bug fixes discussed in the conversation were NOT deployed to the live site (https://referconnect.vercel.app/), causing:
 - ❌ Affiliates still registering with ACTIVE status (should be PENDING)
 - ❌ Generic "Access Denied" messages (should show specific status messages)
 - ❌ Profile updates not working
@@ -37,7 +37,7 @@ All bug fixes discussed in the conversation were NOT deployed to the live site (
 ## 📋 Complete List of Fixes
 
 ### 1. ✅ Affiliate Registration Status (CRITICAL)
-**Issue**: All users were registered as ACTIVE  
+**Issue**: All users were registered as ACTIVE
 **Fix**: Affiliates now get PENDING status, admins get ACTIVE
 
 **File**: `src/lib/auth.ts`
@@ -51,7 +51,7 @@ const initialStatus = userRoleLower === 'admin' ? 'ACTIVE' : 'PENDING';
 status: initialStatus as UserStatus
 ```
 
-**Impact**: 
+**Impact**:
 - ✅ New affiliates require admin approval
 - ✅ Admins can login immediately
 - ✅ Better security and control
@@ -59,7 +59,7 @@ status: initialStatus as UserStatus
 ---
 
 ### 2. ✅ Login Error Messages (USER EXPERIENCE)
-**Issue**: Generic "Access Denied" for all statuses  
+**Issue**: Generic "Access Denied" for all statuses
 **Fix**: Specific messages for each account status
 
 **File**: `src/app/api/auth/login/route.ts`
@@ -78,7 +78,7 @@ status: initialStatus as UserStatus
 ---
 
 ### 3. ✅ Profile API Response (DATA SYNC)
-**Issue**: Frontend expected `success: true` field in response  
+**Issue**: Frontend expected `success: true` field in response
 **Fix**: Added success field to affiliate profile API
 
 **File**: `src/app/api/affiliate/profile/route.ts`
@@ -99,7 +99,7 @@ return NextResponse.json({
 ---
 
 ### 4. ✅ Referral Code Generation (NEW FEATURE)
-**Issue**: No way to generate referral code if missing  
+**Issue**: No way to generate referral code if missing
 **Fix**: Created endpoint and UI button
 
 **File**: `src/app/api/affiliate/generate-code/route.ts` (NEW)
@@ -120,7 +120,7 @@ return NextResponse.json({
 ---
 
 ### 5. ✅ Admin Profile Updates (ADMIN FEATURE)
-**Issue**: Admin couldn't update name or profile picture  
+**Issue**: Admin couldn't update name or profile picture
 **Fix**: Created profile update endpoint
 
 **File**: `src/app/api/admin/profile/route.ts` (NEW)
@@ -143,7 +143,7 @@ return NextResponse.json({
 ---
 
 ### 6. ✅ Dashboard Referral Code UI (UX IMPROVEMENT)
-**Issue**: Blank fields when referral code missing  
+**Issue**: Blank fields when referral code missing
 **Fix**: Conditional rendering with generate button
 
 **File**: `src/app/affiliate/page.tsx`
@@ -207,17 +207,17 @@ return NextResponse.json({
 ## 🚀 Deployment Status
 
 ### GitHub
-✅ **PUSHED**: Commits 2e444df and 9466163  
-✅ **VERIFIED**: All 6 files present in repository  
+✅ **PUSHED**: Commits 2e444df and 9466163
+✅ **VERIFIED**: All 6 files present in repository
 ✅ **BRANCH**: main (up to date)
 
 ### Vercel (Auto-Deploy)
-⏳ **DEPLOYING**: https://refferq.vercel.app/  
-⏳ **ETA**: 1-2 minutes after push  
-🔄 **STATUS**: Check https://vercel.com/refferq/refferq/deployments
+⏳ **DEPLOYING**: https://referconnect.vercel.app/
+⏳ **ETA**: 1-2 minutes after push
+🔄 **STATUS**: Check https://vercel.com/referconnect/referconnect/deployments
 
 ### Verification Steps
-1. Visit https://refferq.vercel.app/register
+1. Visit https://referconnect.vercel.app/register
 2. Register new affiliate
 3. Try to login → Should see "pending approval" message
 4. Admin can approve user in database
@@ -310,7 +310,7 @@ During `git pull origin main --rebase`, the local changes were NOT properly stag
 ### If Live Site Still Has Issues
 
 **Check Deployment Status**:
-1. Visit: https://vercel.com/refferq/refferq/deployments
+1. Visit: https://vercel.com/referconnect/referconnect/deployments
 2. Look for commit `9466163`
 3. Ensure deployment status is "Ready"
 4. Check for any build errors
@@ -328,9 +328,9 @@ git push origin main
 SELECT email, role, status FROM users;
 
 -- Check affiliates
-SELECT u.email, a.referral_code 
-FROM users u 
-LEFT JOIN affiliates a ON u.id = a.user_id 
+SELECT u.email, a.referral_code
+FROM users u
+LEFT JOIN affiliates a ON u.id = a.user_id
 WHERE u.role = 'AFFILIATE';
 ```
 
@@ -350,9 +350,9 @@ WHERE u.role = 'AFFILIATE';
 
 Previous issues were caused by an empty commit that only contained documentation. This has been corrected with two new commits containing all the actual code changes.
 
-**Status**: ✅ DEPLOYED AND LIVE  
-**URL**: https://refferq.vercel.app/  
-**Last Updated**: October 11, 2025  
+**Status**: ✅ DEPLOYED AND LIVE
+**URL**: https://referconnect.vercel.app/
+**Last Updated**: October 11, 2025
 **Commits**: 2e444df, 9466163
 
 ---

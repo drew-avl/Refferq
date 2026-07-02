@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide deploys Refferq as a Next.js 16 application backed by PostgreSQL and Prisma.
+This guide deploys ReferConnect as a Next.js 16 application backed by PostgreSQL and Prisma.
 
 ## Prerequisites
 
@@ -15,10 +15,10 @@ This guide deploys Refferq as a Next.js 16 application backed by PostgreSQL and 
 Create `.env.local` for local builds or configure the same values in your hosting provider:
 
 ```env
-DATABASE_URL="postgresql://user:password@host:5432/refferq?sslmode=require"
+DATABASE_URL="postgresql://user:password@host:5432/referconnect?sslmode=require"
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <noreply@yourdomain.com>"
+RESEND_FROM_EMAIL="ReferConnect <noreply@yourdomain.com>"
 ADMIN_EMAILS="admin@yourdomain.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ```
@@ -29,7 +29,7 @@ Optional variables used by specific features:
 NEXT_PUBLIC_SITE_URL="https://yourdomain.com"
 WEBHOOK_SECRET="replace-with-a-random-webhook-secret"
 CRON_SECRET="replace-with-a-random-cron-secret"
-PLATFORM_NAME="Refferq"
+PLATFORM_NAME="ReferConnect"
 PLATFORM_SUPPORT_EMAIL="support@yourdomain.com"
 STRIPE_SECRET_KEY=""
 STRIPE_PUBLISHABLE_KEY=""
@@ -50,18 +50,18 @@ npm run build
 Validate the Prisma schema with a database URL available:
 
 ```bash
-DATABASE_URL="postgresql://user:password@localhost:5432/refferq" npx prisma validate
+DATABASE_URL="postgresql://user:password@localhost:5432/referconnect" npx prisma validate
 ```
 
 On PowerShell:
 
 ```powershell
-$env:DATABASE_URL="postgresql://user:password@localhost:5432/refferq"; npx prisma validate
+$env:DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"; npx prisma validate
 ```
 
 ## Database Setup
 
-Refferq currently uses Prisma `db push` rather than checked-in migration files.
+ReferConnect currently uses Prisma `db push` rather than checked-in migration files.
 
 ```bash
 npm run db:generate
@@ -102,7 +102,7 @@ Create a local `.env` file for Compose:
 ```env
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 ADMIN_EMAILS="admin@example.com"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
@@ -116,13 +116,13 @@ docker compose up --build
 In another terminal, initialize the schema from the host:
 
 ```bash
-DATABASE_URL="postgresql://refferq:refferq@localhost:5432/refferq" npm run db:push
+DATABASE_URL="postgresql://referconnect:referconnect@localhost:5432/referconnect" npm run db:push
 ```
 
 On PowerShell:
 
 ```powershell
-$env:DATABASE_URL="postgresql://refferq:refferq@localhost:5432/refferq"; npm run db:push
+$env:DATABASE_URL="postgresql://referconnect:referconnect@localhost:5432/referconnect"; npm run db:push
 ```
 
 Then open `http://localhost:3000`.

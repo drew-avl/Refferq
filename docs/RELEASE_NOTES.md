@@ -1,14 +1,14 @@
-# Refferq v1.0.0 - Initial Release 🎉
+# ReferConnect v1.0.0 - Initial Release 🎉
 
 **Release Date:** October 10, 2025
 
-We're thrilled to announce the **first stable release** of Refferq - a comprehensive, open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL!
+We're thrilled to announce the **first stable release** of ReferConnect - a comprehensive, open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL!
 
 ---
 
-## 🎯 What is Refferq?
+## 🎯 What is ReferConnect?
 
-Refferq is a complete affiliate management solution that provides everything you need to create, manage, and scale your affiliate marketing program. Built with modern technologies and developer-friendly architecture, it's the perfect choice for businesses of all sizes.
+ReferConnect is a complete affiliate management solution that provides everything you need to create, manage, and scale your affiliate marketing program. Built with modern technologies and developer-friendly architecture, it's the perfect choice for businesses of all sizes.
 
 ---
 
@@ -95,8 +95,8 @@ Get started in 5 minutes:
 
 ```bash
 # Clone repository
-git clone https://github.com/refferq/refferq.git
-cd refferq
+git clone https://github.com/referconnect/referconnect.git
+cd referconnect
 
 # Install dependencies
 npm install
@@ -115,7 +115,7 @@ npm run dev
 
 Open http://localhost:3000
 
-**Detailed instructions:** See our [Quick Start Guide](https://github.com/refferq/refferq/wiki/Quick-Start-Guide)
+**Detailed instructions:** See our [Quick Start Guide](https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide)
 
 ---
 
@@ -159,14 +159,14 @@ Open http://localhost:3000
 7. Start managing affiliates!
 
 ### Resources
-- 📖 [Documentation](https://github.com/refferq/refferq#readme)
-- 🔍 [API Reference](https://github.com/refferq/refferq/wiki/API-Overview)
-- 🚀 [Deployment Guide](https://github.com/refferq/refferq/blob/main/docs/DEPLOYMENT.md)
-- 💬 [GitHub Discussions](https://github.com/refferq/refferq/discussions)
+- 📖 [Documentation](https://github.com/referconnect/referconnect#readme)
+- 🔍 [API Reference](https://github.com/referconnect/referconnect/wiki/API-Overview)
+- 🚀 [Deployment Guide](https://github.com/referconnect/referconnect/blob/main/docs/DEPLOYMENT.md)
+- 💬 [GitHub Discussions](https://github.com/referconnect/referconnect/discussions)
 
 ---
 
-## 🌟 Why Refferq?
+## 🌟 Why ReferConnect?
 
 ### Open Source & Free
 - ✅ MIT Licensed - use commercially
@@ -217,7 +217,7 @@ Open http://localhost:3000
 - Multi-currency support
 - Tax document generation
 
-[View Full Roadmap](https://github.com/refferq/refferq/wiki/Roadmap)
+[View Full Roadmap](https://github.com/referconnect/referconnect/wiki/Roadmap)
 
 ---
 
@@ -226,24 +226,24 @@ Open http://localhost:3000
 We welcome contributions from the community! Here's how you can help:
 
 ### Ways to Contribute
-- 🐛 **Report bugs** - [Create an issue](https://github.com/refferq/refferq/issues/new)
-- ✨ **Suggest features** - [Start a discussion](https://github.com/refferq/refferq/discussions)
-- 💻 **Submit code** - [Create a pull request](https://github.com/refferq/refferq/pulls)
+- 🐛 **Report bugs** - [Create an issue](https://github.com/referconnect/referconnect/issues/new)
+- ✨ **Suggest features** - [Start a discussion](https://github.com/referconnect/referconnect/discussions)
+- 💻 **Submit code** - [Create a pull request](https://github.com/referconnect/referconnect/pulls)
 - 📝 **Improve docs** - Documentation PRs welcome
-- 🌍 **Translate** - Help make Refferq multilingual
+- 🌍 **Translate** - Help make ReferConnect multilingual
 - 💬 **Help others** - Answer questions in discussions
 
 ### Getting Started
-1. Read our [Contributing Guide](https://github.com/refferq/refferq/wiki/Contributing)
-2. Check [Good First Issues](https://github.com/refferq/refferq/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-3. Join the conversation in [Discussions](https://github.com/refferq/refferq/discussions)
+1. Read our [Contributing Guide](https://github.com/referconnect/referconnect/wiki/Contributing)
+2. Check [Good First Issues](https://github.com/referconnect/referconnect/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+3. Join the conversation in [Discussions](https://github.com/referconnect/referconnect/discussions)
 
 ---
 
 ## 🙏 Acknowledgments
 
 Special thanks to:
-- **The Refferq Team** - Core development
+- **The ReferConnect Team** - Core development
 - **Early Testers** - Valuable feedback
 - **Open Source Community** - Inspiration and support
 
@@ -258,7 +258,7 @@ Special thanks to:
 
 ## 📄 License
 
-Refferq is open source software licensed under the **MIT License**.
+ReferConnect is open source software licensed under the **MIT License**.
 
 This means you can:
 - ✅ Use it commercially
@@ -266,34 +266,34 @@ This means you can:
 - ✅ Distribute your modifications
 - ✅ Use it privately
 
-[View License](https://github.com/refferq/refferq/blob/main/LICENSE)
+[View License](https://github.com/referconnect/referconnect/blob/main/LICENSE)
 
 ---
 
 ## 🔗 Links
 
 - **🌐 Website:** Coming soon
-- **📖 Documentation:** [GitHub Wiki](https://github.com/refferq/refferq/wiki)
-- **💻 Source Code:** [GitHub Repository](https://github.com/refferq/refferq)
-- **🐛 Issues:** [GitHub Issues](https://github.com/refferq/refferq/issues)
-- **💬 Discussions:** [GitHub Discussions](https://github.com/refferq/refferq/discussions)
-- **📧 Email:** hello@refferq.com
+- **📖 Documentation:** [GitHub Wiki](https://github.com/referconnect/referconnect/wiki)
+- **💻 Source Code:** [GitHub Repository](https://github.com/referconnect/referconnect)
+- **🐛 Issues:** [GitHub Issues](https://github.com/referconnect/referconnect/issues)
+- **💬 Discussions:** [GitHub Discussions](https://github.com/referconnect/referconnect/discussions)
+- **📧 Email:** hello@referconnect.com
 
 ---
 
 ## 🚀 Deploy Now
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/refferq/refferq)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/referconnect/referconnect)
 
 ---
 
 ## 📢 Spread the Word
 
-Love Refferq? Help us grow:
+Love ReferConnect? Help us grow:
 
-- ⭐ **Star us on GitHub** - [github.com/refferq/refferq](https://github.com/refferq/refferq)
-- 🐦 **Share on Twitter** - "Just discovered @refferq - an amazing open-source affiliate management platform!"
-- 💼 **Share on LinkedIn** - Tell your network about Refferq
+- ⭐ **Star us on GitHub** - [github.com/referconnect/referconnect](https://github.com/referconnect/referconnect)
+- 🐦 **Share on Twitter** - "Just discovered @referconnect - an amazing open-source affiliate management platform!"
+- 💼 **Share on LinkedIn** - Tell your network about ReferConnect
 - 📝 **Write a blog post** - Share your experience
 - 🎥 **Create a video** - Tutorial or demo
 
@@ -319,28 +319,28 @@ We're just getting started! Here's what we're working on:
 3. **White-Label Support** (January 2026)
 4. **Mobile App** (Q3 2026)
 
-[View Detailed Roadmap](https://github.com/refferq/refferq/wiki/Roadmap)
+[View Detailed Roadmap](https://github.com/referconnect/referconnect/wiki/Roadmap)
 
 ---
 
 ## ❓ FAQ
 
-**Q: Is Refferq really free?**  
+**Q: Is ReferConnect really free?**
 A: Yes! MIT licensed, use it commercially without restrictions.
 
-**Q: Can I customize it?**  
+**Q: Can I customize it?**
 A: Absolutely! Full source code access for modifications.
 
-**Q: Is it production ready?**  
+**Q: Is it production ready?**
 A: Yes! v1.0.0 is stable and ready for production use.
 
-**Q: Do you offer support?**  
+**Q: Do you offer support?**
 A: Community support via GitHub Discussions. Custom development available.
 
-**Q: Can I contribute?**  
+**Q: Can I contribute?**
 A: Yes! We welcome all contributions. See our Contributing Guide.
 
-[View All FAQs](https://github.com/refferq/refferq/wiki/FAQ)
+[View All FAQs](https://github.com/referconnect/referconnect/wiki/FAQ)
 
 ---
 
@@ -364,34 +364,34 @@ No critical issues in v1.0.0. Minor items:
 - Email delivery may be slow on free Resend tier (upgrade available)
 - Manual session refresh required after token expiration (auto-refresh in v1.1.0)
 
-[View All Issues](https://github.com/refferq/refferq/issues)
+[View All Issues](https://github.com/referconnect/referconnect/issues)
 
 ---
 
 ## 📝 Changelog
 
-See [CHANGELOG.md](https://github.com/refferq/refferq/wiki/Changelog) for detailed version history.
+See [CHANGELOG.md](https://github.com/referconnect/referconnect/wiki/Changelog) for detailed version history.
 
 ---
 
 <p align="center">
-  <strong>Thank you for choosing Refferq!</strong><br>
+  <strong>Thank you for choosing ReferConnect!</strong><br>
   We can't wait to see what you build with it 🚀
 </p>
 
 <p align="center">
-  <a href="https://github.com/refferq/refferq">⭐ Star on GitHub</a> •
-  <a href="https://github.com/refferq/refferq/wiki">📖 Read the Docs</a> •
-  <a href="https://github.com/refferq/refferq/discussions">💬 Join Discussion</a>
+  <a href="https://github.com/referconnect/referconnect">⭐ Star on GitHub</a> •
+  <a href="https://github.com/referconnect/referconnect/wiki">📖 Read the Docs</a> •
+  <a href="https://github.com/referconnect/referconnect/discussions">💬 Join Discussion</a>
 </p>
 
 <p align="center">
-  Made with ❤️ by the Refferq Team
+  Made with ❤️ by the ReferConnect Team
 </p>
 
 ---
 
-**Release Date:** October 10, 2025  
-**Version:** 1.0.0  
-**License:** MIT  
+**Release Date:** October 10, 2025
+**Version:** 1.0.0
+**License:** MIT
 **Status:** Stable ✅

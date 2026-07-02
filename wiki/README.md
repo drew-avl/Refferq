@@ -1,6 +1,6 @@
-# Refferq Wiki
+# ReferConnect Wiki
 
-This directory contains the complete documentation for the Refferq affiliate management platform, designed to be used as a GitHub Wiki.
+This directory contains the complete documentation for the ReferConnect affiliate management platform, designed to be used as a GitHub Wiki.
 
 ---
 
@@ -32,19 +32,19 @@ These markdown files are designed to be imported into GitHub Wiki:
 1. **Enable Wiki** for your repository
 2. **Clone Wiki repository:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/refferq.wiki.git
+   git clone https://github.com/YOUR_USERNAME/referconnect.wiki.git
    ```
 
 3. **Copy wiki files:**
    ```bash
-   cp wiki/*.md refferq.wiki/
+   cp wiki/*.md referconnect.wiki/
    ```
 
 4. **Commit and push:**
    ```bash
-   cd refferq.wiki
+   cd referconnect.wiki
    git add .
-   git commit -m "Import Refferq wiki"
+   git commit -m "Import ReferConnect wiki"
    git push origin master
    ```
 
@@ -373,9 +373,9 @@ See [Contributing.md](Contributing.md) for details.
 
 Need help with the wiki?
 
-- **[GitHub Issues](https://github.com/refferq/refferq/issues)** - Report wiki issues
-- **[GitHub Discussions](https://github.com/refferq/refferq/discussions)** - Ask questions
-- **Email:** hello@refferq.com
+- **[GitHub Issues](https://github.com/referconnect/referconnect/issues)** - Report wiki issues
+- **[GitHub Discussions](https://github.com/referconnect/referconnect/discussions)** - Ask questions
+- **Email:** hello@referconnect.com
 
 ---
 
@@ -387,7 +387,7 @@ Wiki content is licensed under [MIT License](../LICENSE), same as the project.
 
 <p align="center">
   <strong>Questions about the wiki?</strong><br>
-  Ask in <a href="https://github.com/refferq/refferq/discussions">GitHub Discussions</a>
+  Ask in <a href="https://github.com/referconnect/referconnect/discussions">GitHub Discussions</a>
 </p>
 
 <p align="center">

@@ -1,11 +1,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-ffdd00?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/refferq)
-# Refferq - Open Source Affiliate Management Platform
-[![Open Collective](https://img.shields.io/badge/OpenCollective-Support%20Us-3385FF?style=for-the-badge&logo=open-collective&logoColor=white)](https://opencollective.com/refferq)
+[![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-ffdd00?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/referconnect)
+# ReferConnect - Open Source Affiliate Management Platform
+[![Open Collective](https://img.shields.io/badge/OpenCollective-Support%20Us-3385FF?style=for-the-badge&logo=open-collective&logoColor=white)](https://opencollective.com/referconnect)
 <p align="center">
-  <img src="./public/images/github-banner.svg" alt="Refferq Logo" width="200"/>
+  <img src="./public/images/github-banner.svg" alt="ReferConnect Logo" width="200"/>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 ## 📋 About
 
-**Refferq** is a comprehensive affiliate management platform designed to help businesses create, manage, and scale their affiliate programs. Built with modern web technologies, it provides a complete solution for tracking referrals, managing commissions, and engaging with affiliate partners.
+**ReferConnect** is a comprehensive affiliate management platform designed to help businesses create, manage, and scale their affiliate programs. Built with modern web technologies, it provides a complete solution for tracking referrals, managing commissions, and engaging with affiliate partners.
 
 ### 🎯 Key Highlights
 
@@ -156,8 +156,8 @@
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/refferq.git
-cd refferq
+git clone https://github.com/yourusername/referconnect.git
+cd referconnect
 ```
 
 ### Step 2: Install Dependencies
@@ -176,7 +176,7 @@ Create a `.env.local` file in the root directory:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/refferq"
+DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 
 # JWT Secret (generate a secure random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
@@ -184,7 +184,7 @@ JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 # Email Configuration (Resend)
 # Sign up at https://resend.com for free API key
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 
 # Admin Notification Emails (comma-separated)
 ADMIN_EMAILS="admin@yourdomain.com"
@@ -212,7 +212,7 @@ npx prisma db seed
 
 ### Step 5: Email Configuration
 
-Refferq uses [Resend](https://resend.com) for sending transactional emails. Follow these steps:
+ReferConnect uses [Resend](https://resend.com) for sending transactional emails. Follow these steps:
 
 1. **Sign up for Resend**
    - Go to [https://resend.com](https://resend.com)
@@ -226,7 +226,7 @@ Refferq uses [Resend](https://resend.com) for sending transactional emails. Foll
 3. **Update .env.local**
    ```env
    RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-   RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"
+   RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
    ADMIN_EMAILS="admin@yourdomain.com"
    ```
 
@@ -245,7 +245,7 @@ Refferq uses [Resend](https://resend.com) for sending transactional emails. Foll
 npm run dev
 ```
 
-Open [https://app.refferq.com](https://app.refferq.com) or your configured domain in your browser.
+Open [https://app.referconnect.com](https://app.referconnect.com) or your configured domain in your browser.
 # or
 yarn dev
 # or
@@ -272,9 +272,9 @@ UPDATE users SET role = 'ADMIN', status = 'ACTIVE' WHERE email = 'your-email@exa
 
 ### Deploy on Vercel
 
-The easiest way to deploy Refferq is using [Vercel](https://vercel.com):
+The easiest way to deploy ReferConnect is using [Vercel](https://vercel.com):
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/refferq)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/referconnect)
 
 #### Manual Deployment Steps:
 
@@ -313,7 +313,7 @@ For detailed deployment instructions, see [DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 ## 🗂️ Project Structure
 
 ```
-refferq/
+referconnect/
 ├── prisma/
 │   └── schema.prisma          # Database schema
 ├── public/
@@ -392,10 +392,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 
 ## 👨‍💻 Author
 
-**Developed by: Refferq Team**
+**Developed by: ReferConnect Team**
 
-- GitHub: [@refferq](https://github.com/refferq)
-- Website: [https://refferq.com](https://refferq.com)
+- GitHub: [@referconnect](https://github.com/referconnect)
+- Website: [https://referconnect.com](https://referconnect.com)
 
 ---
 
@@ -413,14 +413,14 @@ If you find this project useful, please consider:
 ## 📞 Support
 
 - **Documentation**: [docs/](./docs/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/refferq/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/refferq/discussions)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/referconnect/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/referconnect/discussions)
 
 ---
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=refferq/refferq&type=date&legend=top-left)](https://www.star-history.com/#refferq/refferq&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=referconnect/referconnect&type=date&legend=top-left)](https://www.star-history.com/#referconnect/referconnect&type=date&legend=top-left)
 
 ## 🙏 Acknowledgments
 
@@ -435,14 +435,14 @@ Built with ❤️ using:
 
 
 <p align="center">
-  Made with ❤️ by the <strong>Refferq Team</strong>
+  Made with ❤️ by the <strong>ReferConnect Team</strong>
 </p>
 
 <p align="center">
-  <sub>© 2025 Refferq. All rights reserved.</sub>
+  <sub>© 2025 ReferConnect. All rights reserved.</sub>
 </p>
 <p align="center">
  **⭐ Found this useful? Give us a star to support the project!**
 
-  [![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&slug=daniavila&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/refferq)
+  [![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&slug=daniavila&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/referconnect)
  

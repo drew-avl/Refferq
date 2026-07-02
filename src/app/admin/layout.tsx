@@ -94,7 +94,7 @@ function AdminSidebar() {
                 <span className="text-lg">🎯</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold">Refferq</span>
+                <span className="text-sm font-bold">ReferConnect</span>
                 <span className="text-xs text-muted-foreground">Admin Dashboard</span>
               </div>
             </div>

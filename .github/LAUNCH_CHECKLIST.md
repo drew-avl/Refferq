@@ -1,4 +1,4 @@
-# 🚀 Launch Checklist for Refferq v1.0.0
+# 🚀 Launch Checklist for ReferConnect v1.0.0
 
 Complete checklist for launching your first release on GitHub and going live.
 
@@ -8,7 +8,7 @@ Complete checklist for launching your first release on GitHub and going live.
 
 ### Repository Setup
 - [ ] Repository is public on GitHub
-- [ ] Repository name is correct: `refferq`
+- [ ] Repository name is correct: `referconnect`
 - [ ] Repository description is set
 - [ ] Topics/tags are added (nextjs, typescript, affiliate, etc.)
 - [ ] Repository URL is working
@@ -46,7 +46,7 @@ Complete checklist for launching your first release on GitHub and going live.
 ### Create Release
 - [ ] Go to repository > Releases > Create a new release
 - [ ] Tag version: `v1.0.0`
-- [ ] Release title: `Refferq v1.0.0 - Initial Release 🎉`
+- [ ] Release title: `ReferConnect v1.0.0 - Initial Release 🎉`
 - [ ] Copy content from `RELEASE_NOTES.md`
 - [ ] Mark as "Latest release"
 - [ ] Check "Create a discussion for this release"
@@ -70,7 +70,7 @@ Complete checklist for launching your first release on GitHub and going live.
 ### Repository Settings
 
 #### General
-- [ ] Repository name: `refferq`
+- [ ] Repository name: `referconnect`
 - [ ] Description: "Open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL"
 - [ ] Website: Leave blank or add when available
 - [ ] Topics: nextjs, typescript, affiliate, postgresql, prisma, tailwind, react
@@ -427,7 +427,7 @@ Complete checklist for launching your first release on GitHub and going live.
 - [ ] GitHub Discussions
 - [ ] Twitter DMs
 - [ ] LinkedIn messages
-- [ ] Email (hello@refferq.com)
+- [ ] Email (hello@referconnect.com)
 - [ ] Reddit PMs
 
 ### Response Time Goals

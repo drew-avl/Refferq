@@ -25,6 +25,16 @@ export const affiliateCreateSchema = z.object({
     sendWelcomeEmail: z.boolean().optional(),
 });
 
+export const affiliateUpdateSchema = z.object({
+    name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+    email: z.string().email('Invalid email address').optional(),
+    status: z.enum(['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
+    company: z.string().optional(),
+    payoutMethod: z.string().optional(),
+    paypalEmail: z.string().email('Invalid payout email address').optional().or(z.literal('')),
+    assignedProgramIds: z.array(z.string()).optional(),
+});
+
 // Payout Validation
 export const payoutSchema = z.object({
     affiliateId: z.string(),

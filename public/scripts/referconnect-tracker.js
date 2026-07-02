@@ -1,9 +1,9 @@
 /**
- * Refferq Tracking Script
+ * ReferConnect Tracking Script
  * Embed this on your website to track referrals and conversions
  * 
  * Usage:
- * <script src="https://your-domain.com/scripts/refferq-tracker.js" data-api-key="your_public_key"></script>
+ * <script src="https://your-domain.com/scripts/referconnect-tracker.js" data-api-key="your_public_key"></script>
  */
 
 (function() {
@@ -15,7 +15,7 @@
   const apiUrl = script.getAttribute('data-api-url') || window.location.origin;
   
   if (!apiKey) {
-    console.error('[Refferq] API key is required. Add data-api-key attribute to script tag.');
+    console.error('[ReferConnect] API key is required. Add data-api-key attribute to script tag.');
     return;
   }
 
@@ -66,24 +66,24 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        console.log('[Refferq] Referral tracked successfully');
+        console.log('[ReferConnect] Referral tracked successfully');
         // Store referral code in cookie (30 days default)
-        Cookies.set('refferq_ref', referralCode, 30);
+        Cookies.set('referconnect_ref', referralCode, 30);
       } else {
-        console.error('[Refferq] Failed to track referral:', data.error);
+        console.error('[ReferConnect] Failed to track referral:', data.error);
       }
     })
     .catch(error => {
-      console.error('[Refferq] Error tracking referral:', error);
+      console.error('[ReferConnect] Error tracking referral:', error);
     });
   }
 
   // Track conversion
   function trackConversion(options) {
-    const referralCode = Cookies.get('refferq_ref');
+    const referralCode = Cookies.get('referconnect_ref');
     
     if (!referralCode) {
-      console.warn('[Refferq] No referral code found in cookies');
+      console.warn('[ReferConnect] No referral code found in cookies');
       return Promise.resolve({ success: false, error: 'No referral code' });
     }
 
@@ -108,16 +108,16 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        console.log('[Refferq] Conversion tracked successfully');
+        console.log('[ReferConnect] Conversion tracked successfully');
         // Clear referral cookie after conversion
-        Cookies.delete('refferq_ref');
+        Cookies.delete('referconnect_ref');
       } else {
-        console.error('[Refferq] Failed to track conversion:', data.error);
+        console.error('[ReferConnect] Failed to track conversion:', data.error);
       }
       return data;
     })
     .catch(error => {
-      console.error('[Refferq] Error tracking conversion:', error);
+      console.error('[ReferConnect] Error tracking conversion:', error);
       return { success: false, error: error.message };
     });
   }
@@ -134,7 +134,7 @@
       }
     } else {
       // Check if we have a stored referral code
-      const storedRef = Cookies.get('refferq_ref');
+      const storedRef = Cookies.get('referconnect_ref');
       if (storedRef) {
         // Stored referral code found
       }
@@ -142,13 +142,13 @@
   }
 
   // Public API
-  window.Refferq = {
+  window.ReferConnect = {
     trackConversion: trackConversion,
     getReferralCode: function() {
-      return Cookies.get('refferq_ref');
+      return Cookies.get('referconnect_ref');
     },
     clearReferralCode: function() {
-      Cookies.delete('refferq_ref');
+      Cookies.delete('referconnect_ref');
     },
     version: '1.0.0'
   };
