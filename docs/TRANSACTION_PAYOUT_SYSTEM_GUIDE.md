@@ -79,7 +79,7 @@ Lists all commissions generated from transactions:
    - **Amount** (₹) - Required (e.g., 10000.00)
    - **Description** - Optional (e.g., "Monthly subscription payment")
    - **Invoice ID** - Optional (e.g., "INV-001")
-   - **Payment Method** - Dropdown (Credit Card, UPI, Bank Transfer, etc.)
+   - **Payment Method** - Dropdown (Credit Card, UPI, Zelle, etc.)
    - **Payment Date** - Date picker (defaults to today)
 3. Click **"Create Transaction"**
 
@@ -195,7 +195,7 @@ Affiliate Sees Payout in Dashboard
 - Total Amount: ₹7,500
 - Commission Count: 3
 - Status: PENDING
-- Method: Bank Transfer
+- Method: PayPal
 
 ---
 
@@ -221,7 +221,7 @@ Displays:
 - **Next Payout** - Upcoming payout date (if scheduled)
 - **Payout History Table**:
   - Date
-  - Method (PayPal, Bank Transfer, etc.)
+  - Method (PayPal or Zelle)
   - Amount
   - Status
 
@@ -315,7 +315,7 @@ Fetch all payouts (admin only)
       "amountCents": 750000,
       "commissionCount": 3,
       "status": "COMPLETED",
-      "method": "Bank Transfer",
+      "method": "PayPal",
       "affiliate": { "name": "Alice" }
     }
   ]
@@ -330,7 +330,7 @@ Create payout (admin only)
 {
   "affiliateId": "aff_123",
   "commissionIds": ["comm_1", "comm_2", "comm_3"],
-  "method": "Bank Transfer",
+  "method": "PayPal",
   "notes": "Monthly payout"
 }
 ```
@@ -343,7 +343,7 @@ Update payout status (admin only)
 {
   "id": "payout_123",
   "status": "COMPLETED",
-  "method": "Bank Transfer"
+  "method": "PayPal"
 }
 ```
 
@@ -368,7 +368,7 @@ Fetch affiliate's own payouts
       "id": "payout_123",
       "amount": 750000,
       "status": "COMPLETED",
-      "method": "Bank Transfer",
+      "method": "PayPal",
       "createdAt": "2025-10-22T10:00:00Z",
       "paidAt": "2025-10-23T10:00:00Z"
     }

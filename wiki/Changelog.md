@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.3.0] - 2026-02-17
 
-### 🔒 Production Hardening, Admin Expansion & Affiliate Portal
+### 🔒 Production Hardening, Admin Expansion & Referral Portal
 
 This release delivers critical security fixes, eliminates PrismaClient connection leaks across 36 files, adds 7 new admin pages, 5 affiliate sub-pages, 10+ new API routes, and a comprehensive 156-assertion production test suite. The platform is now verified production-ready.
 
@@ -32,7 +32,7 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 #### New Admin Pages (7 pages)
 - `/admin/invoices` — Invoice management with create, view, delete, and status tracking
 - `/admin/team` — Team member management with role assignment and invitations
-- `/admin/programs` — Affiliate program management with commission rate configuration
+- `/admin/programs` — Referral program management with commission rate configuration
 - `/admin/coupons` — Coupon/discount code management
 - `/admin/resources` — Marketing resource library (banners, links, documents)
 - `/admin/emails` — Email template editor with variable preview
@@ -53,7 +53,7 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 - `GET/POST/DELETE /api/admin/resources` — Resource management
 - `POST /api/admin/payouts/auto` — Automated payout processing
 - `POST /api/admin/refunds` — Refund protection with commission clawback
-- `GET/PUT /api/affiliate/branding` — Affiliate portal branding
+- `GET/PUT /api/affiliate/branding` — Referral portal branding
 - `POST /api/affiliate/generate-code` — Referral code regeneration
 - `GET /api/affiliate/resources` — Affiliate resource access
 
@@ -61,7 +61,7 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 - `Coupon` — Discount codes with usage tracking and expiration
 - `Resource` — Marketing materials (IMAGE, DOCUMENT, LINK, VIDEO)
 - `Invoice` — Invoice records with line items and tax
-- `Program` — Affiliate program configurations
+- `Program` — Referral program configurations
 - `TeamMember` — Admin team with role-based access
 
 #### Production Test Suite
@@ -77,7 +77,7 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 - All 17 admin pages accessible from sidebar
 - Active state highlighting and section grouping
 
-#### Branded Affiliate Portal
+#### Branded Referral Portal
 - Custom branding API with logo, colors, and company name
 - Branded sidebar with affiliate's company identity
 - Consistent design across all affiliate sub-pages
@@ -268,7 +268,7 @@ This release focuses on modernizing the user interface, adding comprehensive ana
 - Better typography and spacing
 - Smooth animations and micro-interactions
 
-#### Affiliate Portal UI
+#### Referral Portal UI
 - Consistent modern design language
 - Improved stats cards with gradient accents
 - Better form styling and input states
@@ -304,7 +304,7 @@ This release focuses on modernizing the user interface, adding comprehensive ana
 
 ### 🎉 Initial Release
 
-The first stable release of ReferConnect - a comprehensive open-source affiliate management platform.
+The first stable release of ReferConnect - a comprehensive open-source referral program management platform.
 
 ### ✨ Added
 
@@ -318,14 +318,14 @@ The first stable release of ReferConnect - a comprehensive open-source affiliate
 
 - **Admin Dashboard**
   - Comprehensive analytics overview
-  - Affiliate management (approve, reject, suspend)
+  - Referral partner management (approve, reject, suspend)
   - Referral tracking and approval
   - Commission management
   - Payout processing interface
   - Program settings configuration
   - Batch operations (status changes, deletions)
 
-- **Affiliate Portal**
+- **Referral Portal**
   - Personal dashboard with earnings overview
   - Referral submission form
   - Referral history and status tracking
@@ -349,7 +349,7 @@ The first stable release of ReferConnect - a comprehensive open-source affiliate
   - Unpaid/paid status management
 
 - **Payout System**
-  - Multiple payout methods (Bank CSV, Stripe Connect)
+  - Multiple payout methods (PayPal and Zelle)
   - Batch payout processing
   - Payout history tracking
   - Status tracking (PENDING, PROCESSING, COMPLETED, FAILED)

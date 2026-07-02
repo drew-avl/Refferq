@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { isSoldReferralStatus } from '@/lib/referral-status';
 
+const allowedPayoutMethods = ['PayPal', 'Zelle'];
+
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { error: 'Access denied. Affiliate role required.' },
+        { error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
@@ -35,13 +37,13 @@ export async function GET(request: NextRequest) {
     const affiliate = user.affiliate as any;
     if (!affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate profile not found' },
+        { error: 'Referral partner profile not found' },
         { status: 404 }
       );
     }
 
-    // Get affiliate statistics
-    const [referrals, conversions, commissions, programs] = await Promise.all([
+    // Get referral partner statistics
+    const [referrals, conversions, commissions, programSettings, programs] = await Promise.all([
       prisma.referral.findMany({
         where: { affiliateId: affiliate.id },
         include: {
@@ -50,6 +52,7 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               referralPayoutCents: true,
+              minPayoutCents: true,
               currency: true,
             },
           },
@@ -64,6 +67,7 @@ export async function GET(request: NextRequest) {
         where: { affiliateId: affiliate.id },
         orderBy: { createdAt: 'desc' }
       }),
+      prisma.programSettings.findFirst(),
       prisma.program.findMany({
         where: {
           isActive: true,
@@ -76,6 +80,7 @@ export async function GET(request: NextRequest) {
           id: true,
           name: true,
           referralPayoutCents: true,
+          minPayoutCents: true,
           currency: true,
           isDefault: true,
         },
@@ -132,6 +137,16 @@ export async function GET(request: NextRequest) {
     // Get currency symbol
     const { getCurrencySymbol } = await import('@/lib/currency');
     const currencySymbol = await getCurrencySymbol();
+    const programMinPayouts = programs
+      .map((program) => program.minPayoutCents)
+      .filter((value): value is number => typeof value === 'number' && value >= 0);
+    const fallbackMinPayoutCents = programSettings?.minPayoutCents ?? 100000;
+    const minPayoutCents = programMinPayouts.length > 0
+      ? Math.min(...programMinPayouts)
+      : fallbackMinPayoutCents;
+    const maxPayoutCents = programMinPayouts.length > 0
+      ? Math.max(...programMinPayouts)
+      : fallbackMinPayoutCents;
 
     return NextResponse.json({
       success: true,
@@ -148,11 +163,16 @@ export async function GET(request: NextRequest) {
       conversions,
       commissions,
       currencySymbol,
+      payoutSettings: {
+        minPayoutCents,
+        maxPayoutCents,
+        source: programMinPayouts.length > 0 ? 'PROGRAM' : 'GLOBAL',
+      },
     });
   } catch (error) {
-    console.error('Affiliate profile API error:', error);
+    console.error('Referral partner profile API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch affiliate profile' },
+      { error: 'Failed to fetch referral partner profile' },
       { status: 500 }
     );
   }
@@ -182,13 +202,20 @@ export async function PUT(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { error: 'Access denied. Affiliate role required.' },
+        { error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
 
     const body = await request.json();
     const { name, company, email, country, paymentMethod, paymentEmail } = body;
+
+    if (paymentMethod && !allowedPayoutMethods.includes(paymentMethod)) {
+      return NextResponse.json(
+        { error: 'Payment method must be PayPal or Zelle' },
+        { status: 400 }
+      );
+    }
 
     // Update user name and email if provided
     const userUpdateData: any = {};
@@ -216,7 +243,7 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    // Update affiliate payout details if provided
+    // Update referral partner payout details if provided
     if (user.affiliate) {
       const payoutDetails: any = {};
 
@@ -238,7 +265,7 @@ export async function PUT(request: NextRequest) {
       message: 'Profile updated successfully',
     });
   } catch (error) {
-    console.error('Affiliate profile update API error:', error);
+    console.error('Referral partner profile update API error:', error);
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

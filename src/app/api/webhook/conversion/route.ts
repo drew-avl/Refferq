@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // If no affiliate found, log the conversion but don't create commission
     if (!affiliate) {
-      console.log('Conversion received but no affiliate attribution found:', {
+      console.log('Conversion received but no referral partner attribution found:', {
         event_type,
         customer_email,
         attribution_key,

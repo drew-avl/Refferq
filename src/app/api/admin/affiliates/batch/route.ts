@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('Batch update affiliates error:', error);
+    console.error('Batch update referral partners error:', error);
     return NextResponse.json(
       { error: 'Failed to process batch update' },
       { status: 500 }

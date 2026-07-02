@@ -101,6 +101,11 @@ interface Partner {
   assignedProgramIds: string[];
 }
 
+const payoutMethodOptions = ['PayPal', 'Zelle'] as const;
+
+const getAllowedPayoutMethod = (method?: string) =>
+  payoutMethodOptions.includes(method as (typeof payoutMethodOptions)[number]) ? method! : 'PayPal';
+
 export default function PartnersPage() {
   const router = useRouter();
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -186,7 +191,7 @@ export default function PartnersPage() {
             earnings: aff.balanceCents || 0,
             groupName: '',
             company: payoutDetails.company || '',
-            payoutMethod: payoutDetails.paymentMethod || 'PayPal',
+            payoutMethod: getAllowedPayoutMethod(payoutDetails.paymentMethod),
             payoutEmail: payoutDetails.paymentEmail || aff.user.email,
             assignedPrograms,
             assignedProgramIds: assignedPrograms.map((program: AssignedProgram) => program.id),
@@ -305,7 +310,7 @@ export default function PartnersPage() {
       email: partner.email,
       status: partner.status,
       company: partner.company || '',
-      payoutMethod: partner.payoutMethod || 'PayPal',
+      payoutMethod: getAllowedPayoutMethod(partner.payoutMethod),
       payoutEmail: partner.payoutEmail || partner.email,
       assignedProgramIds: partner.assignedProgramIds || [],
     });
@@ -492,7 +497,7 @@ export default function PartnersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Partners</h2>
-          <p className="text-muted-foreground">Manage your affiliate partners</p>
+          <p className="text-muted-foreground">Manage your referral partners</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowInviteModal(true)}>
@@ -708,7 +713,7 @@ export default function PartnersPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Create Partner</DialogTitle>
-            <DialogDescription>Add a new affiliate partner manually</DialogDescription>
+            <DialogDescription>Add a new referral partner manually</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreatePartner}>
             <div className="grid gap-4 py-4">
@@ -776,18 +781,15 @@ export default function PartnersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Wise">Wise</SelectItem>
-                      <SelectItem value="Bank">Bank Transfer</SelectItem>
-                      <SelectItem value="Crypto">Crypto</SelectItem>
+                      <SelectItem value="Zelle">Zelle</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="paypalEmail">PayPal Email (Optional)</Label>
+                <Label htmlFor="paypalEmail">Payout Email / Phone (Optional)</Label>
                 <Input
                   id="paypalEmail"
-                  type="email"
                   value={newPartner.paypalEmail}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPartner({ ...newPartner, paypalEmail: e.target.value })}
                   placeholder="defaults to partner email"
@@ -888,17 +890,14 @@ export default function PartnersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Wise">Wise</SelectItem>
-                      <SelectItem value="Bank">Bank Transfer</SelectItem>
-                      <SelectItem value="Crypto">Crypto</SelectItem>
+                      <SelectItem value="Zelle">Zelle</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="editPayoutEmail">Payout Email</Label>
+                  <Label htmlFor="editPayoutEmail">Payout Email / Phone</Label>
                   <Input
                     id="editPayoutEmail"
-                    type="email"
                     value={editPartner.payoutEmail}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditPartner({ ...editPartner, payoutEmail: e.target.value })}
                     placeholder="defaults to partner email"
@@ -950,7 +949,7 @@ export default function PartnersPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Invite Partner</DialogTitle>
-            <DialogDescription>Send an email invitation to a new affiliate partner</DialogDescription>
+            <DialogDescription>Send an email invitation to a new referral partner</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">

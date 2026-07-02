@@ -138,7 +138,7 @@ async function generateReportData(reportType: string, startDate?: string, endDat
       },
     });
     return {
-      type: 'Affiliate Performance Report',
+      type: 'Referral Partner Performance Report',
       data: affiliates.map((a) => ({
         name: a.user.name,
         email: a.user.email,

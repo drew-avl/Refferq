@@ -2,13 +2,13 @@
 
 **Release Date:** October 10, 2025
 
-We're thrilled to announce the **first stable release** of ReferConnect - a comprehensive, open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL!
+We're thrilled to announce the **first stable release** of ReferConnect - a comprehensive, open-source referral program management platform built with Next.js, TypeScript, and PostgreSQL!
 
 ---
 
 ## 🎯 What is ReferConnect?
 
-ReferConnect is a complete affiliate management solution that provides everything you need to create, manage, and scale your affiliate marketing program. Built with modern technologies and developer-friendly architecture, it's the perfect choice for businesses of all sizes.
+ReferConnect is a complete referral partner management solution that provides everything you need to create, manage, and scale your referral program. Built with modern technologies and developer-friendly architecture, it's the perfect choice for businesses of all sizes.
 
 ---
 
@@ -16,13 +16,13 @@ ReferConnect is a complete affiliate management solution that provides everythin
 
 ### For Admins
 - 📊 **Comprehensive Dashboard** - Real-time analytics and metrics
-- 👥 **Affiliate Management** - Approve, manage, and track affiliates
+- 👥 **Referral Partner Management** - Approve, manage, and track affiliates
 - 📋 **Referral System** - Review and approve referrals with commissions
-- 💰 **Payout Processing** - Bank CSV export and Stripe Connect integration
+- 💰 **Payout Processing** - PayPal and Zelle payout support
 - ⚙️ **Program Settings** - Flexible commission rules and configurations
 - 🔄 **Batch Operations** - Bulk status changes and deletions
 
-### For Affiliates
+### For Referral Partners
 - 🏠 **Personal Dashboard** - Track earnings and performance
 - 📝 **Referral Submission** - Submit leads through web portal
 - 💵 **Commission Tracking** - View pending and paid commissions
@@ -46,10 +46,10 @@ ReferConnect is a complete affiliate management solution that provides everythin
 ### Core Platform
 - ✅ User authentication with JWT + OTP
 - ✅ Admin dashboard with analytics
-- ✅ Affiliate portal with earnings tracking
+- ✅ Referral portal with earnings tracking
 - ✅ Referral submission and approval workflow
 - ✅ Flexible commission system (percentage & fixed)
-- ✅ Payout processing (Bank CSV, Stripe Connect)
+- ✅ Payout processing (PayPal and Zelle)
 - ✅ User status management (PENDING/ACTIVE/INACTIVE/SUSPENDED)
 - ✅ Batch operations for efficiency
 
@@ -292,7 +292,7 @@ This means you can:
 Love ReferConnect? Help us grow:
 
 - ⭐ **Star us on GitHub** - [github.com/referconnect/referconnect](https://github.com/referconnect/referconnect)
-- 🐦 **Share on Twitter** - "Just discovered @referconnect - an amazing open-source affiliate management platform!"
+- 🐦 **Share on Twitter** - "Just discovered @referconnect - an amazing open-source referral program management platform!"
 - 💼 **Share on LinkedIn** - Tell your network about ReferConnect
 - 📝 **Write a blog post** - Share your experience
 - 🎥 **Create a video** - Tutorial or demo

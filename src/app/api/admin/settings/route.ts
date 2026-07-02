@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         data: {
           programId: `prg_${Date.now()}`,
           productName: 'BsBot',
-          programName: "BsBot's Affiliate Program",
+          programName: "BsBot's Referral Program",
           websiteUrl: 'https://kyns.com',
           currency: 'USD',
           portalSubdomain: 'bsbot.tolt.io',
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
         data: {
           programId: `prg_${Date.now()}`,
           productName: 'BsBot',
-          programName: "BsBot's Affiliate Program",
+          programName: "BsBot's Referral Program",
           websiteUrl: 'https://kyns.com',
           currency: 'USD',
           portalSubdomain: 'bsbot.tolt.io',
@@ -119,7 +119,7 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    // Update program settings — only allow specific fields (prevent mass assignment)
+    // Update program settings â€” only allow specific fields (prevent mass assignment)
     const allowedFields = [
       'programName', 'productName', 'websiteUrl', 'currency', 'portalSubdomain',
       'companyName', 'companyLogo', 'favicon', 'brandBackgroundColor', 'brandButtonColor',

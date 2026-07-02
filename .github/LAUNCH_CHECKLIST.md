@@ -71,7 +71,7 @@ Complete checklist for launching your first release on GitHub and going live.
 
 #### General
 - [ ] Repository name: `referconnect`
-- [ ] Description: "Open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL"
+- [ ] Description: "Open-source referral program management platform built with Next.js, TypeScript, and PostgreSQL"
 - [ ] Website: Leave blank or add when available
 - [ ] Topics: nextjs, typescript, affiliate, postgresql, prisma, tailwind, react
 

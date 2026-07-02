@@ -200,7 +200,7 @@ model ProgramSettings {
   termsOfService            String?  @map("terms_of_service")
   minimumPayoutThreshold    Int      @default(0) @map("minimum_payout_threshold")
   payoutTerm                String   @default("NET-15") @map("payout_term")
-  payoutMethods             Json     @default("[\"PAYPAL\"]") @map("payout_methods")
+  payoutMethods             Json     @default("[\"PAYPAL\",\"ZELLE\"]") @map("payout_methods")
   brandBackgroundColor      String   @default("#000000") @map("brand_background_color")
   brandButtonColor          String   @default("#000000") @map("brand_button_color")
   brandTextColor            String   @default("#ffffff") @map("brand_text_color")
@@ -402,11 +402,7 @@ enum CommissionStatus {
 
 enum PayoutMethod {
   PAYPAL
-  BANK_TRANSFER
-  STRIPE
-  WISE
-  BANK_CSV
-  STRIPE_CONNECT
+  ZELLE
 }
 
 enum PayoutStatus {

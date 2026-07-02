@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const { affiliateId, payoutId, amountCents, taxCents, lineItems, billingInfo, notes, dueAt } = body;
 
     if (!affiliateId || !amountCents) {
-      return NextResponse.json({ error: 'Affiliate ID and amount are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Referral partner ID and amount are required' }, { status: 400 });
     }
 
     // Generate invoice number
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         taxCents: tax,
         totalCents: total,
         currency,
-        lineItems: lineItems || [{ description: 'Affiliate commission payout', qty: 1, unitPrice: amountCents, total: amountCents }],
+        lineItems: lineItems || [{ description: 'Referral partner commission payout', qty: 1, unitPrice: amountCents, total: amountCents }],
         billingInfo: billingInfo || {},
         notes: notes || null,
         status: 'ISSUED',

@@ -205,7 +205,7 @@ export default function CouponsPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Coupons</CardTitle>
-          <CardDescription>Discount codes for customers referred by affiliates</CardDescription>
+          <CardDescription>Discount codes for customers referred by referral partners</CardDescription>
         </CardHeader>
         <CardContent>
           {coupons.length === 0 ? (
@@ -221,7 +221,7 @@ export default function CouponsPage() {
                   <TableHead>Code</TableHead>
                   <TableHead>Discount</TableHead>
                   <TableHead>Usage</TableHead>
-                  <TableHead>Affiliate</TableHead>
+                  <TableHead>Referral Partner</TableHead>
                   <TableHead>Expires</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -268,7 +268,7 @@ export default function CouponsPage() {
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Coupon' : 'Create Coupon'}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Update coupon details' : 'Create a new discount code for affiliates or customers'}
+              {editing ? 'Update coupon details' : 'Create a new discount code for referral partners or customers'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -307,7 +307,7 @@ export default function CouponsPage() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label>Affiliate ID (optional)</Label>
+              <Label>Referral Partner ID (optional)</Label>
               <Input value={form.affiliateId} onChange={e => setForm({...form, affiliateId: e.target.value})} placeholder="Leave empty for program-wide coupon" />
             </div>
           </div>

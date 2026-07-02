@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const payoutMethodSchema = z.enum(['PayPal', 'Zelle']);
+
 // Referral Validation
 export const referralSchema = z.object({
     leadName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -20,8 +22,8 @@ export const affiliateCreateSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters').optional(),
     company: z.string().optional(),
-    payoutMethod: z.string().optional(),
-    paypalEmail: z.string().email('Invalid PayPal email address').optional().or(z.literal('')),
+    payoutMethod: payoutMethodSchema.optional(),
+    paypalEmail: z.string().max(200, 'Payout account is too long').optional().or(z.literal('')),
     sendWelcomeEmail: z.boolean().optional(),
 });
 
@@ -30,8 +32,8 @@ export const affiliateUpdateSchema = z.object({
     email: z.string().email('Invalid email address').optional(),
     status: z.enum(['PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
     company: z.string().optional(),
-    payoutMethod: z.string().optional(),
-    paypalEmail: z.string().email('Invalid payout email address').optional().or(z.literal('')),
+    payoutMethod: payoutMethodSchema.optional(),
+    paypalEmail: z.string().max(200, 'Payout account is too long').optional().or(z.literal('')),
     assignedProgramIds: z.array(z.string()).optional(),
 });
 
@@ -39,7 +41,7 @@ export const affiliateUpdateSchema = z.object({
 export const payoutSchema = z.object({
     affiliateId: z.string(),
     commissionIds: z.array(z.string()).min(1, 'At least one commission is required'),
-    method: z.string().optional(),
+    method: payoutMethodSchema.optional(),
     notes: z.string().optional(),
 });
 
@@ -47,7 +49,7 @@ export const payoutSchema = z.object({
 export const payoutUpdateSchema = z.object({
     id: z.string(),
     status: z.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']).optional(),
-    method: z.string().optional(),
+    method: payoutMethodSchema.optional(),
     notes: z.string().optional(),
 });
 

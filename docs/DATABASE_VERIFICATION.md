@@ -62,7 +62,7 @@ Run the SQL query above and confirm:
 4. ✅ **The new affiliate should appear in the list**
 
 ### Step 4: Test Login
-1. Try to login with the pending affiliate account
+1. Try to login with the pending referral partner account
 2. ✅ Should see: "Your account is pending approval. Please wait for admin activation."
 
 ### Step 5: Approve Affiliate

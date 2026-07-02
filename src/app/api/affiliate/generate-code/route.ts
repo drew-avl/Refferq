@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { success: false, error: 'Access denied. Affiliate role required.' },
+        { success: false, error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: 'Affiliate profile created with referral code',
+        message: 'Referral partner profile created with referral code',
         affiliate,
       });
     }

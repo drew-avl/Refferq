@@ -1,4 +1,4 @@
-// Real-time notification system for the affiliate platform
+// Real-time notification system for the referral program platform
 export interface NotificationData {
   id: string;
   type: 'referral_submitted' | 'referral_approved' | 'referral_rejected' | 'commission_approved' | 'payout_processed' | 'affiliate_registered';
@@ -92,7 +92,7 @@ class NotificationService {
     }
   }
 
-  // Affiliate notifications
+  // Referral partner notifications
   async notifyReferralApproved(affiliateId: string, referralData: { leadName: string; commissionAmount: number }): Promise<void> {
     await this.createNotification({
       type: 'referral_approved',
@@ -138,8 +138,8 @@ class NotificationService {
     for (const adminId of adminIds) {
       await this.createNotification({
         type: 'affiliate_registered',
-        title: 'New Affiliate Registration',
-        message: `${affiliateData.name} (${affiliateData.email}) has registered as an affiliate`,
+        title: 'New Referral Partner Registration',
+        message: `${affiliateData.name} (${affiliateData.email}) has registered as a referral partner`,
         userId: adminId,
         metadata: affiliateData,
       });

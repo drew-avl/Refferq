@@ -56,7 +56,7 @@
 - Better typography and spacing
 - Smooth animations and micro-interactions
 
-#### Affiliate Portal
+#### Referral Portal
 - Consistent modern design language
 - Improved stats cards with gradient accents
 - Better form styling and input states

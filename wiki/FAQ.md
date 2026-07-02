@@ -22,11 +22,11 @@ Find quick answers to common questions about ReferConnect.
 
 ### What is ReferConnect?
 
-ReferConnect is a comprehensive, open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL. It provides everything you need to create, manage, and scale your affiliate marketing program.
+ReferConnect is a comprehensive, open-source referral program management platform built with Next.js, TypeScript, and PostgreSQL. It provides everything you need to create, manage, and scale your referral program.
 
 ### Who is ReferConnect for?
 
-- **SaaS Companies** - Grow through affiliate partnerships
+- **SaaS Companies** - Grow through referral partnerships
 - **E-commerce Stores** - Reward customer referrals
 - **Digital Products** - Course creators, software vendors
 - **Service Businesses** - Consultants, agencies
@@ -41,7 +41,7 @@ Yes! ReferConnect is 100% free and open-source under the MIT License. You can us
 - Email service (Resend: 3,000 free emails/month)
 - Optional payment processing (Stripe fees)
 
-### How is ReferConnect different from other affiliate platforms?
+### How is ReferConnect different from other referral program platforms?
 
 - ✅ **Open Source** - Full source code access, no vendor lock-in
 - ✅ **Self-Hosted** - You control your data and infrastructure
@@ -116,14 +116,8 @@ Calculations happen automatically when a referral is approved.
 ### What payout methods are supported?
 
 **Current (v1.0.0):**
-- Bank CSV export
-- Stripe Connect
-
-**Planned (v1.3.0):**
 - PayPal
-- Wise
-- Payoneer
-- Cryptocurrency
+- Zelle
 
 ### How often can affiliates receive payouts?
 

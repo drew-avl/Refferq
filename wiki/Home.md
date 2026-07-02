@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The Open Source Affiliate Management Platform</strong>
+  <strong>The Open Source Referral Program Management Platform</strong>
 </p>
 
 ---
@@ -43,7 +43,7 @@
 - **[Testing Guide](Testing-Guide)** - Testing strategies and tools
 
 ### Guides & Tutorials
-- **[Creating Your First Affiliate Program](Creating-First-Program)** - Step-by-step tutorial
+- **[Creating Your First Referral Program](Creating-First-Program)** - Step-by-step tutorial
 - **[Customizing Email Templates](Customizing-Emails)** - Email customization guide
 - **[Setting Up Webhooks](Setting-Up-Webhooks)** - Webhook integration guide
 - **[White Label Customization](White-Label-Guide)** - Branding customization
@@ -73,16 +73,16 @@
 
 ## 🎯 What is ReferConnect?
 
-**ReferConnect** is a comprehensive, open-source affiliate management platform built with modern web technologies. It provides everything you need to create, manage, and scale your affiliate marketing program.
+**ReferConnect** is a comprehensive, open-source referral program management platform built with modern web technologies. It provides everything you need to create, manage, and scale your referral program.
 
 ### Key Features
 
-✅ **Complete Affiliate Portal** - Dashboard for affiliates to track earnings and manage referrals  
-✅ **Admin Control Panel** - Manage partners, approve referrals, process payouts  
-✅ **Real-time Analytics** - Track conversions, commissions, and performance  
-✅ **Automated Workflows** - Email notifications, commission calculations, payouts  
-✅ **Flexible Commission Rules** - Percentage-based and fixed commissions  
-✅ **White-Label Ready** - Customizable branding and subdomain support  
+✅ **Complete Referral Portal** - Dashboard for referral partners to track earnings and manage referrals
+✅ **Admin Control Panel** - Manage partners, approve referrals, process payouts
+✅ **Real-time Analytics** - Track conversions, commissions, and performance
+✅ **Automated Workflows** - Email notifications, commission calculations, payouts
+✅ **Flexible Commission Rules** - Percentage-based and fixed commissions
+✅ **White-Label Ready** - Customizable branding and subdomain support
 
 ### Technology Stack
 
@@ -91,7 +91,7 @@
 - **Database:** PostgreSQL with Prisma ORM
 - **Authentication:** JWT with OTP verification
 - **Email:** Resend API
-- **Payments:** Stripe Connect (optional)
+- **Payouts:** PayPal and Zelle
 
 ---
 
@@ -118,7 +118,7 @@
 
 ReferConnect is perfect for:
 
-- **SaaS Companies** - Grow through affiliate partnerships
+- **SaaS Companies** - Grow through referral partnerships
 - **E-commerce Stores** - Reward customer referrals
 - **Digital Products** - Course creators, software vendors
 - **Service Businesses** - Consultants, agencies, service providers
@@ -157,10 +157,10 @@ ReferConnect is perfect for:
 
 ## 📊 Current Status
 
-**Version:** 1.3.0  
-**Status:** Production Ready ✅  
-**Last Updated:** February 2026  
-**License:** MIT  
+**Version:** 1.3.0
+**Status:** Production Ready ✅
+**Last Updated:** February 2026
+**License:** MIT
 
 ### Recent Updates (v1.3.0)
 - ✅ 3 CRITICAL security fixes: login JWT, password hashing, referral tracking
@@ -222,7 +222,7 @@ Please read our **[Code of Conduct](Code-of-Conduct)** before participating in t
 1. Quick Start Guide
 2. Installation
 3. Configuration
-4. Creating Your First Affiliate Program
+4. Creating Your First Referral Program
 
 #### Setting Up for Production?
 1. Deployment

@@ -12,7 +12,20 @@ async function verifyAdmin(request: NextRequest) {
   } catch (_e) { return null; }
 }
 
-// POST - Process auto-payouts for all eligible affiliates
+function getAffiliateMinPayoutCents(
+  affiliate: { programAssignments?: { program: { minPayoutCents: number } }[] },
+  fallbackMinPayoutCents: number
+) {
+  const assignedProgramThresholds = affiliate.programAssignments
+    ?.map((assignment) => assignment.program.minPayoutCents)
+    .filter((value) => typeof value === 'number' && value >= 0) || [];
+
+  return assignedProgramThresholds.length > 0
+    ? Math.min(...assignedProgramThresholds)
+    : fallbackMinPayoutCents;
+}
+
+// POST - Process auto-payouts for all eligible referral partners
 export async function POST(request: NextRequest) {
   const admin = await verifyAdmin(request);
   if (!admin) {
@@ -22,26 +35,36 @@ export async function POST(request: NextRequest) {
   try {
     const { dryRun = false } = await request.json().catch(() => ({ dryRun: false }));
 
-    // Get program settings for min payout threshold
     const settings = await prisma.programSettings.findFirst();
-    const minPayoutCents = settings?.minPayoutCents || 100000;
+    const fallbackMinPayoutCents = settings?.minPayoutCents || 100000;
 
-    // Find all affiliates with balance above minimum payout threshold
-    // Status check is on User model, not Affiliate
-    const eligibleAffiliates = await prisma.affiliate.findMany({
+    const activeAffiliates = await prisma.affiliate.findMany({
       where: {
-        balanceCents: { gte: minPayoutCents },
+        balanceCents: { gt: 0 },
         user: { status: 'ACTIVE' },
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
+        programAssignments: {
+          include: {
+            program: {
+              select: { minPayoutCents: true },
+            },
+          },
+        },
       },
     });
+    const eligibleAffiliates = activeAffiliates
+      .map((affiliate) => ({
+        ...affiliate,
+        minPayoutCents: getAffiliateMinPayoutCents(affiliate, fallbackMinPayoutCents),
+      }))
+      .filter((affiliate) => affiliate.balanceCents >= affiliate.minPayoutCents);
 
     if (eligibleAffiliates.length === 0) {
       return NextResponse.json({
         success: true,
-        message: 'No affiliates eligible for auto-payout',
+        message: 'No referral partners eligible for auto-payout',
         processed: 0,
         totalAmountCents: 0,
       });
@@ -56,6 +79,7 @@ export async function POST(request: NextRequest) {
           name: a.user.name,
           email: a.user.email,
           balanceCents: a.balanceCents,
+          minPayoutCents: a.minPayoutCents,
         })),
         totalAffiliates: eligibleAffiliates.length,
         totalAmountCents: eligibleAffiliates.reduce((s, a) => s + a.balanceCents, 0),
@@ -109,6 +133,7 @@ export async function POST(request: NextRequest) {
             payload: {
               affiliateId: affiliate.id,
               amountCents: payoutAmountCents,
+              minPayoutCents: affiliate.minPayoutCents,
             },
           },
         });
@@ -135,7 +160,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Auto-payout processed for ${totalProcessed} affiliates`,
+      message: `Auto-payout processed for ${totalProcessed} referral partners`,
       processed: totalProcessed,
       totalAmountCents,
       results,
@@ -156,22 +181,28 @@ export async function GET(request: NextRequest) {
   try {
     const settings = await prisma.programSettings.findFirst();
 
-    // Count eligible affiliates
-    const minPayoutCents = settings?.minPayoutCents || 100000;
-    const eligibleCount = await prisma.affiliate.count({
+    const fallbackMinPayoutCents = settings?.minPayoutCents || 100000;
+    const activeAffiliates = await prisma.affiliate.findMany({
       where: {
-        balanceCents: { gte: minPayoutCents },
+        balanceCents: { gt: 0 },
         user: { status: 'ACTIVE' },
       },
-    });
-
-    const totalPendingBalance = await prisma.affiliate.aggregate({
-      where: {
-        balanceCents: { gte: minPayoutCents },
-        user: { status: 'ACTIVE' },
+      include: {
+        programAssignments: {
+          include: {
+            program: {
+              select: { minPayoutCents: true },
+            },
+          },
+        },
       },
-      _sum: { balanceCents: true },
     });
+    const eligibleAffiliates = activeAffiliates
+      .map((affiliate) => ({
+        ...affiliate,
+        minPayoutCents: getAffiliateMinPayoutCents(affiliate, fallbackMinPayoutCents),
+      }))
+      .filter((affiliate) => affiliate.balanceCents >= affiliate.minPayoutCents);
 
     // Recent auto-payouts
     const recentPayouts = await prisma.payout.findMany({
@@ -188,13 +219,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       config: {
-        minPayoutCents,
+        minPayoutCents: fallbackMinPayoutCents,
         payoutFrequency: settings?.payoutFrequency || 'MONTHLY',
         autoPayoutsEnabled: settings?.autoApprovePayouts || false,
       },
       stats: {
-        eligibleAffiliates: eligibleCount,
-        totalPendingCents: totalPendingBalance._sum?.balanceCents || 0,
+        eligibleAffiliates: eligibleAffiliates.length,
+        totalPendingCents: eligibleAffiliates.reduce((sum, affiliate) => sum + affiliate.balanceCents, 0),
       },
       recentPayouts,
     });

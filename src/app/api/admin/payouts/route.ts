@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!affiliate) {
-      return NextResponse.json({ error: 'Affiliate not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Referral partner not found' }, { status: 404 });
     }
 
     // Fetch commissions for these IDs (must be APPROVED)
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
         amountCents: totalAmountCents,
         commissionCount: commissions.length,
         status: 'PENDING',
-        method: method || 'Bank Transfer',
+        method: method || 'PayPal',
         notes: notes || null,
         createdBy: auth.user.id,
         createdAt: new Date(),
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
           amountCents: totalAmountCents,
           commissionCount: commissions.length,
           payoutId: payout.id,
-          method: method || 'Bank Transfer'
+          method: method || 'PayPal'
         });
       }
     } catch (emailError) {
@@ -360,7 +360,7 @@ export async function PUT(request: NextRequest) {
             amountCents: payout.amountCents,
             commissionCount: payout.commissionCount,
             payoutId: payout.id,
-            method: payout.method || 'Bank Transfer',
+            method: payout.method || 'PayPal',
             processedAt: payout.processedAt?.toISOString() || new Date().toISOString()
           });
         }

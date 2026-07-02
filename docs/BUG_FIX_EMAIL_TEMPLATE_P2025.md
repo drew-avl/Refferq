@@ -2,10 +2,10 @@
 
 ## 🐛 Error Message
 ```
-Error saving email template: Error [PrismaClientKnownRequestError]: 
+Error saving email template: Error [PrismaClientKnownRequestError]:
 Invalid `prisma.emailTemplate.update()` invocation:
 
-An operation failed because it depends on one or more records that were required but not found. 
+An operation failed because it depends on one or more records that were required but not found.
 No record was found for an update.
 
 code: 'P2025'
@@ -166,22 +166,22 @@ Create default email templates in database:
 -- Insert default email templates
 INSERT INTO email_templates (id, type, name, subject, body, variables, is_active, created_at, updated_at)
 VALUES
-  ('welcome_email_template', 'WELCOME_EMAIL', 'Welcome Email', 
-   'Welcome to {{platform_name}}!', 
-   '<p>Hi {{user_name}},</p><p>Welcome to our affiliate platform!</p>', 
-   '["platform_name", "user_name"]', 
+  ('welcome_email_template', 'WELCOME_EMAIL', 'Welcome Email',
+   'Welcome to {{platform_name}}!',
+   '<p>Hi {{user_name}},</p><p>Welcome to our referral portal!</p>',
+   '["platform_name", "user_name"]',
    true, NOW(), NOW()),
-   
-  ('first_referral', 'FIRST_REFERRAL', 'First Referral Notification', 
-   'Congratulations on your first referral!', 
-   '<p>Great job {{partner_name}}! You just got your first referral.</p>', 
-   '["partner_name"]', 
+
+  ('first_referral', 'FIRST_REFERRAL', 'First Referral Notification',
+   'Congratulations on your first referral!',
+   '<p>Great job {{partner_name}}! You just got your first referral.</p>',
+   '["partner_name"]',
    true, NOW(), NOW()),
-   
-  ('partner_approval', 'PARTNER_APPROVAL', 'Partner Approval Email', 
-   'Your affiliate account has been approved', 
-   '<p>Hi {{partner_name}},</p><p>Your affiliate account has been approved!</p>', 
-   '["partner_name"]', 
+
+  ('partner_approval', 'PARTNER_APPROVAL', 'Partner Approval Email',
+   'Your referral partner account has been approved',
+   '<p>Hi {{partner_name}},</p><p>Your referral partner account has been approved!</p>',
+   '["partner_name"]',
    true, NOW(), NOW());
 ```
 
@@ -348,9 +348,9 @@ SELECT id, type, name, subject FROM email_templates;
 
 ---
 
-**Fixed By:** GitHub Copilot  
-**Date:** 2025-10-13  
-**Status:** ✅ Fixed - Ready for testing  
+**Fixed By:** GitHub Copilot
+**Date:** 2025-10-13
+**Status:** ✅ Fixed - Ready for testing
 **Risk Level:** LOW (Safe fallback logic)
 
 ---

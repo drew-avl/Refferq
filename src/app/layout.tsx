@@ -4,8 +4,8 @@ import { db } from '@/lib/prisma';
 import './globals.css';
 
 export const metadata = {
-  title: 'ReferConnect - Modern Affiliate Marketing Platform',
-  description: 'Next-generation affiliate marketing platform with comprehensive tracking, commission management, and payout automation.',
+  title: 'ReferConnect - Modern Referral Program Platform',
+  description: 'Next-generation referral program platform with comprehensive tracking, commission management, and payout automation.',
 };
 
 export default async function RootLayout({

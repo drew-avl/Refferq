@@ -2,7 +2,7 @@
 
 **Author: ReferConnect Team**
 
-Complete API reference for ReferConnect affiliate management platform.
+Complete API reference for ReferConnect referral program management platform.
 
 ## Table of Contents
 
@@ -242,7 +242,7 @@ GET /api/admin/settings
   "success": true,
   "settings": {
     "productName": "BsBot",
-    "programName": "BsBot's Affiliate Program",
+    "programName": "BsBot's Referral Program",
     "websiteUrl": "https://kyns.com",
     "currency": "INR",
     "minimumPayoutThreshold": 1000,

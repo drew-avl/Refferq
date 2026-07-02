@@ -58,7 +58,7 @@ export interface PayoutNotificationData {
   affiliateName: string;
   affiliateEmail: string;
   amount: number;
-  method: 'bank_csv' | 'stripe_connect';
+  method: 'PayPal' | 'Zelle';
   processingDate: string;
 }
 
@@ -190,7 +190,7 @@ class EmailService {
       </div>
       <div class="content">
         <h2>Hello ${this.escapeHtml(data.name)}!</h2>
-        <p>Thank you for joining our affiliate platform as a <strong>${this.escapeHtml(data.role)}</strong>.</p>
+        <p>Thank you for joining our referral portal as a <strong>${this.escapeHtml(data.role === 'affiliate' ? 'referral partner' : data.role)}</strong>.</p>
         
         ${data.role === 'affiliate' ? `
         <p>Your account is currently pending approval. Our admin team will review your application and activate your account within 24-48 hours.</p>
@@ -205,7 +205,7 @@ class EmailService {
         <p>Your admin account has been created and is ready to use.</p>
         <p>You can now:</p>
         <ul>
-          <li>Manage affiliate applications</li>
+          <li>Manage referral partner applications</li>
           <li>Review and approve referrals</li>
           <li>Process commission payments</li>
           <li>Access platform analytics</li>
@@ -262,7 +262,7 @@ class EmailService {
         
         <div class="details">
           <h3>Referral Details:</h3>
-          <p><strong>Affiliate:</strong> ${this.escapeHtml(data.affiliateName)}</p>
+          <p><strong>Referral Partner:</strong> ${this.escapeHtml(data.affiliateName)}</p>
           <p><strong>Lead Name:</strong> ${this.escapeHtml(data.leadName)}</p>
           <p><strong>Lead Email:</strong> ${this.escapeHtml(data.leadEmail)}</p>
           ${data.company ? `<p><strong>Company:</strong> ${this.escapeHtml(data.company)}</p>` : ''}
@@ -361,21 +361,17 @@ class EmailService {
         <div class="details">
           <h3>Payout Details:</h3>
           <p><strong>Amount:</strong> ${this.formatAmount(data.amount, symbol)}</p>
-          <p><strong>Method:</strong> ${data.method === 'stripe_connect' ? 'Stripe Connect' : 'Bank Transfer'}</p>
+          <p><strong>Method:</strong> ${this.escapeHtml(data.method || 'PayPal')}</p>
           <p><strong>Processing Date:</strong> ${this.escapeHtml(data.processingDate)}</p>
         </div>
         
-        ${data.method === 'bank_csv' ? `
-        <p>Your payout will be processed via bank transfer within 3-5 business days.</p>
-        ` : `
-        <p>Your payout has been sent to your connected Stripe account and should be available immediately.</p>
-        `}
+        <p>Your payout will be processed through your selected payout method.</p>
         
         <div style="text-align: center;">
           <a href="${process.env.NEXT_PUBLIC_APP_URL}/affiliate" class="button">View Dashboard</a>
         </div>
         
-        <p>Thank you for being a valued affiliate partner!</p>
+        <p>Thank you for being a valued referral partner!</p>
         
         <p>Best regards,<br>The ReferConnect Team</p>
       </div>
@@ -514,7 +510,7 @@ class EmailService {
     return this.sendTemplatedEmail({
       to: data.email,
       templateType: 'WELCOME_EMAIL',
-      fallbackSubject: `Welcome to ReferConnect - ${data.role === 'affiliate' ? 'Affiliate' : 'Admin'} Account Created`,
+      fallbackSubject: `Welcome to ReferConnect - ${data.role === 'affiliate' ? 'Referral Partner' : 'Admin'} Account Created`,
       variables: data,
       generateFallbackHtml: () => this.generateWelcomeEmailHTML(data),
     });
@@ -617,7 +613,7 @@ class EmailService {
         </div>
         <div class="content">
           <h2>Hello!</h2>
-          <p>We received a request to reset your password for your affiliate platform account.</p>
+          <p>We received a request to reset your password for your referral portal account.</p>
           
           <div style="text-align: center;">
             <a href="${resetUrl}" class="button">Reset Your Password</a>
@@ -669,7 +665,7 @@ class EmailService {
         </div>
         <div class="content">
           <h2>Hello!</h2>
-          <p>Thank you for registering with our affiliate platform. Please verify your email address to complete your registration.</p>
+          <p>Thank you for registering with our referral portal. Please verify your email address to complete your registration.</p>
           
           <div style="text-align: center;">
             <a href="${verificationUrl}" class="button">Verify Email Address</a>

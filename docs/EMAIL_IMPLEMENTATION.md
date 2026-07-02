@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully integrated welcome email functionality into the ReferConnect affiliate platform. New affiliates and admins now receive automated welcome emails upon registration using the Resend email service.
+Successfully integrated welcome email functionality into the ReferConnect referral portal. New referral partners and admins now receive automated welcome emails upon registration using the Resend email service.
 
 ## What Was Done
 
@@ -53,11 +53,11 @@ Found existing comprehensive email service with:
 Updated all email templates to use "ReferConnect" branding:
 
 **Changes:**
-- ❌ "Welcome to Our Affiliate Platform" 
+- ❌ Generic platform welcome subject
 - ✅ "Welcome to ReferConnect"
 - ❌ Purple gradient (#667eea to #764ba2)
 - ✅ Green gradient (#10b981 to #059669) - matches login/register pages
-- ❌ "The Affiliate Platform Team"
+- ❌ Generic platform team signature
 - ✅ "The ReferConnect Team"
 - ❌ "noreply@yourdomain.com"
 - ✅ "ReferConnect <noreply@referconnect.com>"
@@ -334,7 +334,7 @@ npm run dev
 - ❌ README mentioned Nodemailer (incorrect)
 - ❌ No .env.example file
 - ❌ No email testing tools
-- ❌ Generic "Affiliate Platform" branding in emails
+- ❌ Generic platform branding in emails
 - ❌ No email documentation
 
 ### After

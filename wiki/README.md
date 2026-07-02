@@ -1,6 +1,6 @@
 # ReferConnect Wiki
 
-This directory contains the complete documentation for the ReferConnect affiliate management platform, designed to be used as a GitHub Wiki.
+This directory contains the complete documentation for the ReferConnect referral program management platform, designed to be used as a GitHub Wiki.
 
 ---
 

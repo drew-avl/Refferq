@@ -36,6 +36,11 @@ import {
   Check,
 } from 'lucide-react';
 
+const payoutMethodOptions = ['PayPal', 'Zelle'] as const;
+
+const getAllowedPayoutMethod = (method?: string) =>
+  payoutMethodOptions.includes(method as (typeof payoutMethodOptions)[number]) ? method! : 'PayPal';
+
 export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -70,7 +75,7 @@ export default function SettingsPage() {
           company: pd.company || '',
           email: data.user?.email || user?.email || '',
           country: pd.country || 'India',
-          paymentMethod: pd.paymentMethod || 'PayPal',
+          paymentMethod: getAllowedPayoutMethod(pd.paymentMethod),
           paymentEmail: pd.paymentEmail || data.user?.email || '',
         });
       }
@@ -265,16 +270,12 @@ export default function SettingsPage() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="Stripe">Stripe</SelectItem>
-                  <SelectItem value="Wise">Wise</SelectItem>
-                  <SelectItem value="Wire Transfer">Wire Transfer</SelectItem>
-                  <SelectItem value="UPI">UPI</SelectItem>
+                  <SelectItem value="Zelle">Zelle</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Payment Email / Account</Label>
+              <Label>Payout Email / Phone</Label>
               <Input
                 value={settingsForm.paymentEmail}
                 onChange={(e) => setSettingsForm({ ...settingsForm, paymentEmail: e.target.value })}

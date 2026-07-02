@@ -338,6 +338,6 @@ npx prisma studio              # Open Prisma Studio at localhost:5555
 ---
 
 <p align="center">
-  <strong>Ready to build your affiliate program?</strong><br>
-  Continue to <a href="Creating-First-Program">Creating Your First Affiliate Program</a>
+  <strong>Ready to build your referral program?</strong><br>
+  Continue to <a href="Creating-First-Program">Creating Your First Referral Program</a>
 </p>

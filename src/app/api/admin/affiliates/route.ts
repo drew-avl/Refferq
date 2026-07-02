@@ -72,9 +72,9 @@ export async function GET(request: NextRequest) {
       currencySymbol, // Add currency symbol to response
     });
   } catch (error) {
-    console.error('Get affiliates API error:', error);
+    console.error('Get referral partners API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch affiliates' },
+      { error: 'Failed to fetch referral partners' },
       { status: 500 }
     );
   }
@@ -182,15 +182,15 @@ export async function POST(request: NextRequest) {
         });
         welcomeEmailSent = emailResult.success;
       } catch (emailError) {
-        console.error('Failed to send affiliate welcome email:', emailError);
+        console.error('Failed to send referral partner welcome email:', emailError);
       }
     }
 
     return NextResponse.json({
       success: true,
       message: welcomeEmailSent
-        ? 'Affiliate created and welcome email sent successfully'
-        : 'Affiliate created successfully',
+        ? 'Referral partner created and welcome email sent successfully'
+        : 'Referral partner created successfully',
       affiliate: {
         id: affiliate.id,
         userId: newUser.id,
@@ -201,14 +201,14 @@ export async function POST(request: NextRequest) {
         createdAt: affiliate.createdAt
       },
       // Note: Password is sent to admin once and should be communicated
-      // securely to the affiliate. It is not stored in logs.
+      // securely to the referral partner. It is not stored in logs.
       temporaryPassword: userPassword,
       welcomeEmailSent
     });
   } catch (error) {
-    console.error('Create affiliate API error:', error);
+    console.error('Create referral partner API error:', error);
     return NextResponse.json(
-      { error: 'Failed to create affiliate' },
+      { error: 'Failed to create referral partner' },
       { status: 500 }
     );
   }

@@ -251,7 +251,7 @@ export default function ProgramSettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Program Settings</h1>
-        <p className="text-muted-foreground">Configure your affiliate program</p>
+        <p className="text-muted-foreground">Configure your referral program</p>
       </div>
 
       {/* General Settings */}
@@ -395,7 +395,7 @@ export default function ProgramSettingsPage() {
           <div className="grid gap-4">
             <div>
               <h3 className="text-sm font-semibold">Custom Branding</h3>
-              <p className="text-xs text-muted-foreground">These values control the affiliate portal branding.</p>
+              <p className="text-xs text-muted-foreground">These values control the referral portal branding.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
@@ -699,7 +699,7 @@ ReferConnect.clearReferralCode();`}
               <div className="rounded-md border p-4 space-y-3">
                 <h4 className="text-sm font-medium">Referral link format</h4>
                 <p className="text-sm text-muted-foreground">
-                  Affiliates share links to your website with a <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> query parameter.
+                  Referral partners share links to your website with a <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> query parameter.
                   The tracking script picks this up automatically.
                 </p>
                 <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">

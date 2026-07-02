@@ -1,4 +1,4 @@
-// Authentication and session management for the affiliate platform
+// Authentication and session management for the referral program platform
 import { type User, Role, UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import * as bcrypt from 'bcryptjs';

@@ -130,7 +130,7 @@ interface CohortAnalysis {
 // ────────────────────────────────────────────────
 const reportTypes: { value: ReportType; label: string; description: string; icon: React.ElementType }[] = [
   { value: 'summary', label: 'Summary', description: 'Overview of all metrics', icon: BarChart3 },
-  { value: 'affiliates', label: 'Affiliates', description: 'Partner performance data', icon: Users },
+  { value: 'affiliates', label: 'Referral Partners', description: 'Partner performance data', icon: Users },
   { value: 'referrals', label: 'Referrals', description: 'Referral lead details', icon: Link2 },
   { value: 'commissions', label: 'Commissions', description: 'Commission records', icon: DollarSign },
   { value: 'payouts', label: 'Payouts', description: 'Payout history', icon: Wallet },
@@ -606,7 +606,7 @@ export default function ReportsPage() {
                       <div className="space-y-4 py-4">
                         <div className="grid gap-2">
                           <Label>Name</Label>
-                          <Input placeholder="e.g., Monthly Affiliate Performance" value={saveForm.name} onChange={(e: any) => setSaveForm({ ...saveForm, name: e.target.value })} />
+                          <Input placeholder="e.g., Monthly Referral Partner Performance" value={saveForm.name} onChange={(e: any) => setSaveForm({ ...saveForm, name: e.target.value })} />
                         </div>
                         <div className="grid gap-2">
                           <Label>Description (optional)</Label>
@@ -842,7 +842,7 @@ export default function ReportsPage() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" />Cohort Analysis</CardTitle>
-                  <CardDescription>Analyze affiliate behavior and retention by join date</CardDescription>
+                  <CardDescription>Analyze referral partner behavior and retention by join date</CardDescription>
                 </div>
                 <div className="flex gap-2">
                   <Select value={cohortPeriod} onValueChange={setCohortPeriod}>
@@ -877,11 +877,11 @@ export default function ReportsPage() {
                       <CardContent><div className="text-2xl font-bold">{cohort.summary.totalCohorts}</div></CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Affiliates</CardTitle></CardHeader>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Referral Partners</CardTitle></CardHeader>
                       <CardContent><div className="text-2xl font-bold">{cohort.summary.totalAffiliates}</div></CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Active Affiliates</CardTitle></CardHeader>
+                      <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Active Referral Partners</CardTitle></CardHeader>
                       <CardContent><div className="text-2xl font-bold">{cohort.summary.activeAffiliates}</div></CardContent>
                     </Card>
                     <Card>
@@ -896,13 +896,13 @@ export default function ReportsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Cohort</TableHead>
-                          <TableHead className="text-right">Affiliates</TableHead>
+                          <TableHead className="text-right">Referral Partners</TableHead>
                           <TableHead className="text-right">Referrals</TableHead>
                           <TableHead className="text-right">Completed</TableHead>
                           <TableHead className="text-right">Conv. Rate</TableHead>
                           <TableHead className="text-right">Commissions</TableHead>
                           <TableHead className="text-right">Total Earnings</TableHead>
-                          <TableHead className="text-right">Avg / Affiliate</TableHead>
+                          <TableHead className="text-right">Avg / Partner</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

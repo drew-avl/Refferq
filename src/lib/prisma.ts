@@ -306,7 +306,7 @@ export class DatabaseService {
         affiliateId: payoutData.affiliateId,
         amountCents: payoutData.amountCents,
         commissionCount: payoutData.commissionCount,
-        method: payoutData.method || 'Bank Transfer',
+        method: payoutData.method || 'PayPal',
         notes: payoutData.notes,
         status: 'PENDING',
         createdBy: payoutData.createdBy,
@@ -520,9 +520,8 @@ export class DatabaseService {
         userId: affiliate1User.id,
         referralCode: 'SARAH-TECH',
         payoutDetails: {
-          method: 'bank_transfer',
-          bankAccount: '*****1234',
-          routingNumber: '123456789',
+          method: 'PayPal',
+          paymentEmail: 'sarah@example.com',
         },
       });
 
@@ -530,8 +529,8 @@ export class DatabaseService {
         userId: affiliate2User.id,
         referralCode: 'DAVID-SALES',
         payoutDetails: {
-          method: 'stripe_connect',
-          stripeAccountId: 'acct_1234567890',
+          method: 'Zelle',
+          paymentEmail: 'david@example.com',
         },
       });
 

@@ -11,7 +11,7 @@ Ready-to-use announcements for various platforms.
 ```
 🎉 ReferConnect v1.0.0 is LIVE!
 
-Open-source affiliate management platform built with Next.js & TypeScript
+Open-source referral program management platform built with Next.js & TypeScript
 
 ✅ MIT Licensed
 ✅ 31 API endpoints
@@ -88,9 +88,9 @@ Join us: https://github.com/referconnect/referconnect
 ### Professional Announcement
 
 ```
-🚀 Introducing ReferConnect v1.0.0 - Open Source Affiliate Management Platform
+🚀 Introducing ReferConnect v1.0.0 - Open Source Referral Program Management Platform
 
-After months of development, I'm excited to announce the release of ReferConnect - a comprehensive affiliate management platform that's:
+After months of development, I'm excited to announce the release of ReferConnect - a comprehensive referral program management platform that's:
 
 ✅ 100% Open Source (MIT License)
 ✅ Production Ready
@@ -99,13 +99,13 @@ After months of development, I'm excited to announce the release of ReferConnect
 
 **Why We Built This:**
 
-Most affiliate platforms charge $99-999/month with per-affiliate fees and transaction costs. We believe affiliate management should be accessible to businesses of all sizes.
+Most affiliate platforms charge $99-999/month with per-affiliate fees and transaction costs. We believe referral partner management should be accessible to businesses of all sizes.
 
 **Key Features:**
 • Admin dashboard with real-time analytics
-• Affiliate portal with earnings tracking
+• Referral portal with earnings tracking
 • Flexible commission system
-• Payout processing (Bank CSV, Stripe Connect)
+• Payout processing (PayPal and Zelle)
 • Email notifications
 • REST API (31 endpoints)
 • Complete documentation
@@ -129,7 +129,7 @@ We'd love your feedback and contributions!
 ### Short Update
 
 ```
-🎉 Big news! Just launched ReferConnect v1.0.0 - an open-source affiliate management platform.
+🎉 Big news! Just launched ReferConnect v1.0.0 - an open-source referral program management platform.
 
 • Free & self-hosted
 • Production ready
@@ -137,7 +137,7 @@ We'd love your feedback and contributions!
 • 31 API endpoints
 • Complete documentation
 
-Perfect for anyone building an affiliate program without the SaaS fees.
+Perfect for anyone building an referral program without the SaaS fees.
 
 Check it out: https://github.com/referconnect/referconnect
 
@@ -153,10 +153,10 @@ Thoughts? I'd love your feedback! 💬
 ```
 🎉 Exciting News! ReferConnect v1.0.0 is Now Available
 
-We've just released ReferConnect - a comprehensive, open-source affiliate management platform that's completely free to use!
+We've just released ReferConnect - a comprehensive, open-source referral program management platform that's completely free to use!
 
 **What is ReferConnect?**
-A self-hosted affiliate management system that helps businesses create, manage, and scale their affiliate programs without expensive SaaS subscriptions.
+A self-hosted referral partner management system that helps businesses create, manage, and scale their referral programs without expensive SaaS subscriptions.
 
 **Why Choose ReferConnect?**
 💰 Free (MIT Licensed)
@@ -176,7 +176,7 @@ A self-hosted affiliate management system that helps businesses create, manage, 
 
 **Features:**
 ✅ Admin dashboard with analytics
-✅ Affiliate portal
+✅ Referral portal
 ✅ Commission management
 ✅ Payout processing
 ✅ Email notifications
@@ -199,16 +199,16 @@ We'd love your feedback! Comment below or join our GitHub Discussions.
 
 ### r/opensource
 
-**Title:** [Release] ReferConnect v1.0.0 - Open Source Affiliate Management Platform
+**Title:** [Release] ReferConnect v1.0.0 - Open Source Referral Program Management Platform
 
 ```markdown
 Hey r/opensource! 👋
 
-I'm excited to share **ReferConnect v1.0.0** - an open-source affiliate management platform I've been working on.
+I'm excited to share **ReferConnect v1.0.0** - an open-source referral program management platform I've been working on.
 
 ## What is it?
 
-A self-hosted platform for managing affiliate programs. Think of it as an open-source alternative to expensive SaaS platforms like PartnerStack, Rewardful, or Tapfiliate.
+A self-hosted platform for managing referral programs. Think of it as an open-source alternative to expensive SaaS platforms like PartnerStack, Rewardful, or Tapfiliate.
 
 ## Why I built it
 
@@ -231,13 +231,13 @@ Most affiliate platforms charge $99-999/month plus per-affiliate fees. I wanted 
 
 **For Admins:**
 - Dashboard with real-time analytics
-- Affiliate management
+- Referral partner management
 - Referral approval workflow
 - Commission management
 - Payout processing
 - Program settings
 
-**For Affiliates:**
+**For Referral Partners:**
 - Personal dashboard
 - Referral submission
 - Earnings tracking
@@ -295,7 +295,7 @@ Would love to hear your thoughts! Happy to answer any questions.
 ```markdown
 Hey r/webdev!
 
-Just released **ReferConnect v1.0.0** - an open-source affiliate management platform.
+Just released **ReferConnect v1.0.0** - an open-source referral program management platform.
 
 ## Stack
 
@@ -319,7 +319,7 @@ Just released **ReferConnect v1.0.0** - an open-source affiliate management plat
 ## Features
 
 - Admin dashboard
-- Affiliate portal
+- Referral portal
 - Referral tracking
 - Commission system
 - Payout processing
@@ -395,7 +395,7 @@ ReferConnect is:
 
 Everything you need:
 - Admin dashboard
-- Affiliate portal
+- Referral portal
 - Referral tracking
 - Commission management
 - Payout processing
@@ -425,7 +425,7 @@ Built with Next.js, TypeScript, PostgreSQL. Production ready.
 - GitHub: https://github.com/referconnect/referconnect
 - Docs: https://github.com/referconnect/referconnect/wiki
 
-Perfect for bootstrapped startups looking to save money while building an affiliate program.
+Perfect for bootstrapped startups looking to save money while building an referral program.
 
 Questions? AMA!
 ```
@@ -437,17 +437,17 @@ Questions? AMA!
 ### Video Title Ideas
 
 1. "Building an Open Source Affiliate Platform with Next.js 15"
-2. "How to Set Up a Free Affiliate Program (ReferConnect Tutorial)"
+2. "How to Set Up a Free Referral Program (ReferConnect Tutorial)"
 3. "ReferConnect vs. Expensive SaaS: Save $1000/month"
-4. "Self-Hosted Affiliate Management: Complete Guide"
+4. "Self-Hosted Referral Partner Management: Complete Guide"
 5. "Next.js 15 Full Stack Project: ReferConnect Walkthrough"
 
 ### Video Description Template
 
 ```
-🎉 Introducing ReferConnect v1.0.0 - an open-source affiliate management platform!
+🎉 Introducing ReferConnect v1.0.0 - an open-source referral program management platform!
 
-In this video, I'll show you how to set up a complete affiliate program using ReferConnect, a free and open-source alternative to expensive SaaS platforms.
+In this video, I'll show you how to set up a complete referral program using ReferConnect, a free and open-source alternative to expensive SaaS platforms.
 
 ⏱️ TIMESTAMPS
 00:00 - Introduction
@@ -455,7 +455,7 @@ In this video, I'll show you how to set up a complete affiliate program using Re
 03:00 - Features Overview
 05:00 - Installation Guide
 10:00 - Admin Dashboard Tour
-15:00 - Affiliate Portal Demo
+15:00 - Referral Portal Demo
 20:00 - API Integration
 25:00 - Deployment to Vercel
 30:00 - Wrap Up
@@ -492,7 +492,7 @@ Contribute: https://github.com/referconnect/referconnect/blob/main/CONTRIBUTING.
 
 ### Subject Line Options
 
-1. "🎉 ReferConnect v1.0.0 is Live - Free Affiliate Management"
+1. "🎉 ReferConnect v1.0.0 is Live - Free Referral Partner Management"
 2. "Introducing ReferConnect: Open Source Affiliate Platform"
 3. "Save $1000/mo on Affiliate Software"
 4. "We Built an Open Source Alternative to [Expensive Platform]"
@@ -506,7 +506,7 @@ Big news: **ReferConnect v1.0.0 is now available!**
 
 ## What is ReferConnect?
 
-An open-source affiliate management platform that helps you create and manage your affiliate program without expensive SaaS subscriptions.
+An open-source referral program management platform that helps you create and manage your referral program without expensive SaaS subscriptions.
 
 ## Why You'll Love It
 
@@ -536,7 +536,7 @@ Full guide: https://github.com/referconnect/referconnect/wiki/Quick-Start-Guide
 ## What's Included
 
 ✅ Admin dashboard with analytics
-✅ Affiliate portal
+✅ Referral portal
 ✅ Commission management
 ✅ Payout processing
 ✅ Email notifications
@@ -571,18 +571,18 @@ P.S. We'd love your feedback! What features would you like to see next?
 
 ### Title
 
-**ReferConnect Launches Open Source Affiliate Management Platform, Democratizing Affiliate Marketing for Businesses of All Sizes**
+**ReferConnect Launches Open Source Referral Program Management Platform, Democratizing Referral Program for Businesses of All Sizes**
 
 ### Body
 
 ```
 FOR IMMEDIATE RELEASE
 
-[Your City, State] – October 10, 2025 – The ReferConnect Team today announced the release of ReferConnect v1.0.0, a comprehensive open-source affiliate management platform that enables businesses to create and manage affiliate programs without expensive SaaS subscriptions.
+[Your City, State] – October 10, 2025 – The ReferConnect Team today announced the release of ReferConnect v1.0.0, a comprehensive open-source referral program management platform that enables businesses to create and manage referral programs without expensive SaaS subscriptions.
 
-"Most affiliate platforms cost $99-999 per month plus per-affiliate fees," said [Your Name], founder of ReferConnect. "We wanted to democratize affiliate marketing by providing a world-class platform that anyone can use for free."
+"Most affiliate platforms cost $99-999 per month plus per-affiliate fees," said [Your Name], founder of ReferConnect. "We wanted to democratize referral program by providing a world-class platform that anyone can use for free."
 
-ReferConnect provides a complete solution including admin dashboards, affiliate portals, commission management, payout processing, and email notifications. Built with modern technologies like Next.js, TypeScript, and PostgreSQL, the platform is production-ready and fully documented.
+ReferConnect provides a complete solution including admin dashboards, referral portals, commission management, payout processing, and email notifications. Built with modern technologies like Next.js, TypeScript, and PostgreSQL, the platform is production-ready and fully documented.
 
 Key features include:
 • Real-time analytics dashboard
@@ -599,7 +599,7 @@ ReferConnect is released under the MIT License, allowing businesses to use, modi
 For more information, visit https://github.com/referconnect/referconnect
 
 About ReferConnect:
-ReferConnect is an open-source affiliate management platform designed to help businesses of all sizes create and scale their affiliate programs. Built by developers for developers, it provides a modern, secure, and scalable solution with complete documentation and community support.
+ReferConnect is an open-source referral program management platform designed to help businesses of all sizes create and scale their referral programs. Built by developers for developers, it provides a modern, secure, and scalable solution with complete documentation and community support.
 
 Contact:
 Email: hello@referconnect.com
@@ -613,12 +613,12 @@ GitHub: https://github.com/referconnect/referconnect
 ## 🎯 Product Hunt Launch
 
 ### Tagline
-"Open-source affiliate management platform for modern businesses"
+"Open-source referral program management platform for modern businesses"
 
 ### Description (260 chars)
 
 ```
-Self-hosted affiliate platform with admin dashboard, affiliate portal, commission management, and payout processing. Built with Next.js & TypeScript. MIT licensed. No monthly fees, no limits.
+Self-hosted affiliate platform with admin dashboard, referral portal, commission management, and payout processing. Built with Next.js & TypeScript. MIT licensed. No monthly fees, no limits.
 ```
 
 ### First Comment
@@ -639,7 +639,7 @@ Affiliate platforms are expensive:
 
 ## The Solution
 
-ReferConnect is a completely free, open-source affiliate management platform that you can self-host.
+ReferConnect is a completely free, open-source referral program management platform that you can self-host.
 
 ## What Makes It Special
 

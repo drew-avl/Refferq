@@ -338,7 +338,7 @@ All values are stored in cents (smallest currency unit) for precision:
 1. **Affiliate 1 (Default - 20%)**: Submit lead with ₹10,000
 2. **Affiliate 2 (Premium - 25%)**: Submit lead with ₹10,000
 3. **Affiliate 3 (Enterprise - 30%)**: Submit lead with ₹10,000
-4. Logout from affiliate accounts
+4. Logout from referral partner accounts
 
 ### Test 4: View in Admin Dashboard
 1. Login as admin

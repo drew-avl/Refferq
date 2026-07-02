@@ -262,7 +262,7 @@ export default function ProgramsPage() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Layers className="h-12 w-12 text-muted-foreground/50" />
               <h3 className="mt-4 text-lg font-semibold">No programs yet</h3>
-              <p className="text-sm text-muted-foreground">Create your first affiliate program</p>
+              <p className="text-sm text-muted-foreground">Create your first referral program</p>
             </div>
           ) : (
             <Table>
@@ -365,7 +365,7 @@ export default function ProgramsPage() {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Program' : 'Create Program'}</DialogTitle>
-            <DialogDescription>{editing ? 'Update program configuration' : 'Set up a new affiliate program'}</DialogDescription>
+            <DialogDescription>{editing ? 'Update program configuration' : 'Set up a new referral program'}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -467,7 +467,7 @@ export default function ProgramsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.autoApprove as boolean} onCheckedChange={v => setForm({...form, autoApprove: v})} />
-              <Label>Auto-approve new affiliates</Label>
+              <Label>Auto-approve new referral partners</Label>
             </div>
           </div>
           <DialogFooter>

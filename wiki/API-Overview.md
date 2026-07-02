@@ -19,7 +19,7 @@ Complete reference for the ReferConnect REST API.
 
 ## Introduction
 
-The ReferConnect API is a RESTful API that allows you to programmatically interact with your affiliate program. All API endpoints return JSON responses.
+The ReferConnect API is a RESTful API that allows you to programmatically interact with your referral program. All API endpoints return JSON responses.
 
 ### Base URL
 

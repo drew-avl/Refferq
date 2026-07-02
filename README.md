@@ -2,14 +2,14 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-ffdd00?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/referconnect)
-# ReferConnect - Open Source Affiliate Management Platform
+# ReferConnect - Open Source Referral Program Management Platform
 [![Open Collective](https://img.shields.io/badge/OpenCollective-Support%20Us-3385FF?style=for-the-badge&logo=open-collective&logoColor=white)](https://opencollective.com/referconnect)
 <p align="center">
   <img src="./public/images/github-banner.svg" alt="ReferConnect Logo" width="200"/>
 </p>
 
 <p align="center">
-  <strong>A powerful, feature-rich affiliate marketing platform built with Next.js 15 and PostgreSQL</strong>
+  <strong>A powerful, feature-rich referral program platform built with Next.js 15 and PostgreSQL</strong>
 </p>
 
 <p align="center">
@@ -25,11 +25,11 @@
 
 ## 📋 About
 
-**ReferConnect** is a comprehensive affiliate management platform designed to help businesses create, manage, and scale their affiliate programs. Built with modern web technologies, it provides a complete solution for tracking referrals, managing commissions, and engaging with affiliate partners.
+**ReferConnect** is a comprehensive referral program management platform designed to help businesses create, manage, and scale their referral programs. Built with modern web technologies, it provides a complete solution for tracking referrals, managing commissions, and engaging with referral partners.
 
 ### 🎯 Key Highlights
 
-- **Complete Affiliate Portal** - Full-featured dashboard for affiliates to track earnings, submit leads, and manage payouts
+- **Complete Referral Portal** - Full-featured dashboard for referral partners to track earnings, submit leads, and manage payouts
 - **Admin Control Panel** - Comprehensive admin dashboard for managing partners, referrals, and program settings
 - **Real-time Analytics** - Track conversions, commissions, and performance metrics in real-time
 - **Automated Workflows** - Automated commission calculations, payout processing, and email notifications
@@ -64,7 +64,7 @@
   - Automated commission calculations
   - Flexible commission rules
   - Payout scheduling (NET-15, NET-30, etc.)
-  - Multiple payout methods (PayPal, Bank Transfer, Stripe, Wise)
+  - Multiple payout methods (PayPal and Zelle)
 
 - **Program Settings**
   - Customizable program details
@@ -80,7 +80,7 @@
   - Payout confirmation emails
   - Customizable email templates
 
-### For Affiliates
+### For Referral Partners
 
 - **Personal Dashboard**
   - Earnings overview (total, pending, paid)
@@ -344,7 +344,7 @@ referconnect/
 
 ### Program Settings
 
-Configure your affiliate program through the Admin Dashboard:
+Configure your referral program through the Admin Dashboard:
 
 1. **General Settings**
    - Product name and program name

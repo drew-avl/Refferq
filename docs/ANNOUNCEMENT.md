@@ -1,24 +1,24 @@
-# 🎉 Announcing ReferConnect v1.0.0 - Open Source Affiliate Management Platform
+# 🎉 Announcing ReferConnect v1.0.0 - Open Source Referral Program Management Platform
 
-**TL;DR:** We just launched ReferConnect - a complete, open-source affiliate management platform built with Next.js, TypeScript, and PostgreSQL. MIT licensed, production-ready, and feature-complete. [Check it out!](https://github.com/referconnect/referconnect)
+**TL;DR:** We just launched ReferConnect - a complete, open-source referral program management platform built with Next.js, TypeScript, and PostgreSQL. MIT licensed, production-ready, and feature-complete. [Check it out!](https://github.com/referconnect/referconnect)
 
 ---
 
 ## 🚀 What We Built
 
-After months of development, we're thrilled to release **ReferConnect v1.0.0** - a comprehensive affiliate management platform that's:
+After months of development, we're thrilled to release **ReferConnect v1.0.0** - a comprehensive referral program management platform that's:
 
-✅ **100% Open Source** (MIT License)  
-✅ **Production Ready** (Zero build errors)  
-✅ **Feature Complete** (31 API endpoints)  
-✅ **Well Documented** (18,000+ words wiki)  
-✅ **Self-Hosted** (You control your data)  
+✅ **100% Open Source** (MIT License)
+✅ **Production Ready** (Zero build errors)
+✅ **Feature Complete** (31 API endpoints)
+✅ **Well Documented** (18,000+ words wiki)
+✅ **Self-Hosted** (You control your data)
 
 ---
 
 ## 💡 Why We Built This
 
-Most affiliate platforms are expensive SaaS products with:
+Most referral program platforms are expensive SaaS products with:
 - ❌ Monthly fees per affiliate
 - ❌ Transaction-based pricing
 - ❌ Limited customization
@@ -36,13 +36,13 @@ Most affiliate platforms are expensive SaaS products with:
 
 ### For Admins
 - 📊 Real-time analytics dashboard
-- 👥 Affiliate management (approve, suspend, delete)
+- 👥 Referral partner management (approve, suspend, delete)
 - 📋 Referral approval workflow
-- 💰 Payout processing (Bank CSV, Stripe Connect)
+- 💰 Payout processing (PayPal and Zelle)
 - ⚙️ Flexible commission rules
 - 🔄 Batch operations
 
-### For Affiliates
+### For Referral Partners
 - 🏠 Personal dashboard with earnings
 - 📝 Referral submission portal
 - 💵 Commission tracking
@@ -203,30 +203,30 @@ Check our [good first issues](https://github.com/referconnect/referconnect/issue
 ## 🎁 What's Included
 
 ### Core Platform
-✅ User authentication (JWT + OTP)  
-✅ Admin dashboard  
-✅ Affiliate portal  
-✅ Referral system  
-✅ Commission engine  
-✅ Payout processing  
-✅ Email notifications  
-✅ Status management  
+✅ User authentication (JWT + OTP)
+✅ Admin dashboard
+✅ Referral portal
+✅ Referral system
+✅ Commission engine
+✅ Payout processing
+✅ Email notifications
+✅ Status management
 
 ### Developer Tools
-✅ REST API (31 endpoints)  
-✅ TypeScript types  
-✅ Prisma schema  
-✅ Email testing script  
-✅ Database migrations  
-✅ Environment templates  
+✅ REST API (31 endpoints)
+✅ TypeScript types
+✅ Prisma schema
+✅ Email testing script
+✅ Database migrations
+✅ Environment templates
 
 ### Documentation
-✅ README (comprehensive)  
-✅ Wiki (18,000+ words)  
-✅ API docs (2,000+ lines)  
-✅ Deployment guides  
-✅ Email setup guide  
-✅ Contributing guide  
+✅ README (comprehensive)
+✅ Wiki (18,000+ words)
+✅ API docs (2,000+ lines)
+✅ Deployment guides
+✅ Email setup guide
+✅ Contributing guide
 
 ---
 
@@ -259,10 +259,10 @@ Check our [good first issues](https://github.com/referconnect/referconnect/issue
 ### Admin Dashboard
 ![Admin Dashboard](https://via.placeholder.com/800x450/10b981/ffffff?text=Admin+Dashboard)
 
-*Real-time analytics, affiliate management, and payout processing*
+*Real-time analytics, referral partner management, and payout processing*
 
-### Affiliate Portal
-![Affiliate Portal](https://via.placeholder.com/800x450/10b981/ffffff?text=Affiliate+Portal)
+### Referral Portal
+![Referral Portal](https://via.placeholder.com/800x450/10b981/ffffff?text=Referral+Portal)
 
 *Personal dashboard with earnings tracking and referral submission*
 
@@ -319,7 +319,7 @@ Built with amazing open source projects:
 
 ## 🎯 Our Mission
 
-**To democratize affiliate marketing** by providing a world-class, open-source platform that anyone can use, customize, and improve.
+**To democratize referral program** by providing a world-class, open-source platform that anyone can use, customize, and improve.
 
 ---
 
@@ -388,7 +388,7 @@ npm run dev
 ---
 
 <p align="center">
-  <strong>Ready to build your affiliate program?</strong><br>
+  <strong>Ready to build your referral program?</strong><br>
   <a href="https://github.com/referconnect/referconnect">🚀 Get Started Now</a>
 </p>
 
@@ -401,4 +401,4 @@ npm run dev
 
 **Tags:** #opensource #affiliate #nextjs #typescript #postgresql #webdev #saas #startup #github
 
-**Share this:** [Twitter](https://twitter.com/intent/tweet?text=Just%20found%20ReferConnect%20-%20an%20amazing%20open-source%20affiliate%20management%20platform!%20%F0%9F%9A%80&url=https://github.com/referconnect/referconnect) • [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/referconnect/referconnect) • [Reddit](https://reddit.com/submit?url=https://github.com/referconnect/referconnect&title=ReferConnect%20v1.0.0%20-%20Open%20Source%20Affiliate%20Management%20Platform)
+**Share this:** [Twitter](https://twitter.com/intent/tweet?text=Just%20found%20ReferConnect%20-%20an%20amazing%20open-source%20referral%20program%20management%20platform!%20%F0%9F%9A%80&url=https://github.com/referconnect/referconnect) • [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/referconnect/referconnect) • [Reddit](https://reddit.com/submit?url=https://github.com/referconnect/referconnect&title=ReferConnect%20v1.0.0%20-%20Open%20Source%20Referral%20Program%20Management%20Platform)

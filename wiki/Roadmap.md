@@ -6,7 +6,7 @@ This roadmap outlines the planned features and improvements for ReferConnect. It
 
 ## 🎯 Vision
 
-To become the **most comprehensive, developer-friendly, and feature-rich open-source affiliate management platform** that empowers businesses of all sizes to build and scale their affiliate programs.
+To become the **most comprehensive, developer-friendly, and feature-rich open-source referral program management platform** that empowers businesses of all sizes to build and scale their referral programs.
 
 ---
 
@@ -17,10 +17,10 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 ### Core Features
 - ✅ User authentication with JWT + OTP
 - ✅ Admin dashboard with analytics
-- ✅ Affiliate portal with earnings tracking
+- ✅ Referral portal with earnings tracking
 - ✅ Referral submission and tracking
 - ✅ Commission calculation system
-- ✅ Payout processing (Bank CSV, Stripe Connect)
+- ✅ Payout processing (PayPal and Zelle)
 - ✅ Email notifications (Resend integration)
 - ✅ User status management (PENDING/ACTIVE/INACTIVE/SUSPENDED)
 - ✅ Batch operations for admin
@@ -132,7 +132,7 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 ## ✅ Version 1.3.0 (Q1 2026)
 
 **Status:** Released (February 17, 2026)  
-**Focus:** Production Hardening, Admin Expansion & Affiliate Portal
+**Focus:** Production Hardening, Admin Expansion & Referral Portal
 
 ### Security Fixes (CRITICAL)
 - [x] Login JWT cookie — Login API now creates and sets JWT token (was missing entirely)
@@ -180,7 +180,7 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 
 ### White-Label (Partial — carried to v1.4.0)
 - [x] Custom email templates editor
-- [x] Branded affiliate portal with custom branding API
+- [x] Branded referral portal with custom branding API
 - [ ] Custom domain support (moved to v1.4.0)
 - [ ] Multi-language support / i18n (moved to v1.4.0)
 
@@ -232,7 +232,7 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 - [ ] Time-based commission rules
 
 #### Payout System
-- [ ] Multiple payout methods (PayPal, Wise, etc.)
+- [ ] Multiple payout methods (PayPal and Zelle)
 - [ ] Automatic payout scheduling
 - [ ] Payout thresholds per affiliate
 - [ ] Tax document generation (1099, etc.)
@@ -266,9 +266,9 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 #### Payment Processors
 - [ ] PayPal integration
 - [ ] Square integration
-- [ ] Wise integration
+- [ ] Zelle integration
 - [ ] Payoneer integration
-- [ ] Cryptocurrency payouts
+- [ ] Additional payout audit controls
 
 #### CRM Integrations
 - [ ] HubSpot integration
@@ -301,7 +301,7 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 
 #### Multi-Tier Affiliates
 - [ ] Affiliate hierarchy (MLM support)
-- [ ] Sub-affiliate management
+- [ ] Sub-referral partner management
 - [ ] Network-wide analytics
 - [ ] Multi-level commissions
 - [ ] Team performance tracking
@@ -427,7 +427,7 @@ These features are being considered but not yet scheduled:
 2. Mobile app (React Native)
 3. Fraud prevention
 4. Performance optimization (Redis)
-5. Multiple payout methods (PayPal, Wise)
+5. Multiple payout methods (PayPal and Zelle)
 
 ### Low Priority (6+ Months)
 1. Multi-tier affiliates (MLM)
@@ -497,7 +497,7 @@ Want a feature prioritized? Consider sponsoring development:
 
 ### October 2025 (v1.0.0)
 - ✅ Initial release with core features
-- ✅ Admin dashboard & affiliate portal
+- ✅ Admin dashboard & referral portal
 - ✅ Email notifications, OTP auth, commission system
 
 ---
@@ -515,7 +515,7 @@ Want a feature prioritized? Consider sponsoring development:
 ## 🎯 Long-Term Goals
 
 ### 2025-2026
-- Become the #1 open-source affiliate platform
+- Become the #1 open-source referral program platform
 - 1,000+ GitHub stars
 - 100+ contributors
 - 50+ production deployments
@@ -527,7 +527,7 @@ Want a feature prioritized? Consider sponsoring development:
 - Enterprise adoption
 
 ### 2029+
-- Industry standard for affiliate management
+- Industry standard for referral partner management
 - Large enterprise clients
 - Global community
 - Sustainable open-source business model

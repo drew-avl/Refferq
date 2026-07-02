@@ -1,4 +1,4 @@
-# ReferConnect - Open Source Affiliate Platform
+# ReferConnect - Open Source Referral Program Platform
 # https://app.referconnect.com/
 
 User-agent: *

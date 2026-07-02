@@ -789,7 +789,7 @@ export default function PartnerDetailPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {newStatus === 'COMPLETED' && 'Affiliate will be notified of payment completion'}
+                  {newStatus === 'COMPLETED' && 'Referral partner will be notified of payment completion'}
                   {newStatus === 'PROCESSING' && 'Payout is being processed'}
                   {newStatus === 'FAILED' && 'Payment failed, may need manual intervention'}
                   {newStatus === 'PENDING' && 'Payout is waiting to be processed'}

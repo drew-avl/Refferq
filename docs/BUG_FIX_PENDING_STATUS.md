@@ -105,7 +105,7 @@ ORDER BY created_at DESC;
 4. **Expected:** Newly registered affiliates should appear in the list
 
 ### 4. Test Login (should still work as before)
-1. Try to login with pending affiliate account
+1. Try to login with pending referral partner account
 2. **Expected:** "Your account is pending approval. Please wait for admin activation."
 
 ### 5. Test Approval Workflow

@@ -62,7 +62,7 @@ export async function proxy(request: NextRequest) {
     if (isAffiliateRoute && userRole !== 'AFFILIATE' && userRole !== 'ADMIN') {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
-          { error: 'Forbidden: Affiliate access required' },
+          { error: 'Forbidden: referral partner access required' },
           { status: 403 }
         );
       }

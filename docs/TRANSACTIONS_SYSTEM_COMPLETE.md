@@ -44,7 +44,7 @@ This document describes the complete flow from Lead → Transaction → Commissi
 6. ADMIN GENERATES PAYOUT
    ├─ Reviews approved commissions
    ├─ Generates payout for affiliate
-   ├─ Method: PayPal / Bank Transfer / etc.
+   ├─ Method: PayPal / Zelle / etc.
    └─ Payout status: PENDING
           ↓
 7. ADMIN PROCESSES PAYOUT

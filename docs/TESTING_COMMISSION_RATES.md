@@ -12,7 +12,7 @@ Commission rates are now **dynamic** based on the affiliate's **Partner Group**.
 - [ ] Development server is running (`npm run dev`)
 - [ ] .next cache has been cleared
 - [ ] Have admin account credentials
-- [ ] Have at least 2-3 test affiliate accounts
+- [ ] Have at least 2-3 test referral partner accounts
 - [ ] Database is accessible
 
 ---

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error('Affiliate resources API error:', error);
+    console.error('Referral partner resources API error:', error);
     return NextResponse.json({ error: 'Failed to fetch resources' }, { status: 500 });
   }
 }

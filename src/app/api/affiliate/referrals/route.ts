@@ -63,14 +63,14 @@ export async function POST(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { error: 'Access denied. Affiliate role required.' },
+        { error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
 
     if (!user.affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate profile not found' },
+        { error: 'Referral partner profile not found' },
         { status: 404 }
       );
     }
@@ -192,14 +192,14 @@ export async function GET(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { error: 'Access denied. Affiliate role required.' },
+        { error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
 
     if (!user.affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate profile not found' },
+        { error: 'Referral partner profile not found' },
         { status: 404 }
       );
     }
@@ -274,14 +274,14 @@ export async function PATCH(request: NextRequest) {
 
     if (user.role !== 'AFFILIATE') {
       return NextResponse.json(
-        { error: 'Access denied. Affiliate role required.' },
+        { error: 'Access denied. Referral partner role required.' },
         { status: 403 }
       );
     }
 
     if (!user.affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate profile not found' },
+        { error: 'Referral partner profile not found' },
         { status: 404 }
       );
     }
@@ -382,7 +382,7 @@ export async function PATCH(request: NextRequest) {
       referral: updatedReferral,
     });
   } catch (error) {
-    console.error('Update affiliate referral API error:', error);
+    console.error('Update referral partner referral API error:', error);
     return NextResponse.json(
       { error: 'Failed to update referral' },
       { status: 500 }

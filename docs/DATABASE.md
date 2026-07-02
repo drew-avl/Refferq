@@ -6,7 +6,7 @@ Complete reference for ReferConnect's PostgreSQL database schema using Prisma OR
 
 ## Overview
 
-ReferConnect uses PostgreSQL with Prisma ORM for type-safe database access. The schema is designed for a multi-tenant affiliate marketing platform.
+ReferConnect uses PostgreSQL with Prisma ORM for type-safe database access. The schema is designed for a multi-tenant referral program platform.
 
 **Schema Location**: `prisma/schema.prisma`
 
@@ -132,8 +132,7 @@ model Affiliate {
 {
   "paymentMethod": "paypal",
   "paymentEmail": "affiliate@example.com",
-  "bankName": "Optional Bank Name",
-  "accountNumber": "Optional Account Number"
+  "zellePhoneOrEmail": "optional-zelle@example.com"
 }
 ```
 
@@ -280,7 +279,7 @@ model Payout {
   affiliateId   String
   amount        Float
   status        PayoutStatus @default(PENDING)
-  method        String?      // paypal, bank_transfer, etc.
+  method        String?      // PayPal or Zelle
   reference     String?      // Transaction ID
   paidAt        DateTime?
   createdAt     DateTime     @default(now())
@@ -335,7 +334,7 @@ Platform-wide configuration.
 model ProgramSettings {
   id                    String   @id @default(cuid())
   productName           String   @default("Product Name")
-  programName           String   @default("Affiliate Program")
+  programName           String   @default("Referral Program")
   websiteUrl            String   @default("https://example.com")
   subdomain             String?
   currency              String   @default("USD")
@@ -357,7 +356,7 @@ model ProgramSettings {
 |-------|------|-------------|---------|---------|
 | `id` | String | Settings ID | cuid() | - |
 | `productName` | String | Product/service name | "Product Name" | "ReferConnect" |
-| `programName` | String | Program display name | "Affiliate Program" | "ReferConnect Partners" |
+| `programName` | String | Program display name | "Referral Program" | "ReferConnect Partners" |
 | `websiteUrl` | String | Main website URL | "https://example.com" | "https://referconnect.com" |
 | `subdomain` | String? | Custom subdomain | null | "affiliates" |
 | `currency` | String | Currency code | "USD" | "USD", "EUR" |

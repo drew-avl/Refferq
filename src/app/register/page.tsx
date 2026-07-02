@@ -154,7 +154,7 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">ReferConnect</h1>
           <p className="text-sm text-muted-foreground">
-            Affiliate Marketing Platform
+            Referral Program Platform
           </p>
         </div>
 
@@ -165,7 +165,7 @@ export default function RegisterPage() {
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl">Create your account</CardTitle>
                 <CardDescription>
-                  Join as an affiliate partner and start earning
+                  Join as an referral partner and start earning
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleRegister}>

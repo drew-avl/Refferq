@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     if (affiliate.user.status !== 'ACTIVE') {
       return NextResponse.json(
-        { success: false, error: 'Affiliate is not active' },
+        { success: false, error: 'Referral partner is not active' },
         { status: 403 }
       );
     }

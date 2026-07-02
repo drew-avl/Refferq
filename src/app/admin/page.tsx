@@ -169,7 +169,7 @@ export default function AdminDashboardPage() {
       title: 'Total Partners',
       value: stats?.totalAffiliates || 0,
       icon: Users,
-      description: 'Active affiliates',
+      description: 'Active referral partners',
       trend: '+5',
       trendUp: true,
       color: 'text-violet-600',
@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
   const quickActions = [
     {
       title: 'Partners',
-      description: 'Manage affiliates',
+      description: 'Manage referral partners',
       icon: Users,
       href: '/admin/partners',
       color: 'text-blue-600',
@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of your affiliate program performance
+            Overview of your referral program performance
           </p>
         </div>
 
@@ -347,7 +347,7 @@ export default function AdminDashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base font-semibold">Top Partners</CardTitle>
-                <CardDescription>Best performing affiliates</CardDescription>
+                <CardDescription>Best performing referral partners</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/partners')}>
                 View all

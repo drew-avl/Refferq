@@ -1,21 +1,21 @@
 ---
-title: "🎉 ReferConnect v1.0.0 Released - Open Source Affiliate Management Platform"
+title: "🎉 ReferConnect v1.0.0 Released - Open Source Referral Program Management Platform"
 labels: ["announcement", "release"]
 ---
 
 # 🎉 ReferConnect v1.0.0 is Now Available!
 
-We're incredibly excited to announce the **first stable release** of ReferConnect - a comprehensive, open-source affiliate management platform!
+We're incredibly excited to announce the **first stable release** of ReferConnect - a comprehensive, open-source referral program management platform!
 
 ## 🚀 What's New in v1.0.0
 
 ### Core Features
-- ✅ Complete affiliate management system
+- ✅ Complete referral partner management system
 - ✅ Admin dashboard with real-time analytics
-- ✅ Affiliate portal with earnings tracking
+- ✅ Referral portal with earnings tracking
 - ✅ Referral submission and approval workflow
 - ✅ Flexible commission system
-- ✅ Payout processing (Bank CSV, Stripe Connect)
+- ✅ Payout processing (PayPal and Zelle)
 - ✅ Email notifications with professional templates
 - ✅ JWT + OTP authentication
 

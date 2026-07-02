@@ -3,7 +3,7 @@ import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 
-// Update affiliate details
+// Update referral partner details
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -57,7 +57,7 @@ export async function PATCH(
 
     if (!affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate not found' },
+        { error: 'Referral partner not found' },
         { status: 404 }
       );
     }
@@ -218,20 +218,20 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      message: 'Affiliate updated successfully',
+      message: 'Referral partner updated successfully',
       affiliate: updatedAffiliate
     });
 
   } catch (error) {
-    console.error('Update affiliate error:', error);
+    console.error('Update referral partner error:', error);
     return NextResponse.json(
-      { error: 'Failed to update affiliate' },
+      { error: 'Failed to update referral partner' },
       { status: 500 }
     );
   }
 }
 
-// Delete affiliate
+// Delete referral partner
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -251,7 +251,7 @@ export async function DELETE(
       );
     }
 
-    // Get affiliate to find userId
+    // Get referral partner to find userId
     const affiliate = await prisma.affiliate.findUnique({
       where: { id: params.id },
       include: { user: true }
@@ -259,12 +259,12 @@ export async function DELETE(
 
     if (!affiliate) {
       return NextResponse.json(
-        { error: 'Affiliate not found' },
+        { error: 'Referral partner not found' },
         { status: 404 }
       );
     }
 
-    // Delete user (will cascade delete affiliate due to Prisma schema)
+    // Delete user (will cascade delete referral partner profile due to Prisma schema)
     await prisma.user.delete({
       where: { id: affiliate.userId }
     });
@@ -286,13 +286,13 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Affiliate deleted successfully'
+      message: 'Referral partner deleted successfully'
     });
 
   } catch (error) {
-    console.error('Delete affiliate error:', error);
+    console.error('Delete referral partner error:', error);
     return NextResponse.json(
-      { error: 'Failed to delete affiliate' },
+      { error: 'Failed to delete referral partner' },
       { status: 500 }
     );
   }

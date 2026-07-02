@@ -118,7 +118,7 @@ ReferConnect includes the following email templates:
 **Recipient:** The affiliate receiving the payout  
 **Content:**
 - Payout amount
-- Payment method (Bank Transfer or Stripe Connect)
+- Payment method (PayPal or Zelle)
 - Processing date
 - Dashboard link
 

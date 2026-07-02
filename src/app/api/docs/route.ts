@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
         info: {
             title: 'ReferConnect API',
             version: '1.1.0',
-            description: 'Open-source affiliate marketing platform API. Manage affiliates, referrals, conversions, commissions, and payouts.',
+            description: 'Open-source referral program platform API. Manage referral partners, referrals, conversions, commissions, and payouts.',
             contact: { email: 'hello@referconnect.com' },
             license: { name: 'MIT', url: 'https://opensource.org/licenses/MIT' },
         },
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         ],
         tags: [
             { name: 'Auth', description: 'Authentication endpoints' },
-            { name: 'Affiliate', description: 'Affiliate-facing endpoints' },
+            { name: 'Referral Partner', description: 'Referral partner-facing endpoints' },
             { name: 'Admin', description: 'Admin management endpoints' },
             { name: 'Tracking', description: 'Click and conversion tracking' },
             { name: 'Webhooks', description: 'External webhook receivers' },
@@ -46,17 +46,17 @@ export async function GET(request: NextRequest) {
                 },
             },
 
-            // ─── Affiliate ─────────────────────────────────────────
+            // ─── Referral Partner ─────────────────────────────────
             '/api/affiliate/profile': {
                 get: {
-                    tags: ['Affiliate'],
-                    summary: 'Get affiliate profile & stats',
+                    tags: ['Referral Partner'],
+                    summary: 'Get referral partner profile & stats',
                     security: [{ BearerAuth: [] }],
-                    responses: { '200': { description: 'Affiliate data, referrals, stats, currencySymbol' } },
+                    responses: { '200': { description: 'Referral partner data, referrals, stats, currencySymbol' } },
                 },
                 put: {
-                    tags: ['Affiliate'],
-                    summary: 'Update affiliate profile',
+                    tags: ['Referral Partner'],
+                    summary: 'Update referral partner profile',
                     security: [{ BearerAuth: [] }],
                     requestBody: {
                         required: true,
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
             },
             '/api/affiliate/referrals': {
                 post: {
-                    tags: ['Affiliate'],
+                    tags: ['Referral Partner'],
                     summary: 'Submit a new referral lead',
                     security: [{ BearerAuth: [] }],
                     requestBody: {
@@ -82,8 +82,8 @@ export async function GET(request: NextRequest) {
             },
             '/api/affiliate/payouts': {
                 get: {
-                    tags: ['Affiliate'],
-                    summary: 'Get affiliate payout history',
+                    tags: ['Referral Partner'],
+                    summary: 'Get referral partner payout history',
                     security: [{ BearerAuth: [] }],
                     responses: { '200': { description: 'List of payouts' } },
                 },
@@ -93,20 +93,20 @@ export async function GET(request: NextRequest) {
             '/api/admin/affiliates': {
                 get: {
                     tags: ['Admin'],
-                    summary: 'List all affiliates',
+                    summary: 'List all referral partners',
                     security: [{ BearerAuth: [] }],
-                    responses: { '200': { description: 'Array of affiliates with stats and currencySymbol' } },
+                    responses: { '200': { description: 'Array of referral partners with stats and currencySymbol' } },
                 },
                 post: {
                     tags: ['Admin'],
-                    summary: 'Create a new affiliate',
+                    summary: 'Create a new referral partner',
                     security: [{ BearerAuth: [] }],
                     requestBody: {
                         required: true,
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/AffiliateCreateRequest' } } },
                     },
                     responses: {
-                        '200': { description: 'Affiliate created, temporaryPassword included' },
+                        '200': { description: 'Referral partner created, temporaryPassword included' },
                         '400': { description: 'Validation error or email exists' },
                     },
                 },
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
                     summary: 'List all payouts',
                     security: [{ BearerAuth: [] }],
                     parameters: [
-                        { name: 'affiliateId', in: 'query', schema: { type: 'string' }, description: 'Filter by affiliate' },
+                        { name: 'affiliateId', in: 'query', schema: { type: 'string' }, description: 'Filter by referral partner' },
                         { name: 'format', in: 'query', schema: { type: 'string', enum: ['csv'] }, description: 'Export as CSV' },
                     ],
                     responses: { '200': { description: 'Array of payouts' } },
@@ -248,7 +248,7 @@ export async function GET(request: NextRequest) {
                     properties: {
                         affiliateId: { type: 'string' },
                         commissionIds: { type: 'array', items: { type: 'string' }, minItems: 1 },
-                        method: { type: 'string' },
+                        method: { type: 'string', enum: ['PayPal', 'Zelle'] },
                         notes: { type: 'string' },
                     },
                 },
@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
                     properties: {
                         id: { type: 'string' },
                         status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'] },
-                        method: { type: 'string' },
+                        method: { type: 'string', enum: ['PayPal', 'Zelle'] },
                         notes: { type: 'string' },
                     },
                 },
@@ -269,8 +269,8 @@ export async function GET(request: NextRequest) {
                         email: { type: 'string', format: 'email' },
                         company: { type: 'string' },
                         country: { type: 'string' },
-                        paymentMethod: { type: 'string' },
-                        paymentEmail: { type: 'string', format: 'email' },
+                        paymentMethod: { type: 'string', enum: ['PayPal', 'Zelle'] },
+                        paymentEmail: { type: 'string', description: 'Payout email or phone' },
                     },
                 },
                 ProgramSettingsRequest: {

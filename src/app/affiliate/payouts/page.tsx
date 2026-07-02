@@ -40,12 +40,23 @@ interface Payout {
   paidAt?: string;
 }
 
+interface PayoutSettings {
+  minPayoutCents: number;
+  maxPayoutCents: number;
+  source: 'PROGRAM' | 'GLOBAL';
+}
+
 export default function PayoutsPage() {
   const { user, loading: authLoading } = useAuth();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
   const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [payoutSettings, setPayoutSettings] = useState<PayoutSettings>({
+    minPayoutCents: 100000,
+    maxPayoutCents: 100000,
+    source: 'GLOBAL',
+  });
 
   useEffect(() => {
     if (!authLoading && user) fetchPayouts();
@@ -64,6 +75,9 @@ export default function PayoutsPage() {
       if (profileData.success) {
         setBalance(profileData.affiliate?.balanceCents || 0);
         setCurrencySymbol(profileData.currencySymbol || '$');
+        if (profileData.payoutSettings) {
+          setPayoutSettings(profileData.payoutSettings);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -77,6 +91,20 @@ export default function PayoutsPage() {
 
   const formatCurrency = (cents: number) =>
     `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const formatThresholdCurrency = (cents: number) =>
+    `${currencySymbol}${(cents / 100).toLocaleString(undefined, {
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+  const getThresholdText = () => {
+    if (payoutSettings.minPayoutCents === payoutSettings.maxPayoutCents) {
+      return `Minimum payout threshold is ${formatThresholdCurrency(payoutSettings.minPayoutCents)}.`;
+    }
+
+    return `Minimum payout thresholds range from ${formatThresholdCurrency(payoutSettings.minPayoutCents)} to ${formatThresholdCurrency(payoutSettings.maxPayoutCents)}, depending on the property program.`;
+  };
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
@@ -205,7 +233,7 @@ export default function PayoutsPage() {
           <div>
             <p className="text-sm font-medium text-blue-900">Payout Schedule</p>
             <p className="text-sm text-blue-700">
-              Payouts are processed on the 1st of each month for the previous month&apos;s earnings. Minimum payout threshold is {currencySymbol}1,000.
+              Payouts are processed on the 1st of each month for the previous month&apos;s earnings. {getThresholdText()}
             </p>
           </div>
         </CardContent>

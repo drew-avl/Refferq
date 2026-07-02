@@ -89,7 +89,7 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
               )}
               <div className="flex flex-col">
                 <span className="text-sm font-bold">{brandName}</span>
-                <span className="text-xs text-muted-foreground">Affiliate Portal</span>
+                <span className="text-xs text-muted-foreground">Referral Portal</span>
               </div>
             </div>
           </SidebarMenuItem>
@@ -240,7 +240,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
             <span className="text-3xl">🔒</span>
           </div>
           <h1 className="text-xl font-bold">Access Denied</h1>
-          <p className="text-sm text-muted-foreground">Affiliate account required to access this page</p>
+          <p className="text-sm text-muted-foreground">Referral partner account required to access this page</p>
           <Button asChild>
             <a href="/login">Go to Login</a>
           </Button>

@@ -1,7 +1,7 @@
 {
   "name": "referconnect",
   "version": "1.1.0",
-  "description": "Open-source affiliate marketing platform with comprehensive tracking, commission management, and payout automation. Built with Next.js, TypeScript, and PostgreSQL.",
+  "description": "Open-source referral program platform with comprehensive tracking, commission management, and payout automation. Built with Next.js, TypeScript, and PostgreSQL.",
   "author": "ReferConnect Team <hello@referconnect.com>",
   "license": "MIT",
   "repository": {

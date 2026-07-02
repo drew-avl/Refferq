@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     let reportData: any = {};
 
     if (reportType === 'affiliates') {
-      // Affiliate Performance Report
+      // Referral Partner Performance Report
       const affiliates = await prisma.affiliate.findMany({
         include: {
           user: true,
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       });
 
       reportData = {
-        type: 'Affiliate Performance Report',
+        type: 'Referral Partner Performance Report',
         generatedAt: new Date().toISOString(),
         data: affiliates.map(affiliate => ({
           affiliateId: affiliate.id,
