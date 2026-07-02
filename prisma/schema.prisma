@@ -577,6 +577,7 @@ model Resource {
   title       String
   description String?
   type        String   // BANNER, LOGO, EMAIL_TEMPLATE, SOCIAL_POST, DOCUMENT, VIDEO, OTHER
+  programId   String?  @map("program_id")
   fileUrl     String   @map("file_url")
   fileName    String   @map("file_name")
   fileSize    Int?     @map("file_size") // bytes
@@ -588,7 +589,9 @@ model Resource {
   createdBy   String   @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  program     Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
 
+  @@index([programId])
   @@map("resources")
 }
 
@@ -654,6 +657,7 @@ model Program {
   updatedAt         DateTime @updatedAt @map("updated_at")
   referrals         Referral[]
   affiliateAssignments AffiliateProgram[]
+  resources         Resource[]
 
   @@map("programs")
 }

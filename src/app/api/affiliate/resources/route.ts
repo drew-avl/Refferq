@@ -1,20 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+async function getAffiliateProgramIds(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      affiliate: {
+        include: {
+          programAssignments: {
+            select: { programId: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!user || user.role !== 'AFFILIATE' || !user.affiliate) {
+    return null;
+  }
+
+  return user.affiliate.programAssignments.map((assignment) => assignment.programId);
+}
+
 // GET: List active resources for affiliates
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')!;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const assignedProgramIds = await getAffiliateProgramIds(userId);
 
-    if (!user || user.role !== 'AFFILIATE') {
+    if (!assignedProgramIds) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     const resources = await prisma.resource.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        OR: [
+          { programId: null },
+          { programId: { in: assignedProgramIds } },
+        ],
+      },
+      include: {
+        program: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -30,6 +64,8 @@ export async function GET(request: NextRequest) {
         fileSize: r.fileSize,
         mimeType: r.mimeType,
         category: r.category,
+        programId: r.programId,
+        program: r.program,
         downloads: r.downloads,
         createdAt: r.createdAt.toISOString(),
       })),
@@ -44,11 +80,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')!;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const assignedProgramIds = await getAffiliateProgramIds(userId);
 
-    if (!user || user.role !== 'AFFILIATE') {
+    if (!assignedProgramIds) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -59,8 +93,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Resource ID required' }, { status: 400 });
     }
 
+    const resource = await prisma.resource.findFirst({
+      where: {
+        id,
+        isActive: true,
+        OR: [
+          { programId: null },
+          { programId: { in: assignedProgramIds } },
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (!resource) {
+      return NextResponse.json({ error: 'Resource not found' }, { status: 404 });
+    }
+
     await prisma.resource.update({
-      where: { id },
+      where: { id: resource.id },
       data: { downloads: { increment: 1 } },
     });
 

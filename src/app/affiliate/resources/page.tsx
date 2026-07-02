@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Download,
   FileText,
-  Image,
+  Image as ImageIcon,
   Video,
   Search,
   ExternalLink,
@@ -29,6 +29,12 @@ interface Resource {
   title: string;
   description?: string;
   type: string;
+  programId?: string | null;
+  program?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
   fileUrl: string;
   fileName: string;
   fileSize?: number;
@@ -38,9 +44,9 @@ interface Resource {
 }
 
 const typeIcons: Record<string, React.ElementType> = {
-  BANNER: Image,
-  LOGO: Image,
-  SOCIAL_POST: Image,
+  BANNER: ImageIcon,
+  LOGO: ImageIcon,
+  SOCIAL_POST: ImageIcon,
   EMAIL_TEMPLATE: FileText,
   DOCUMENT: FileText,
   VIDEO: Video,
@@ -63,6 +69,7 @@ export default function ResourcesPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [programFilter, setProgramFilter] = useState('ALL');
 
   useEffect(() => {
     if (!authLoading) fetchResources();
@@ -102,6 +109,13 @@ export default function ResourcesPage() {
   };
 
   const categories: string[] = ['ALL', ...Array.from(new Set(resources.map((r) => r.category).filter((c): c is string => Boolean(c))))];
+  const programs = Array.from(
+    new Map(
+      resources
+        .filter((r) => r.program)
+        .map((r) => [r.program!.id, r.program!])
+    ).values()
+  );
 
   const filteredResources = resources.filter((r) => {
     const matchesSearch =
@@ -109,7 +123,11 @@ export default function ResourcesPage() {
       r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (r.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || r.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesProgram =
+      programFilter === 'ALL' ||
+      (programFilter === 'SHARED' && !r.programId) ||
+      r.programId === programFilter;
+    return matchesSearch && matchesCategory && matchesProgram;
   });
 
   if (authLoading || loading) {
@@ -148,7 +166,7 @@ export default function ResourcesPage() {
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-              <Image className="h-4 w-4 text-emerald-600" />
+              <ImageIcon className="h-4 w-4 text-emerald-600" />
             </div>
             <div>
               <p className="text-2xl font-bold">{resources.filter((r) => ['BANNER', 'LOGO', 'SOCIAL_POST'].includes(r.type)).length}</p>
@@ -193,6 +211,36 @@ export default function ResourcesPage() {
           ))}
         </div>
       </div>
+      {(programs.length > 0 || resources.some((r) => !r.programId)) && (
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={programFilter === 'ALL' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setProgramFilter('ALL')}
+          >
+            All Programs
+          </Button>
+          {resources.some((r) => !r.programId) && (
+            <Button
+              variant={programFilter === 'SHARED' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setProgramFilter('SHARED')}
+            >
+              Shared
+            </Button>
+          )}
+          {programs.map((program) => (
+            <Button
+              key={program.id}
+              variant={programFilter === program.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setProgramFilter(program.id)}
+            >
+              {program.name}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Resources Grid */}
       {filteredResources.length === 0 ? (
@@ -219,9 +267,14 @@ export default function ResourcesPage() {
                     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colorClass}`}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {resource.type.replace('_', ' ')}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {resource.type.replace('_', ' ')}
+                      </Badge>
+                      <Badge variant={resource.program ? 'secondary' : 'outline'} className="text-xs">
+                        {resource.program?.name || 'Shared'}
+                      </Badge>
+                    </div>
                   </div>
                   <CardTitle className="text-base mt-3">{resource.title}</CardTitle>
                   {resource.description && (

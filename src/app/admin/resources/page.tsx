@@ -21,7 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Image, FileText, Video, Layers, Plus, Pencil, Trash2, Download, ExternalLink,
+  Image as ImageIcon, FileText, Video, Layers, Plus, Pencil, Trash2, Download, ExternalLink,
 } from 'lucide-react';
 
 interface Resource {
@@ -29,6 +29,12 @@ interface Resource {
   title: string;
   description?: string;
   type: string;
+  programId?: string | null;
+  program?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
   fileUrl: string;
   fileName: string;
   fileSize?: number;
@@ -38,23 +44,45 @@ interface Resource {
   createdAt: string;
 }
 
+interface Program {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+}
+
+const emptyForm = {
+  title: '',
+  description: '',
+  type: 'BANNER',
+  programId: '',
+  fileUrl: '',
+  fileName: '',
+  fileSize: '',
+  category: '',
+};
+
+const SHARED_PROGRAM_VALUE = 'SHARED';
+
 const typeIcons: Record<string, React.ElementType> = {
-  BANNER: Image, LOGO: Image, SOCIAL_POST: Image,
+  BANNER: ImageIcon, LOGO: ImageIcon, SOCIAL_POST: ImageIcon,
   EMAIL_TEMPLATE: FileText, DOCUMENT: FileText,
   VIDEO: Video, OTHER: Layers,
 };
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Resource | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    title: '', description: '', type: 'BANNER', fileUrl: '', fileName: '', fileSize: '', category: '',
-  });
+  const [form, setForm] = useState(emptyForm);
 
-  useEffect(() => { fetchResources(); }, []);
+  useEffect(() => {
+    fetchResources();
+    fetchPrograms();
+  }, []);
 
   const fetchResources = async () => {
     try {
@@ -68,12 +96,23 @@ export default function ResourcesPage() {
     }
   };
 
+  const fetchPrograms = async () => {
+    try {
+      const res = await fetch('/api/admin/programs');
+      const data = await res.json();
+      if (data.success) setPrograms(data.programs || []);
+    } catch (error) {
+      console.error('Failed to fetch programs:', error);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload: any = {
         ...form,
-        fileSize: form.fileSize ? parseInt(form.fileSize) : null,
+        programId: form.programId || null,
+        fileSize: form.fileSize ? parseInt(form.fileSize, 10) : null,
         ...(editing ? { id: editing.id } : {}),
       };
       const res = await fetch('/api/admin/resources', {
@@ -123,6 +162,7 @@ export default function ResourcesPage() {
     setEditing(r);
     setForm({
       title: r.title, description: r.description || '', type: r.type,
+      programId: r.programId || '',
       fileUrl: r.fileUrl, fileName: r.fileName,
       fileSize: r.fileSize ? String(r.fileSize) : '', category: r.category || '',
     });
@@ -132,7 +172,7 @@ export default function ResourcesPage() {
   const closeDialog = () => {
     setDialogOpen(false);
     setEditing(null);
-    setForm({ title: '', description: '', type: 'BANNER', fileUrl: '', fileName: '', fileSize: '', category: '' });
+    setForm(emptyForm);
   };
 
   if (loading) {
@@ -152,7 +192,7 @@ export default function ResourcesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Resources</h1>
           <p className="text-muted-foreground">Manage marketing assets for referral partners</p>
         </div>
-        <Button onClick={() => { setEditing(null); setForm({ title: '', description: '', type: 'BANNER', fileUrl: '', fileName: '', fileSize: '', category: '' }); setDialogOpen(true); }}>
+        <Button onClick={() => { setEditing(null); setForm(emptyForm); setDialogOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Resource
         </Button>
@@ -169,7 +209,7 @@ export default function ResourcesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Active</CardTitle>
-            <Image className="h-4 w-4 text-green-500" />
+            <ImageIcon className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{resources.filter(r => r.isActive).length}</div></CardContent>
         </Card>
@@ -199,6 +239,7 @@ export default function ResourcesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Program</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Downloads</TableHead>
@@ -216,6 +257,16 @@ export default function ResourcesPage() {
                           <Icon className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{r.title}</span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {r.program ? (
+                          <div>
+                            <p className="font-medium">{r.program.name}</p>
+                            <p className="text-xs text-muted-foreground">/{r.program.slug}</p>
+                          </div>
+                        ) : (
+                          <Badge variant="secondary">Shared</Badge>
+                        )}
                       </TableCell>
                       <TableCell><Badge variant="outline">{r.type}</Badge></TableCell>
                       <TableCell className="text-muted-foreground">{r.category || '—'}</TableCell>
@@ -261,6 +312,25 @@ export default function ResourcesPage() {
             <div className="grid gap-2">
               <Label>Description</Label>
               <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Property Program</Label>
+              <Select
+                value={form.programId || SHARED_PROGRAM_VALUE}
+                onValueChange={v => setForm({...form, programId: v === SHARED_PROGRAM_VALUE ? '' : v})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SHARED_PROGRAM_VALUE}>Shared across all programs</SelectItem>
+                  {programs.map((program) => (
+                    <SelectItem key={program.id} value={program.id}>
+                      {program.name}{!program.isActive ? ' (Inactive)' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
