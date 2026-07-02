@@ -144,7 +144,7 @@ async function generateReportData(reportType: string, startDate?: string, endDat
         email: a.user.email,
         referralCode: a.referralCode,
         totalReferrals: a.referrals.length,
-        approved: a.referrals.filter((r) => r.status === 'APPROVED').length,
+        completed: a.referrals.filter((r) => r.status === 'COMPLETED').length,
         totalEarningsCents: a.commissions.reduce((s, c) => s + c.amountCents, 0),
         joinedDate: a.createdAt.toISOString().slice(0, 10),
       })),
@@ -208,7 +208,7 @@ async function generateReportData(reportType: string, startDate?: string, endDat
   // Default: summary
   const totalAffiliates = await prisma.affiliate.count();
   const totalReferrals = await prisma.referral.count({ where: dateFilter });
-  const approvedReferrals = await prisma.referral.count({ where: { ...dateFilter, status: 'APPROVED' } });
+  const completedReferrals = await prisma.referral.count({ where: { ...dateFilter, status: 'COMPLETED' } });
   const totalCommissions = await prisma.commission.aggregate({
     where: dateFilter,
     _sum: { amountCents: true },
@@ -225,8 +225,8 @@ async function generateReportData(reportType: string, startDate?: string, endDat
     summary: {
       totalAffiliates,
       totalReferrals,
-      approvedReferrals,
-      conversionRate: totalReferrals > 0 ? ((approvedReferrals / totalReferrals) * 100).toFixed(2) + '%' : '0%',
+      completedReferrals,
+      conversionRate: totalReferrals > 0 ? ((completedReferrals / totalReferrals) * 100).toFixed(2) + '%' : '0%',
       totalCommissions: totalCommissions._count,
       totalCommissionAmountCents: totalCommissions._sum.amountCents || 0,
       totalPayouts: totalPayouts._count,

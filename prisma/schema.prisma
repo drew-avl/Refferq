@@ -49,6 +49,7 @@ model Affiliate {
 model Referral {
   id             String          @id @default(cuid())
   affiliateId    String          @map("affiliate_id")
+  programId      String?         @map("program_id")
   leadName       String          @map("lead_name")
   leadEmail      String          @map("lead_email")
   leadPhone      String?         @map("lead_phone")
@@ -65,6 +66,7 @@ model Referral {
   clicks         ReferralClick[]
   transactions   Transaction[]
   affiliate      Affiliate       @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  program        Program?        @relation(fields: [programId], references: [id])
 
   @@map("referrals")
 }
@@ -371,7 +373,8 @@ enum UserStatus {
 
 enum ReferralStatus {
   PENDING
-  APPROVED
+  SOLD
+  COMPLETED
   REJECTED
 }
 
@@ -637,6 +640,7 @@ model Program {
   name              String
   slug              String   @unique
   description       String?
+  referralPayoutCents Int    @default(10000) @map("referral_payout_cents")
   commissionRate    Float    @default(20) @map("commission_rate")
   commissionType    String   @default("PERCENTAGE") @map("commission_type")
   cookieDuration    Int      @default(30) @map("cookie_duration") // days
@@ -651,6 +655,7 @@ model Program {
   brandColor        String   @default("#10b981") @map("brand_color")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
+  referrals         Referral[]
 
   @@map("programs")
 }

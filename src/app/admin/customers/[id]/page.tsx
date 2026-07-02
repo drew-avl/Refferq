@@ -44,6 +44,7 @@ import {
   FileText,
   Shield,
   Loader2,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface Referral {
@@ -58,6 +59,13 @@ interface Referral {
   notes: string | null;
   createdAt: string;
   company: string;
+  program: {
+    id: string;
+    name: string;
+    referralPayoutCents: number;
+    currency: string;
+  } | null;
+  referralPayoutCents: number | null;
   affiliate: {
     id: string;
     name: string;
@@ -71,7 +79,8 @@ interface Referral {
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
   PENDING: { label: 'Pending', variant: 'secondary', icon: Clock },
-  APPROVED: { label: 'Approved', variant: 'default', icon: CheckCircle2 },
+  SOLD: { label: 'Sold', variant: 'outline', icon: ShoppingBag },
+  COMPLETED: { label: 'Completed', variant: 'default', icon: CheckCircle2 },
   REJECTED: { label: 'Rejected', variant: 'destructive', icon: XCircle },
 };
 
@@ -151,7 +160,7 @@ export default function CustomerDetailPage() {
     }
   };
 
-  const handleAction = async (action: 'approve' | 'reject') => {
+  const handleAction = async (action: 'sell' | 'complete' | 'reject') => {
     setActionLoading(true);
     try {
       const res = await fetch(`/api/admin/referrals/${id}`, {
@@ -379,15 +388,19 @@ export default function CustomerDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Review Actions Card - only for PENDING */}
-          {referral.status === 'PENDING' && (
+          {/* Review Actions Card */}
+          {(referral.status === 'PENDING' || referral.status === 'SOLD') && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Review Lead
+                  {referral.status === 'SOLD' ? 'Confirm Installation' : 'Review Lead'}
                 </CardTitle>
-                <CardDescription>Approve or reject this referral lead</CardDescription>
+                <CardDescription>
+                  {referral.status === 'SOLD'
+                    ? 'Mark completed only after service is installed. Completed referrals are eligible for payout.'
+                    : 'Mark this lead sold or reject it after review.'}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
@@ -401,29 +414,46 @@ export default function CustomerDetailPage() {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button
-                    onClick={() => handleAction('approve')}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                    )}
-                    Approve Lead
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleAction('reject')}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <XCircle className="mr-2 h-4 w-4" />
-                    )}
-                    Reject Lead
-                  </Button>
+                  {referral.status === 'PENDING' && (
+                    <>
+                      <Button
+                        onClick={() => handleAction('sell')}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <ShoppingBag className="mr-2 h-4 w-4" />
+                        )}
+                        Mark Sold
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleAction('reject')}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <XCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Reject Lead
+                      </Button>
+                    </>
+                  )}
+                  {referral.status === 'SOLD' && (
+                    <Button
+                      onClick={() => handleAction('complete')}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                      )}
+                      Mark Completed
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -439,8 +469,16 @@ export default function CustomerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Commission Rate</span>
-                <span className="font-semibold">{(referral.affiliate.commissionRate * 100).toFixed(0)}%</span>
+                <span className="text-sm text-muted-foreground">Property Program</span>
+                <span className="font-semibold text-right">{referral.program?.name || 'Not selected'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Referral Payout</span>
+                <span className="font-semibold">
+                  {referral.referralPayoutCents !== null
+                    ? `$${(referral.referralPayoutCents / 100).toFixed(2)}`
+                    : 'Not set'}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -513,15 +551,19 @@ export default function CustomerDetailPage() {
                 </div>
                 <div className="flex items-start gap-3">
                   <div className={`mt-0.5 rounded-full p-1 ${
-                    referral.status === 'APPROVED'
+                    referral.status === 'COMPLETED'
                       ? 'bg-green-100'
+                      : referral.status === 'SOLD'
+                        ? 'bg-blue-100'
                       : referral.status === 'REJECTED'
                         ? 'bg-red-100'
                         : 'bg-yellow-100'
                   }`}>
                     <StatusIcon className={`h-3 w-3 ${
-                      referral.status === 'APPROVED'
+                      referral.status === 'COMPLETED'
                         ? 'text-green-600'
+                        : referral.status === 'SOLD'
+                          ? 'text-blue-600'
                         : referral.status === 'REJECTED'
                           ? 'text-red-600'
                           : 'text-yellow-600'
@@ -529,8 +571,10 @@ export default function CustomerDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {referral.status === 'APPROVED'
-                        ? 'Approved'
+                      {referral.status === 'COMPLETED'
+                        ? 'Completed'
+                        : referral.status === 'SOLD'
+                          ? 'Sold'
                         : referral.status === 'REJECTED'
                           ? 'Rejected'
                           : 'Awaiting Review'}
@@ -538,6 +582,10 @@ export default function CustomerDetailPage() {
                     <p className="text-xs text-muted-foreground">
                       {referral.status === 'PENDING'
                         ? 'Needs admin review'
+                        : referral.status === 'SOLD'
+                          ? 'Waiting for service installation'
+                          : referral.status === 'COMPLETED'
+                            ? 'Service installed; payout eligible'
                         : 'Decision recorded'}
                     </p>
                   </div>

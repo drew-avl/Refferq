@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         user: true,
         referrals: {
           where: {
-            status: 'APPROVED'
+            status: 'COMPLETED'
           }
         },
         commissions: {
@@ -51,14 +51,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const approvedReferrals = await prisma.referral.count({
+    const completedReferrals = await prisma.referral.count({
       where: {
-        status: 'APPROVED',
+        status: 'COMPLETED',
         createdAt: { gte: startDate }
       }
     });
 
-    const conversionRate = totalReferrals > 0 ? (approvedReferrals / totalReferrals) * 100 : 0;
+    const conversionRate = totalReferrals > 0 ? (completedReferrals / totalReferrals) * 100 : 0;
 
     // Revenue over time (daily)
     const dailyRevenue = await prisma.conversion.groupBy({
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     const analytics = {
       overview: {
         totalReferrals,
-        approvedReferrals,
+        completedReferrals,
         conversionRate: conversionRate.toFixed(2),
         totalRevenue: totalCommissions._sum.amountCents || 0,
         totalCommissionsPaid: paidCommissions._sum.amountCents || 0,

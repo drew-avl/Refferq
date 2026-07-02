@@ -11,6 +11,7 @@ function normalizeReferralBody(body: any) {
     address: body.address,
     address2: body.address2 ?? body.address_2 ?? '',
     moveInDate: body.moveInDate ?? body.move_in_date,
+    programId: body.programId ?? body.program_id,
     company: body.company,
     notes: body.notes,
     estimatedValue: body.estimatedValue ?? body.estimated_value ?? 0,
@@ -67,12 +68,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { leadName, leadEmail, leadPhone, address, address2, moveInDate, company, notes, estimatedValue } = data;
+    const { leadName, leadEmail, leadPhone, address, address2, moveInDate, programId, company, notes, estimatedValue } = data;
+
+    const activePrograms = await prisma.program.findMany({
+      where: { isActive: true },
+      select: { id: true },
+    });
+
+    const selectedProgramId = programId || null;
+    if (activePrograms.length > 0 && !selectedProgramId) {
+      return NextResponse.json(
+        { error: 'Please select a property program for this lead' },
+        { status: 400 }
+      );
+    }
+
+    if (selectedProgramId && !activePrograms.some((program) => program.id === selectedProgramId)) {
+      return NextResponse.json(
+        { error: 'Selected property program is not available' },
+        { status: 400 }
+      );
+    }
 
     // Create the referral
     const referral = await prisma.referral.create({
       data: {
         affiliateId: user.affiliate.id,
+        programId: selectedProgramId,
         leadName: leadName.trim(),
         leadEmail: leadEmail.toLowerCase().trim(),
         leadPhone: leadPhone.trim(),
@@ -82,6 +104,7 @@ export async function POST(request: NextRequest) {
           company: company || '',
           notes: notes?.trim() || '',
           source: 'manual',
+          program_id: selectedProgramId,
           estimated_value: estimatedValue || 0,
           address: address.trim(),
           address2: address2?.trim() || '',
@@ -157,7 +180,29 @@ export async function GET(request: NextRequest) {
 
     const referrals = await prisma.referral.findMany({
       where: { affiliateId: user.affiliate.id },
+      include: {
+        program: {
+          select: {
+            id: true,
+            name: true,
+            referralPayoutCents: true,
+            currency: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' }
+    });
+
+    const programs = await prisma.program.findMany({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        referralPayoutCents: true,
+        currency: true,
+        isDefault: true,
+      },
     });
 
     // Map referrals to include metadata details
@@ -171,6 +216,7 @@ export async function GET(request: NextRequest) {
         address: metadata.address,
         address2: metadata.address2,
         moveInDate: metadata.moveInDate,
+        program: ref.program,
       };
     });
 
@@ -179,6 +225,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       referrals: mappedReferrals,
+      programs,
       ...currencySettings,
     });
   } catch (error) {

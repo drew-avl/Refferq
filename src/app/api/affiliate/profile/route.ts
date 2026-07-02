@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getReferralMetadataDetails } from '@/lib/referrals';
+import { isSoldReferralStatus } from '@/lib/referral-status';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,9 +41,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Get affiliate statistics
-    const [referrals, conversions, commissions] = await Promise.all([
+    const [referrals, conversions, commissions, programs] = await Promise.all([
       prisma.referral.findMany({
         where: { affiliateId: affiliate.id },
+        include: {
+          program: {
+            select: {
+              id: true,
+              name: true,
+              referralPayoutCents: true,
+              currency: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'desc' }
       }),
       prisma.conversion.findMany({
@@ -52,6 +63,17 @@ export async function GET(request: NextRequest) {
       prisma.commission.findMany({
         where: { affiliateId: affiliate.id },
         orderBy: { createdAt: 'desc' }
+      }),
+      prisma.program.findMany({
+        where: { isActive: true },
+        orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
+        select: {
+          id: true,
+          name: true,
+          referralPayoutCents: true,
+          currency: true,
+          isDefault: true,
+        },
       }),
     ]);
 
@@ -67,11 +89,8 @@ export async function GET(request: NextRequest) {
     const totalCommissions = commissions.length;
     const pendingCommissionsCount = pendingCommissionsList.length;
     const totalConversions = conversions.length;
-    const totalClicks = referrals.reduce((sum, r) => {
-      const metadata = r.metadata as any;
-      return sum + (metadata?.clicks || 0);
-    }, 0);
-    const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
+    const totalSold = referrals.filter((referral) => isSoldReferralStatus(referral.status)).length;
+    const conversionRate = referrals.length > 0 ? (totalSold / referrals.length) * 100 : 0;
 
     // Next maturation date for pending commissions
     const nextMaturesAt = pendingCommissionsList
@@ -86,7 +105,7 @@ export async function GET(request: NextRequest) {
       totalCommissions,
       pendingCommissions: pendingCommissionsCount,
       totalConversions,
-      totalClicks,
+      totalSold,
       conversionRate
     };
 
@@ -101,6 +120,7 @@ export async function GET(request: NextRequest) {
         address: metadata.address,
         address2: metadata.address2,
         moveInDate: metadata.moveInDate,
+        program: ref.program,
       };
     });
 
@@ -119,6 +139,7 @@ export async function GET(request: NextRequest) {
       affiliate: affiliate,
       stats,
       referrals: mappedReferrals,
+      programs,
       conversions,
       commissions,
       currencySymbol,

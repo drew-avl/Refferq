@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrencySettings } from '@/lib/currency';
-import { getReferralMetadataDetails } from '@/lib/referrals';
-
-function estimatedValueToCents(metadata: unknown): number {
-  const details = getReferralMetadataDetails(metadata);
-  return Math.max(0, Math.round(details.estimatedValue * 100));
-}
+import { createCompletedReferralCommission } from '@/lib/referral-payouts';
+import { isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
 
 
 export async function PUT(
@@ -33,8 +28,9 @@ export async function PUT(
 
     const body = await request.json();
     const { action, reviewNotes } = body;
+    const targetStatus = action ? referralStatusFromAction(action) : null;
 
-    if (!action || !['approve', 'reject'].includes(action)) {
+    if (!targetStatus || targetStatus === 'PENDING') {
       return NextResponse.json(
         { error: 'Invalid action' },
         { status: 400 }
@@ -44,6 +40,7 @@ export async function PUT(
     const referral = await prisma.referral.findUnique({
       where: { id: params.id },
       include: {
+        program: true,
         affiliate: {
           include: { partnerGroup: true }
         }
@@ -57,55 +54,25 @@ export async function PUT(
       );
     }
 
-    // Get estimated value from referral metadata
-    const estimatedValueCents = estimatedValueToCents(referral.metadata);
-    const { currency } = await getCurrencySettings();
-
     const updatedReferral = await prisma.referral.update({
       where: { id: params.id },
       data: {
-        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+        status: targetStatus,
         reviewNotes: reviewNotes || null,
         reviewedBy: user.id,
         reviewedAt: new Date()
       }
     });
 
-    // If approved, create conversion and commission
-    if (action === 'approve') {
-      // Get commission rate from partner group or use default 10%
-      const commissionRate = referral.affiliate.partnerGroup?.commissionRate
-        ? referral.affiliate.partnerGroup.commissionRate / 100
-        : 0.1;
-
-      const conversion = await prisma.conversion.create({
-        data: {
-          affiliateId: referral.affiliateId,
-          referralId: referral.id,
-          eventType: 'PURCHASE',
-          amountCents: estimatedValueCents,
-          currency,
-          status: 'PENDING'
-        }
-      });
-
-      const commissionAmount = Math.round(estimatedValueCents * commissionRate);
-
-      await prisma.commission.create({
-        data: {
-          affiliateId: referral.affiliateId,
-          conversionId: conversion.id,
-          userId: referral.affiliate.userId,
-          rate: commissionRate,
-          amountCents: commissionAmount,
-          status: 'PENDING'
-        }
-      });
-    }
+    const payoutResult = updatedReferral.status === 'COMPLETED'
+      ? await createCompletedReferralCommission(updatedReferral.id, user.id)
+      : null;
 
     return NextResponse.json({
       success: true,
-      message: `Referral ${action}d successfully`,
+      message: payoutResult?.created
+        ? 'Referral completed and payout-eligible commission created'
+        : `Referral updated to ${targetStatus.toLowerCase()} successfully`,
       referral: updatedReferral
     });
 
@@ -160,7 +127,7 @@ export async function PATCH(
     // Check if referral exists
     const referral = await prisma.referral.findUnique({
       where: { id: params.id },
-      include: { affiliate: { include: { partnerGroup: true } } }
+      include: { affiliate: { include: { partnerGroup: true } }, program: true }
     });
 
     if (!referral) {
@@ -170,54 +137,29 @@ export async function PATCH(
       );
     }
 
-    // If action is provided, handle approve/reject (legacy behavior)
-    if (action && ['approve', 'reject'].includes(action)) {
+    const targetStatus = action ? referralStatusFromAction(action) : null;
+
+    // If action is provided, handle status transitions.
+    if (targetStatus && targetStatus !== 'PENDING') {
       const updatedReferral = await prisma.referral.update({
         where: { id: params.id },
         data: {
-          status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+          status: targetStatus,
           reviewNotes: reviewNotes || null,
           reviewedBy: user.id,
           reviewedAt: new Date()
         }
       });
 
-      // If approved, create conversion and commission
-      if (action === 'approve') {
-        const estValueCents = estimatedValueToCents(referral.metadata);
-        const { currency } = await getCurrencySettings();
-        const commissionRate = referral.affiliate.partnerGroup?.commissionRate
-          ? referral.affiliate.partnerGroup.commissionRate / 100
-          : 0.1;
-
-        const conversion = await prisma.conversion.create({
-          data: {
-            affiliateId: referral.affiliateId,
-            referralId: referral.id,
-            eventType: 'PURCHASE',
-            amountCents: estValueCents,
-            currency,
-            status: 'PENDING'
-          }
-        });
-
-        const commissionAmount = Math.round(estValueCents * commissionRate);
-        
-        await prisma.commission.create({
-          data: {
-            affiliateId: referral.affiliateId,
-            conversionId: conversion.id,
-            userId: referral.affiliate.userId,
-            rate: commissionRate,
-            amountCents: commissionAmount,
-            status: 'PENDING'
-          }
-        });
-      }
+      const payoutResult = updatedReferral.status === 'COMPLETED'
+        ? await createCompletedReferralCommission(updatedReferral.id, user.id)
+        : null;
 
       return NextResponse.json({
         success: true,
-        message: `Referral ${action}d successfully`,
+        message: payoutResult?.created
+          ? 'Referral completed and payout-eligible commission created'
+          : `Referral updated to ${targetStatus.toLowerCase()} successfully`,
         referral: updatedReferral
       });
     }
@@ -230,7 +172,12 @@ export async function PATCH(
     if (leadPhone !== undefined) updateData.leadPhone = leadPhone;
     if (notes !== undefined) updateData.notes = notes || null;
     if (status !== undefined) {
-      // Map status values
+      if (!isReferralStatus(status)) {
+        return NextResponse.json(
+          { error: 'Invalid referral status' },
+          { status: 400 }
+        );
+      }
       updateData.status = status;
       updateData.reviewedBy = user.id;
       updateData.reviewedAt = new Date();
@@ -255,6 +202,10 @@ export async function PATCH(
       where: { id: params.id },
       data: updateData
     });
+
+    if (updatedReferral.status === 'COMPLETED') {
+      await createCompletedReferralCommission(updatedReferral.id, user.id);
+    }
 
     return NextResponse.json({
       success: true,

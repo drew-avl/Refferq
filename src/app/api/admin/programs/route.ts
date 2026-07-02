@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, slug, description, commissionRate, commissionType, cookieDuration, currency, autoApprove, minPayoutCents, payoutFrequency, termsUrl, logoUrl, brandColor } = body;
+    const { name, slug, description, referralPayoutCents, commissionRate, commissionType, cookieDuration, currency, autoApprove, minPayoutCents, payoutFrequency, termsUrl, logoUrl, brandColor } = body;
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
@@ -53,8 +53,9 @@ export async function POST(request: NextRequest) {
         name,
         slug: slug.toLowerCase(),
         description: description || null,
-        commissionRate: commissionRate || 20,
-        commissionType: commissionType || 'PERCENTAGE',
+        referralPayoutCents: Number(referralPayoutCents) || 10000,
+        commissionRate: commissionRate || 0,
+        commissionType: commissionType || 'FIXED',
         cookieDuration: cookieDuration || 30,
         currency: currency || 'USD',
         autoApprove: autoApprove || false,
@@ -87,10 +88,34 @@ export async function PUT(request: NextRequest) {
     }
 
     // Only allow specific fields (prevent mass assignment)
-    const allowedFields = ['name', 'description', 'commissionType', 'commissionValue', 'cookieDuration', 'isActive', 'terms'];
+    const allowedFields = [
+      'name',
+      'slug',
+      'description',
+      'referralPayoutCents',
+      'commissionRate',
+      'commissionType',
+      'cookieDuration',
+      'currency',
+      'autoApprove',
+      'minPayoutCents',
+      'payoutFrequency',
+      'termsUrl',
+      'logoUrl',
+      'brandColor',
+      'isActive',
+      'isDefault',
+    ];
     const updates: Record<string, any> = {};
     for (const key of allowedFields) {
       if (key in body && body[key] !== undefined) updates[key] = body[key];
+    }
+
+    if (updates.isDefault) {
+      await prisma.program.updateMany({
+        where: { id: { not: id } },
+        data: { isDefault: false },
+      });
     }
 
     const program = await prisma.program.update({

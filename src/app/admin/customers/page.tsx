@@ -39,6 +39,7 @@ import {
   Mail,
   Phone,
   Eye,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface Referral {
@@ -53,6 +54,13 @@ interface Referral {
   notes: string | null;
   createdAt: string;
   company: string;
+  program: {
+    id: string;
+    name: string;
+    referralPayoutCents: number;
+    currency: string;
+  } | null;
+  referralPayoutCents: number | null;
   affiliate: {
     id: string;
     name: string;
@@ -65,7 +73,8 @@ interface Referral {
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   PENDING: { label: 'Pending', variant: 'secondary' },
-  APPROVED: { label: 'Approved', variant: 'default' },
+  SOLD: { label: 'Sold', variant: 'outline' },
+  COMPLETED: { label: 'Completed', variant: 'default' },
   REJECTED: { label: 'Rejected', variant: 'destructive' },
 };
 
@@ -95,7 +104,7 @@ export default function CustomersPage() {
     }
   };
 
-  const handleAction = async (referralIds: string[], action: 'approve' | 'reject') => {
+  const handleAction = async (referralIds: string[], action: 'sell' | 'complete' | 'reject') => {
     setActionLoading(referralIds[0]);
     try {
       const res = await fetch('/api/admin/referrals', {
@@ -128,7 +137,8 @@ export default function CustomersPage() {
   const stats = {
     total: referrals.length,
     pending: referrals.filter((r) => r.status === 'PENDING').length,
-    approved: referrals.filter((r) => r.status === 'APPROVED').length,
+    sold: referrals.filter((r) => r.status === 'SOLD').length,
+    completed: referrals.filter((r) => r.status === 'COMPLETED').length,
     rejected: referrals.filter((r) => r.status === 'REJECTED').length,
   };
 
@@ -136,8 +146,8 @@ export default function CustomersPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid gap-4 md:grid-cols-5">
+          {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
@@ -154,7 +164,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
@@ -175,11 +185,20 @@ export default function CustomersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+            <CardTitle className="text-sm font-medium">Sold</CardTitle>
+            <ShoppingBag className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.sold}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.approved}</div>
+            <div className="text-2xl font-bold">{stats.completed}</div>
           </CardContent>
         </Card>
         <Card>
@@ -218,7 +237,8 @@ export default function CustomersPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="APPROVED">Approved</SelectItem>
+                  <SelectItem value="SOLD">Sold</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
                   <SelectItem value="REJECTED">Rejected</SelectItem>
                 </SelectContent>
               </Select>
@@ -238,6 +258,7 @@ export default function CustomersPage() {
                 <TableRow>
                   <TableHead>Lead</TableHead>
                   <TableHead>Company</TableHead>
+                  <TableHead>Program</TableHead>
                   <TableHead>Referred By</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -286,6 +307,18 @@ export default function CustomersPage() {
                       )}
                     </TableCell>
                     <TableCell>
+                      {referral.program ? (
+                        <div className="text-sm">
+                          <p className="font-medium">{referral.program.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            ${((referral.referralPayoutCents || 0) / 100).toFixed(2)} payout
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">No program</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm">
                         <p className="font-medium">{referral.affiliate.name}</p>
                         <p className="text-xs text-muted-foreground">{referral.affiliate.partnerGroup}</p>
@@ -318,11 +351,11 @@ export default function CustomersPage() {
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'approve'); }}
+                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'sell'); }}
                               disabled={actionLoading === referral.id}
                             >
-                              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                              Approve
+                              <ShoppingBag className="mr-1 h-3.5 w-3.5" />
+                              Sold
                             </Button>
                             <Button
                               size="sm"
@@ -334,6 +367,17 @@ export default function CustomersPage() {
                               Reject
                             </Button>
                           </>
+                        )}
+                        {referral.status === 'SOLD' && (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'complete'); }}
+                            disabled={actionLoading === referral.id}
+                          >
+                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                            Completed
+                          </Button>
                         )}
                       </div>
                     </TableCell>

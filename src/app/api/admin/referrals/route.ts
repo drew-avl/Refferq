@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
+import { createCompletedReferralCommission } from '@/lib/referral-payouts';
+import { referralStatusFromAction } from '@/lib/referral-status';
 
 
 export async function GET(request: NextRequest) {
@@ -33,6 +35,14 @@ export async function GET(request: NextRequest) {
     const [referrals, partnerGroups, currencySettings] = await Promise.all([
       prisma.referral.findMany({
         include: {
+          program: {
+            select: {
+              id: true,
+              name: true,
+              referralPayoutCents: true,
+              currency: true,
+            },
+          },
           affiliate: {
             include: {
               user: true
@@ -72,6 +82,8 @@ export async function GET(request: NextRequest) {
           address: metadata.address,
           address2: metadata.address2,
           moveInDate: metadata.moveInDate,
+          program: referral.program,
+          referralPayoutCents: referral.program?.referralPayoutCents ?? null,
           affiliate: {
             id: affiliate.id,
             name: affiliate.user.name,
@@ -122,7 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { referralIds, action } = body; // action: 'approve' | 'reject'
+    const { referralIds, action } = body; // action: 'sell' | 'complete' | 'reject'
 
     if (!referralIds || !Array.isArray(referralIds) || referralIds.length === 0) {
       return NextResponse.json(
@@ -131,30 +143,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!action || !['approve', 'reject'].includes(action)) {
+    const targetStatus = action ? referralStatusFromAction(action) : null;
+
+    if (!targetStatus || targetStatus === 'PENDING') {
       return NextResponse.json(
-        { error: 'Invalid action. Must be "approve" or "reject"' },
+        { error: 'Invalid action. Must be "sell", "complete", or "reject"' },
         { status: 400 }
       );
     }
 
-    // Update multiple referrals
-    const updatedReferrals = await prisma.referral.updateMany({
-      where: {
-        id: { in: referralIds },
-        status: 'PENDING'
-      },
-      data: {
-        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
-        reviewedBy: user.id,
-        reviewedAt: new Date()
+    let updatedCount = 0;
+    let payoutEligibleCount = 0;
+
+    for (const referralId of referralIds) {
+      const updatedReferral = await prisma.referral.update({
+        where: { id: referralId },
+        data: {
+          status: targetStatus,
+          reviewedBy: user.id,
+          reviewedAt: new Date()
+        }
+      });
+
+      updatedCount += 1;
+
+      if (updatedReferral.status === 'COMPLETED') {
+        const result = await createCompletedReferralCommission(updatedReferral.id, user.id);
+        if (result.created) payoutEligibleCount += 1;
       }
-    });
+    }
 
     return NextResponse.json({
       success: true,
-      message: `${updatedReferrals.count} referrals ${action}d successfully`,
-      updatedCount: updatedReferrals.count
+      message: `${updatedCount} referral${updatedCount === 1 ? '' : 's'} updated to ${targetStatus.toLowerCase()}${payoutEligibleCount ? `; ${payoutEligibleCount} payout-eligible commission${payoutEligibleCount === 1 ? '' : 's'} created` : ''}`,
+      updatedCount,
+      payoutEligibleCount
     });
 
   } catch (error) {

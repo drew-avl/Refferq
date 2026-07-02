@@ -97,16 +97,16 @@ export async function POST(req: NextRequest) {
           leadEmail: customerEmail,
           leadName: customerName || 'Unknown Customer',
           affiliateId: affiliate.id,
-          status: 'APPROVED',
+          status: 'SOLD',
           metadata: metadata || {},
         },
       });
     } else if (referral && referral.status === 'PENDING') {
-      // Update referral status to APPROVED
+      // Update referral status to SOLD. Installation completion is handled separately.
       referral = await prisma.referral.update({
         where: { id: referral.id },
         data: {
-          status: 'APPROVED',
+          status: 'SOLD',
           metadata: {
             ...(referral.metadata as object),
             ...metadata,

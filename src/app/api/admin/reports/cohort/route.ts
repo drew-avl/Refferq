@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       startDate: Date;
       affiliateCount: number;
       totalReferrals: number;
-      approvedReferrals: number;
+      completedReferrals: number;
       totalCommissions: number;
       totalEarnings: number;
       retention: Record<string, number>; // period label → active count
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
           startDate: cohortStart,
           affiliateCount: 0,
           totalReferrals: 0,
-          approvedReferrals: 0,
+          completedReferrals: 0,
           totalCommissions: 0,
           totalEarnings: 0,
           retention: {},
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       const cohort = cohorts.get(cohortKey)!;
       cohort.affiliateCount++;
       cohort.totalReferrals += affiliate.referrals.length;
-      cohort.approvedReferrals += affiliate.referrals.filter((r) => r.status === 'APPROVED').length;
+      cohort.completedReferrals += affiliate.referrals.filter((r) => r.status === 'COMPLETED').length;
       cohort.totalCommissions += affiliate.commissions.length;
       cohort.totalEarnings += affiliate.commissions.reduce((sum, c) => sum + c.amountCents, 0);
 
@@ -117,9 +117,9 @@ export async function GET(request: NextRequest) {
       startDate: cohort.startDate,
       affiliateCount: cohort.affiliateCount,
       totalReferrals: cohort.totalReferrals,
-      approvedReferrals: cohort.approvedReferrals,
+      completedReferrals: cohort.completedReferrals,
       conversionRate: cohort.totalReferrals > 0
-        ? ((cohort.approvedReferrals / cohort.totalReferrals) * 100).toFixed(1)
+        ? ((cohort.completedReferrals / cohort.totalReferrals) * 100).toFixed(1)
         : '0',
       totalCommissions: cohort.totalCommissions,
       totalEarningsCents: cohort.totalEarnings,

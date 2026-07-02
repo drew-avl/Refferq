@@ -37,7 +37,7 @@ import {
 
 interface ReportStats {
   totalEarnings: number;
-  totalClicks: number;
+  totalSold: number;
   totalLeads: number;
   totalConversions: number;
   conversionRate: number;
@@ -57,7 +57,7 @@ export default function ReportsPage() {
   const [currencySymbol, setCurrencySymbol] = useState('$');
   const [stats, setStats] = useState<ReportStats>({
     totalEarnings: 0,
-    totalClicks: 0,
+    totalSold: 0,
     totalLeads: 0,
     totalConversions: 0,
     conversionRate: 0,
@@ -85,7 +85,7 @@ export default function ReportsPage() {
 
         setStats({
           totalEarnings,
-          totalClicks: data.stats?.totalClicks || 0,
+          totalSold: data.stats?.totalSold || 0,
           totalLeads: referrals.length,
           totalConversions: conversions.length,
           conversionRate: data.stats?.conversionRate || 0,
@@ -225,8 +225,8 @@ export default function ReportsPage() {
                 <Users className="h-4 w-4 text-violet-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalConversions}</p>
-                <p className="text-xs text-muted-foreground">Conversions</p>
+                <p className="text-2xl font-bold">{stats.totalSold}</p>
+                <p className="text-xs text-muted-foreground">Total Sold</p>
               </div>
             </div>
           </CardContent>

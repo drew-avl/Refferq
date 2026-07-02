@@ -104,7 +104,7 @@ interface CohortData {
   label: string;
   affiliateCount: number;
   totalReferrals: number;
-  approvedReferrals: number;
+  completedReferrals: number;
   conversionRate: string;
   totalCommissions: number;
   totalEarningsCents: number;
@@ -898,7 +898,7 @@ export default function ReportsPage() {
                           <TableHead>Cohort</TableHead>
                           <TableHead className="text-right">Affiliates</TableHead>
                           <TableHead className="text-right">Referrals</TableHead>
-                          <TableHead className="text-right">Approved</TableHead>
+                          <TableHead className="text-right">Completed</TableHead>
                           <TableHead className="text-right">Conv. Rate</TableHead>
                           <TableHead className="text-right">Commissions</TableHead>
                           <TableHead className="text-right">Total Earnings</TableHead>
@@ -911,7 +911,7 @@ export default function ReportsPage() {
                             <TableCell className="font-medium whitespace-nowrap">{c.label}</TableCell>
                             <TableCell className="text-right">{c.affiliateCount}</TableCell>
                             <TableCell className="text-right">{c.totalReferrals}</TableCell>
-                            <TableCell className="text-right">{c.approvedReferrals}</TableCell>
+                            <TableCell className="text-right">{c.completedReferrals}</TableCell>
                             <TableCell className="text-right">{c.conversionRate}%</TableCell>
                             <TableCell className="text-right">{c.totalCommissions}</TableCell>
                             <TableCell className="text-right font-medium">

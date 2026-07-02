@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
           email: affiliate.user.email,
           referralCode: affiliate.referralCode,
           totalReferrals: affiliate.referrals.length,
-          approvedReferrals: affiliate.referrals.filter(r => r.status === 'APPROVED').length,
+          completedReferrals: affiliate.referrals.filter(r => r.status === 'COMPLETED').length,
           pendingReferrals: affiliate.referrals.filter(r => r.status === 'PENDING').length,
           totalCommissions: affiliate.commissions.length,
           totalEarnings: affiliate.commissions.reduce((sum, c) => sum + c.amountCents, 0),
@@ -176,13 +176,13 @@ export async function GET(request: NextRequest) {
       const [
         totalAffiliates,
         totalReferrals,
-        approvedReferrals,
+        completedReferrals,
         totalCommissions,
         totalPayouts,
       ] = await Promise.all([
         prisma.affiliate.count(),
         prisma.referral.count({ where: dateFilter }),
-        prisma.referral.count({ where: { ...dateFilter, status: 'APPROVED' } }),
+        prisma.referral.count({ where: { ...dateFilter, status: 'COMPLETED' } }),
         prisma.commission.aggregate({
           where: dateFilter,
           _sum: { amountCents: true },
@@ -202,8 +202,8 @@ export async function GET(request: NextRequest) {
         summary: {
           totalAffiliates,
           totalReferrals,
-          approvedReferrals,
-          conversionRate: totalReferrals > 0 ? ((approvedReferrals / totalReferrals) * 100).toFixed(2) : 0,
+          completedReferrals,
+          conversionRate: totalReferrals > 0 ? ((completedReferrals / totalReferrals) * 100).toFixed(2) : 0,
           totalCommissions: totalCommissions._count,
           totalCommissionAmount: totalCommissions._sum.amountCents || 0,
           totalPayouts: totalPayouts._count,

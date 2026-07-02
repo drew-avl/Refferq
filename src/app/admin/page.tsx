@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
           totalEstimatedCommission: statsData.stats.totalEstimatedCommission || 0,
           totalClicks: 0,
           totalLeads: statsData.stats.totalReferrals || 0,
-          totalReferredCustomers: statsData.stats.approvedReferrals || 0,
+          totalReferredCustomers: statsData.stats.completedReferrals || 0,
           totalAffiliates: statsData.stats.totalAffiliates || 0,
           pendingReferrals: statsData.stats.pendingReferrals || 0,
         });
@@ -153,7 +153,7 @@ export default function AdminDashboardPage() {
       title: 'Confirmed Revenue',
       value: `${currencySymbol}${stats ? (stats.totalRevenue / 100).toFixed(2) : '0.00'}`,
       icon: TrendingUp,
-      description: 'Approved transactions',
+      description: 'Completed referrals',
       color: 'text-emerald-600',
       bg: 'bg-emerald-500/10',
     },
@@ -303,7 +303,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-2xl font-bold">{stats?.totalReferredCustomers || 0}</p>
-                  <p className="text-sm text-muted-foreground">Conversions</p>
+                  <p className="text-sm text-muted-foreground">Completed</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-muted-foreground">Rate</p>
@@ -444,8 +444,9 @@ export default function AdminDashboardPage() {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { variant: 'default' | 'secondary' | 'destructive'; label: string }> = {
-    APPROVED: { variant: 'default', label: 'Approved' },
+  const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+    SOLD: { variant: 'outline', label: 'Sold' },
+    COMPLETED: { variant: 'default', label: 'Completed' },
     PENDING: { variant: 'secondary', label: 'Pending' },
     REJECTED: { variant: 'destructive', label: 'Rejected' },
   };

@@ -31,9 +31,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  MousePointerClick,
   Target,
   Users,
   Plus,
@@ -45,19 +51,28 @@ import {
   TrendingUp,
   ArrowRight,
   Banknote,
+  ShoppingBag,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AffiliateStats {
   totalEarnings: number;
   pendingEarnings: number;
-  totalClicks: number;
+  totalSold: number;
   totalLeads: number;
   totalReferredCustomers: number;
   totalConversions: number;
   conversionRate: number;
   currencySymbol: string;
   nextMaturesAt: string | null;
+}
+
+interface Program {
+  id: string;
+  name: string;
+  referralPayoutCents: number;
+  currency: string;
+  isDefault: boolean;
 }
 
 interface Referral {
@@ -69,6 +84,7 @@ interface Referral {
   address2: string;
   moveInDate: string;
   company?: string;
+  program?: Program | null;
   notes?: string | null;
   status: string;
   createdAt: string;
@@ -78,6 +94,7 @@ export default function AffiliateDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [currencySymbol, setCurrencySymbol] = useState('$');
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -89,6 +106,7 @@ export default function AffiliateDashboard() {
     leadName: '',
     leadEmail: '',
     leadPhone: '',
+    programId: '',
     address: '',
     address2: '',
     moveInDate: '',
@@ -101,6 +119,13 @@ export default function AffiliateDashboard() {
     }
   }, [authLoading, user]);
 
+  useEffect(() => {
+    if (programs.length > 0 && !submitForm.programId) {
+      const defaultProgram = programs.find((program) => program.isDefault) || programs[0];
+      setSubmitForm((current) => ({ ...current, programId: defaultProgram.id }));
+    }
+  }, [programs, submitForm.programId]);
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -109,17 +134,18 @@ export default function AffiliateDashboard() {
 
       if (data.success) {
         setStats({
-          totalEarnings: data.affiliate?.balanceCents || 0,
+          totalEarnings: data.stats?.totalEarnings || 0,
           pendingEarnings: data.stats?.pendingEarnings || 0,
-          totalClicks: data.stats?.totalClicks || 0,
+          totalSold: data.stats?.totalSold || 0,
           totalLeads: data.referrals?.length || 0,
-          totalReferredCustomers: data.referrals?.filter((r: any) => r.status === 'APPROVED').length || 0,
+          totalReferredCustomers: data.referrals?.filter((r: any) => r.status === 'COMPLETED').length || 0,
           totalConversions: data.stats?.totalConversions || 0,
           conversionRate: data.stats?.conversionRate || 0,
           currencySymbol: data.currencySymbol || '$',
           nextMaturesAt: data.stats?.nextMaturesAt || null,
         });
         setReferrals(data.referrals || []);
+        setPrograms(data.programs || []);
         setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
@@ -141,6 +167,7 @@ export default function AffiliateDashboard() {
           leadName: submitForm.leadName,
           leadEmail: submitForm.leadEmail,
           leadPhone: submitForm.leadPhone,
+          programId: submitForm.programId || undefined,
           address: submitForm.address,
           address2: submitForm.address2,
           moveInDate: submitForm.moveInDate,
@@ -151,12 +178,13 @@ export default function AffiliateDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        showNotification('success', 'Lead submitted successfully! Waiting for admin approval.');
+        showNotification('success', 'Lead submitted successfully! Waiting for admin review.');
         setShowSubmitModal(false);
         setSubmitForm({
           leadName: '',
           leadEmail: '',
           leadPhone: '',
+          programId: '',
           address: '',
           address2: '',
           moveInDate: '',
@@ -186,9 +214,9 @@ export default function AffiliateDashboard() {
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
-      APPROVED: { variant: 'default', icon: CheckCircle2 },
       COMPLETED: { variant: 'default', icon: CheckCircle2 },
       PAID: { variant: 'default', icon: CheckCircle2 },
+      SOLD: { variant: 'outline', icon: ShoppingBag },
       PENDING: { variant: 'secondary', icon: Clock },
       PROCESSING: { variant: 'secondary', icon: Loader2 },
       REJECTED: { variant: 'destructive', icon: Ban },
@@ -235,8 +263,8 @@ export default function AffiliateDashboard() {
                 <span className="text-2xl font-bold">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-sm text-white/90 font-medium tracking-wide">Submit qualified leads for review</p>
-                <p className="text-xl font-bold mt-1 tracking-tight">Manual lead entry keeps every handoff clean.</p>
+                <p className="text-sm text-white/90 font-medium tracking-wide">Submit qualified leads by property program</p>
+                <p className="text-xl font-bold mt-1 tracking-tight">Payouts unlock after service is installed and marked completed.</p>
               </div>
             </div>
             <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="gap-2 hidden sm:flex bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95">
@@ -268,7 +296,7 @@ export default function AffiliateDashboard() {
               ? `Next maturity: ${new Date(stats.nextMaturesAt).toLocaleDateString()}`
               : 'Held for refund period'
           },
-          { label: 'Total Clicks', value: stats?.totalClicks || 0, icon: MousePointerClick, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+          { label: 'Total Sold', value: stats?.totalSold || 0, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-500/10' },
           { label: 'Total Leads', value: stats?.totalLeads || 0, icon: Target, color: 'text-rose-600', bg: 'bg-rose-500/10' },
           { label: 'Conv. Rate', value: `${stats?.conversionRate?.toFixed(1) || '0.0'}%`, icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-500/10' },
         ].map((stat, i) => (
@@ -399,6 +427,26 @@ export default function AffiliateDashboard() {
           </DialogHeader>
 
           <form onSubmit={handleSubmitLead} className="space-y-4">
+            {programs.length > 0 && (
+              <div className="space-y-2">
+                <Label>Property Program *</Label>
+                <Select
+                  value={submitForm.programId}
+                  onValueChange={(value) => setSubmitForm({ ...submitForm, programId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map((program) => (
+                      <SelectItem key={program.id} value={program.id}>
+                        {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Lead&apos;s Name *</Label>
               <Input

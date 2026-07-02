@@ -37,8 +37,12 @@ export async function GET(request: NextRequest) {
       where: { status: 'PENDING' }
     });
     
-    const approvedReferrals = await prisma.referral.count({
-      where: { status: 'APPROVED' }
+    const soldReferrals = await prisma.referral.count({
+      where: { status: { in: ['SOLD', 'COMPLETED'] } }
+    });
+
+    const completedReferrals = await prisma.referral.count({
+      where: { status: 'COMPLETED' }
     });
     
     // Calculate ACTUAL transaction revenue from conversions
@@ -49,15 +53,15 @@ export async function GET(request: NextRequest) {
     // Calculate ESTIMATED revenue from referrals (leads)
     const referrals = await prisma.referral.findMany({
       include: {
-        affiliate: true
+        affiliate: true,
+        program: true
       }
     });
-    
-    // Get all partner groups for commission rate lookup
-    const partnerGroups = await prisma.partnerGroup.findMany();
-    const partnerGroupMap = new Map(
-      partnerGroups.map(pg => [pg.id, pg.commissionRate])
-    );
+
+    const fallbackProgram = await prisma.program.findFirst({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+    });
     
     let totalEstimatedRevenue = 0;
     let totalEstimatedCommission = 0;
@@ -66,17 +70,12 @@ export async function GET(request: NextRequest) {
       const metadata = getReferralMetadataDetails(ref.metadata);
       const estimatedValue = metadata.estimatedValue;
       const valueInCents = estimatedValue * 100;
-      
-      // Get commission rate from partner group or default to 20%
-      const affiliate = ref.affiliate as any;
-      const partnerGroupId = affiliate.partnerGroupId;
-      const commissionRate = partnerGroupId 
-        ? (partnerGroupMap.get(partnerGroupId) || 0.20)
-        : 0.20;
-      const commissionInCents = Math.floor(valueInCents * commissionRate);
+      const payoutInCents = ref.status === 'COMPLETED'
+        ? (ref.program?.referralPayoutCents ?? fallbackProgram?.referralPayoutCents ?? 0)
+        : 0;
       
       totalEstimatedRevenue += valueInCents;
-      totalEstimatedCommission += commissionInCents;
+      totalEstimatedCommission += payoutInCents;
     });
 
     const stats = {
@@ -85,7 +84,8 @@ export async function GET(request: NextRequest) {
       totalReferrals,
       totalConversions,
       pendingReferrals,
-      approvedReferrals,
+      soldReferrals,
+      completedReferrals,
       totalRevenue: totalRevenue._sum?.amountCents || 0, // Actual transaction revenue
       totalEstimatedRevenue, // Estimated revenue from all leads
       totalEstimatedCommission, // Total commission to be paid

@@ -123,6 +123,7 @@ export class DatabaseService {
   // Referral operations
   async createReferral(referralData: {
     affiliateId: string;
+    programId?: string;
     leadName: string;
     leadEmail: string;
     metadata?: any;
@@ -130,6 +131,7 @@ export class DatabaseService {
     return await prisma.referral.create({
       data: {
         affiliateId: referralData.affiliateId,
+        programId: referralData.programId,
         leadName: referralData.leadName,
         leadEmail: referralData.leadEmail,
         metadata: referralData.metadata || {},
@@ -438,7 +440,7 @@ export class DatabaseService {
       pendingAffiliates,
       totalReferrals,
       pendingReferrals,
-      approvedReferrals,
+      completedReferrals,
       totalConversions,
       totalCommissions,
       clicks,
@@ -448,7 +450,7 @@ export class DatabaseService {
       prisma.user.count({ where: { role: 'AFFILIATE', status: 'INACTIVE' } }),
       prisma.referral.count(),
       prisma.referral.count({ where: { status: 'PENDING' } }),
-      prisma.referral.count({ where: { status: 'APPROVED' } }),
+      prisma.referral.count({ where: { status: 'COMPLETED' } }),
       prisma.conversion.count(),
       prisma.commission.count(),
       prisma.referralClick.count(),
@@ -466,7 +468,7 @@ export class DatabaseService {
       pendingAffiliates,
       totalReferrals,
       pendingReferrals,
-      approvedReferrals,
+      approvedReferrals: completedReferrals,
       totalConversions,
       totalCommissions,
       totalRevenue,
@@ -559,9 +561,23 @@ export class DatabaseService {
         },
       });
 
+      const defaultProgram = await prisma.program.create({
+        data: {
+          name: 'Default Property Program',
+          slug: 'default-property',
+          description: 'Default fixed payout program for referral leads',
+          referralPayoutCents: 10000,
+          commissionRate: 0,
+          commissionType: 'FIXED',
+          currency: 'USD',
+          isDefault: true,
+        },
+      });
+
       // Create sample referrals
       const referral1 = await this.createReferral({
         affiliateId: affiliate1.id,
+        programId: defaultProgram.id,
         leadName: 'John Smith',
         leadEmail: 'john@techcorp.com',
         metadata: {
@@ -573,6 +589,7 @@ export class DatabaseService {
 
       const referral2 = await this.createReferral({
         affiliateId: affiliate2.id,
+        programId: defaultProgram.id,
         leadName: 'Maria Garcia',
         leadEmail: 'maria@startup.io',
         metadata: {
@@ -582,15 +599,15 @@ export class DatabaseService {
         },
       });
 
-      // Approve one referral and create conversion
+      // Complete one referral and create conversion
       await this.updateReferral(referral2.id, {
-        status: 'APPROVED',
+        status: 'COMPLETED',
         reviewedBy: adminUser.id,
         reviewedAt: new Date(),
-        reviewNotes: 'Approved - verified lead quality',
+        reviewNotes: 'Completed - service installed',
       });
 
-      // Create conversion for approved referral
+      // Create conversion for completed referral
       const conversion = await this.createConversion({
         affiliateId: affiliate1.id,
         eventType: 'PURCHASE',

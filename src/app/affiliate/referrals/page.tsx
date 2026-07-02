@@ -57,15 +57,25 @@ interface Referral {
   address: string;
   address2: string;
   moveInDate: string;
+  program?: Program | null;
   company?: string;
   notes?: string | null;
   status: string;
   createdAt: string;
 }
 
+interface Program {
+  id: string;
+  name: string;
+  referralPayoutCents: number;
+  currency: string;
+  isDefault: boolean;
+}
+
 export default function ReferralsPage() {
   const { user, loading: authLoading } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -76,6 +86,7 @@ export default function ReferralsPage() {
     leadName: '',
     leadEmail: '',
     leadPhone: '',
+    programId: '',
     address: '',
     address2: '',
     moveInDate: '',
@@ -86,6 +97,13 @@ export default function ReferralsPage() {
     if (!authLoading && user) fetchReferrals();
   }, [authLoading, user]);
 
+  useEffect(() => {
+    if (programs.length > 0 && !submitForm.programId) {
+      const defaultProgram = programs.find((program) => program.isDefault) || programs[0];
+      setSubmitForm((current) => ({ ...current, programId: defaultProgram.id }));
+    }
+  }, [programs, submitForm.programId]);
+
   const fetchReferrals = async () => {
     try {
       setLoading(true);
@@ -93,6 +111,7 @@ export default function ReferralsPage() {
       const data = await res.json();
       if (data.success) {
         setReferrals(data.referrals || []);
+        setPrograms(data.programs || []);
       }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
@@ -112,6 +131,7 @@ export default function ReferralsPage() {
           leadName: submitForm.leadName,
           leadEmail: submitForm.leadEmail,
           leadPhone: submitForm.leadPhone,
+          programId: submitForm.programId || undefined,
           address: submitForm.address,
           address2: submitForm.address2,
           moveInDate: submitForm.moveInDate,
@@ -126,6 +146,7 @@ export default function ReferralsPage() {
           leadName: '',
           leadEmail: '',
           leadPhone: '',
+          programId: '',
           address: '',
           address2: '',
           moveInDate: '',
@@ -152,7 +173,8 @@ export default function ReferralsPage() {
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
-      APPROVED: { variant: 'default', icon: CheckCircle2 },
+      SOLD: { variant: 'outline', icon: CheckCircle2 },
+      COMPLETED: { variant: 'default', icon: CheckCircle2 },
       PENDING: { variant: 'secondary', icon: Clock },
       REJECTED: { variant: 'destructive', icon: Ban },
     };
@@ -179,16 +201,18 @@ export default function ReferralsPage() {
   const stats = {
     total: referrals.length,
     pending: referrals.filter((r) => r.status === 'PENDING').length,
-    approved: referrals.filter((r) => r.status === 'APPROVED').length,
+    sold: referrals.filter((r) => r.status === 'SOLD').length,
+    completed: referrals.filter((r) => r.status === 'COMPLETED').length,
     rejected: referrals.filter((r) => r.status === 'REJECTED').length,
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Address', 'Unit / Apartment', 'Move-In Date', 'Notes', 'Status', 'Date'];
+    const headers = ['Name', 'Email', 'Phone', 'Program', 'Address', 'Unit / Apartment', 'Move-In Date', 'Notes', 'Status', 'Date'];
     const rows = filteredReferrals.map((r) => [
       r.leadName,
       r.leadEmail,
       r.leadPhone || '',
+      r.program?.name || '',
       r.address || '',
       r.address2 || '',
       r.moveInDate || '',
@@ -216,8 +240,8 @@ export default function ReferralsPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
+        <div className="grid gap-4 md:grid-cols-5">
+          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20" />)}
         </div>
         <Skeleton className="h-96" />
       </div>
@@ -246,7 +270,7 @@ export default function ReferralsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Total</p>
@@ -261,8 +285,14 @@ export default function ReferralsPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Approved</p>
-            <p className="text-2xl font-bold text-emerald-600">{stats.approved}</p>
+            <p className="text-sm text-muted-foreground">Sold</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.sold}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Completed</p>
+            <p className="text-2xl font-bold text-emerald-600">{stats.completed}</p>
           </CardContent>
         </Card>
         <Card>
@@ -292,7 +322,8 @@ export default function ReferralsPage() {
           <SelectContent>
             <SelectItem value="ALL">All Status</SelectItem>
             <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="APPROVED">Approved</SelectItem>
+            <SelectItem value="SOLD">Sold</SelectItem>
+            <SelectItem value="COMPLETED">Completed</SelectItem>
             <SelectItem value="REJECTED">Rejected</SelectItem>
           </SelectContent>
         </Select>
@@ -323,6 +354,7 @@ export default function ReferralsPage() {
                   <TableHead>Lead Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>Program</TableHead>
                   <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
@@ -334,6 +366,7 @@ export default function ReferralsPage() {
                     <TableCell className="font-medium">{ref.leadName}</TableCell>
                     <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
                     <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                    <TableCell className="text-muted-foreground">{ref.program?.name || '-'}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
@@ -355,6 +388,26 @@ export default function ReferralsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitLead} className="space-y-4">
+            {programs.length > 0 && (
+              <div className="space-y-2">
+                <Label>Property Program *</Label>
+                <Select
+                  value={submitForm.programId}
+                  onValueChange={(value) => setSubmitForm({ ...submitForm, programId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map((program) => (
+                      <SelectItem key={program.id} value={program.id}>
+                        {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Lead&apos;s Name *</Label>
               <Input

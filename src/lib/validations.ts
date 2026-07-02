@@ -8,6 +8,7 @@ export const referralSchema = z.object({
     address: z.string().min(5, 'Address is required'),
     address2: z.string().optional(),
     moveInDate: z.string().min(1, 'Move-in date is required'),
+    programId: z.string().optional(),
     company: z.string().optional(),
     notes: z.string().optional(),
     estimatedValue: z.coerce.number().min(0).max(999999999).optional(),

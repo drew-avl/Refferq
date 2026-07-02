@@ -20,7 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Layers, Plus, Star, Percent, Clock, Globe, Edit, Trash2,
+  Layers, Plus, Star, Banknote, Clock, Globe, Edit, Trash2,
 } from 'lucide-react';
 
 interface Program {
@@ -28,6 +28,7 @@ interface Program {
   name: string;
   slug: string;
   description?: string;
+  referralPayoutCents: number;
   commissionRate: number;
   commissionType: string;
   cookieDuration: number;
@@ -44,7 +45,7 @@ interface Program {
 }
 
 const emptyForm = {
-  name: '', slug: '', description: '', commissionRate: '20', commissionType: 'PERCENTAGE',
+  name: '', slug: '', description: '', referralPayoutDollars: '100',
   cookieDuration: '30', currency: 'USD', autoApprove: false, minPayoutCents: '100000',
   payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
 };
@@ -81,7 +82,7 @@ export default function ProgramsPage() {
     setEditing(p);
     setForm({
       name: p.name, slug: p.slug, description: p.description || '',
-      commissionRate: String(p.commissionRate), commissionType: p.commissionType,
+      referralPayoutDollars: String((p.referralPayoutCents || 0) / 100),
       cookieDuration: String(p.cookieDuration), currency: p.currency,
       autoApprove: p.autoApprove, minPayoutCents: String(p.minPayoutCents),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
@@ -95,7 +96,8 @@ export default function ProgramsPage() {
     try {
       const body: any = {
         name: form.name, slug: form.slug, description: form.description || null,
-        commissionRate: parseFloat(form.commissionRate), commissionType: form.commissionType,
+        referralPayoutCents: Math.round((parseFloat(form.referralPayoutDollars) || 0) * 100),
+        commissionRate: 0, commissionType: 'FIXED',
         cookieDuration: parseInt(form.cookieDuration), currency: form.currency,
         autoApprove: form.autoApprove, minPayoutCents: parseInt(form.minPayoutCents),
         payoutFrequency: form.payoutFrequency,
@@ -180,7 +182,7 @@ export default function ProgramsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
-          <p className="text-muted-foreground">Manage multiple affiliate programs with different commission structures</p>
+          <p className="text-muted-foreground">Manage property programs with fixed referral payouts</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -215,7 +217,7 @@ export default function ProgramsPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Programs</CardTitle>
-          <CardDescription>Configure commission rates, cookie durations, and payout rules per program</CardDescription>
+          <CardDescription>Configure property payout amounts, cookie durations, and payout rules per program</CardDescription>
         </CardHeader>
         <CardContent>
           {programs.length === 0 ? (
@@ -229,7 +231,7 @@ export default function ProgramsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Program</TableHead>
-                  <TableHead>Commission</TableHead>
+                  <TableHead>Referral Payout</TableHead>
                   <TableHead>Cookie</TableHead>
                   <TableHead>Min Payout</TableHead>
                   <TableHead>Frequency</TableHead>
@@ -255,9 +257,9 @@ export default function ProgramsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Percent className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-semibold">{p.commissionRate}%</span>
-                        <span className="text-xs text-muted-foreground">{p.commissionType}</span>
+                        <Banknote className="h-3 w-3 text-muted-foreground" />
+                        <span className="font-semibold">{formatCurrency(p.referralPayoutCents || 0, p.currency)}</span>
+                        <span className="text-xs text-muted-foreground">per completed referral</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -323,21 +325,10 @@ export default function ProgramsPage() {
               <Label>Description</Label>
               <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe this program..." />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Commission Rate (%)</Label>
-                <Input type="number" value={form.commissionRate} onChange={e => setForm({...form, commissionRate: e.target.value})} />
-              </div>
-              <div className="grid gap-2">
-                <Label>Commission Type</Label>
-                <Select value={form.commissionType} onValueChange={v => setForm({...form, commissionType: v})}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PERCENTAGE">Percentage</SelectItem>
-                    <SelectItem value="FIXED">Fixed Amount</SelectItem>
-                    <SelectItem value="TIERED">Tiered</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Referral Payout ({form.currency})</Label>
+                <Input type="number" min="0" step="0.01" value={form.referralPayoutDollars} onChange={e => setForm({...form, referralPayoutDollars: e.target.value})} />
               </div>
               <div className="grid gap-2">
                 <Label>Cookie Duration (days)</Label>
