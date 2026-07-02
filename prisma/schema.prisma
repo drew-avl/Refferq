@@ -40,6 +40,7 @@ model Affiliate {
   commissions    Commission[]
   conversions    Conversion[]
   referrals      Referral[]
+  programAssignments AffiliateProgram[]
   transactions   Transaction[]
   payouts        Payout[]
 
@@ -656,8 +657,21 @@ model Program {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
   referrals         Referral[]
+  affiliateAssignments AffiliateProgram[]
 
   @@map("programs")
+}
+
+model AffiliateProgram {
+  id          String    @id @default(cuid())
+  affiliateId String    @map("affiliate_id")
+  programId   String    @map("program_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  program     Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([affiliateId, programId])
+  @@map("affiliate_programs")
 }
 
 // ───────────────────────────────────────────────

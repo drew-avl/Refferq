@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,17 +42,36 @@ interface Program {
   termsUrl?: string;
   logoUrl?: string;
   brandColor?: string;
+  assignedAffiliates?: AssignedAffiliate[];
   createdAt: string;
+}
+
+interface AssignedAffiliate {
+  id: string;
+  name: string;
+  email: string;
+  status?: string;
+}
+
+interface Affiliate {
+  id: string;
+  user: {
+    name: string;
+    email: string;
+    status: string;
+  };
 }
 
 const emptyForm = {
   name: '', slug: '', description: '', referralPayoutDollars: '100',
   cookieDuration: '30', currency: 'USD', autoApprove: false, minPayoutCents: '100000',
   payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
+  assignedAffiliateIds: [] as string[],
 };
 
 export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Program | null>(null);
@@ -62,9 +82,16 @@ export default function ProgramsPage() {
 
   const fetchPrograms = async () => {
     try {
-      const res = await fetch('/api/admin/programs');
-      const data = await res.json();
-      if (data.success) setPrograms(data.programs || []);
+      const [programsRes, affiliatesRes] = await Promise.all([
+        fetch('/api/admin/programs'),
+        fetch('/api/admin/affiliates'),
+      ]);
+      const [programsData, affiliatesData] = await Promise.all([
+        programsRes.json(),
+        affiliatesRes.json(),
+      ]);
+      if (programsData.success) setPrograms(programsData.programs || []);
+      if (affiliatesData.success) setAffiliates(affiliatesData.affiliates || []);
     } catch (error) {
       console.error('Failed to fetch programs:', error);
     } finally {
@@ -87,8 +114,18 @@ export default function ProgramsPage() {
       autoApprove: p.autoApprove, minPayoutCents: String(p.minPayoutCents),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
       logoUrl: p.logoUrl || '', brandColor: p.brandColor || '#6366f1',
+      assignedAffiliateIds: p.assignedAffiliates?.map((affiliate) => affiliate.id) || [],
     });
     setDialogOpen(true);
+  };
+
+  const toggleAssignedAffiliate = (affiliateId: string) => {
+    setForm((current) => ({
+      ...current,
+      assignedAffiliateIds: current.assignedAffiliateIds.includes(affiliateId)
+        ? current.assignedAffiliateIds.filter((id) => id !== affiliateId)
+        : [...current.assignedAffiliateIds, affiliateId],
+    }));
   };
 
   const handleSave = async () => {
@@ -103,6 +140,7 @@ export default function ProgramsPage() {
         payoutFrequency: form.payoutFrequency,
         termsUrl: form.termsUrl || null, logoUrl: form.logoUrl || null,
         brandColor: form.brandColor || null,
+        affiliateIds: form.assignedAffiliateIds,
       };
       if (editing) body.id = editing.id;
 
@@ -234,6 +272,7 @@ export default function ProgramsPage() {
                   <TableHead>Referral Payout</TableHead>
                   <TableHead>Cookie</TableHead>
                   <TableHead>Min Payout</TableHead>
+                  <TableHead>Assigned Reps</TableHead>
                   <TableHead>Frequency</TableHead>
                   <TableHead>Auto-Approve</TableHead>
                   <TableHead>Status</TableHead>
@@ -269,6 +308,24 @@ export default function ProgramsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{formatCurrency(p.minPayoutCents, p.currency)}</TableCell>
+                    <TableCell>
+                      {p.assignedAffiliates && p.assignedAffiliates.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {p.assignedAffiliates.slice(0, 3).map((affiliate) => (
+                            <Badge key={affiliate.id} variant="secondary" className="text-xs">
+                              {affiliate.name}
+                            </Badge>
+                          ))}
+                          {p.assignedAffiliates.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{p.assignedAffiliates.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No reps assigned</span>
+                      )}
+                    </TableCell>
                     <TableCell><Badge variant="outline" className="text-xs">{p.payoutFrequency}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={p.autoApprove ? 'default' : 'outline'} className="text-xs">
@@ -381,6 +438,32 @@ export default function ProgramsPage() {
             <div className="grid gap-2">
               <Label>Terms URL</Label>
               <Input value={form.termsUrl} onChange={e => setForm({...form, termsUrl: e.target.value})} placeholder="https://yoursite.com/terms" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Assigned Reps</Label>
+              <div className="max-h-48 overflow-y-auto rounded-md border p-3">
+                {affiliates.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No reps available yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {affiliates.map((affiliate) => (
+                      <label key={affiliate.id} className="flex cursor-pointer items-start gap-3">
+                        <Checkbox
+                          checked={form.assignedAffiliateIds.includes(affiliate.id)}
+                          onCheckedChange={() => toggleAssignedAffiliate(affiliate.id)}
+                        />
+                        <span className="grid gap-0.5 text-sm leading-none">
+                          <span className="font-medium">{affiliate.user.name}</span>
+                          <span className="text-xs text-muted-foreground">{affiliate.user.email}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Reps only see property programs assigned here when submitting or editing leads.
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.autoApprove as boolean} onCheckedChange={v => setForm({...form, autoApprove: v})} />

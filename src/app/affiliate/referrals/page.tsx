@@ -47,6 +47,7 @@ import {
   Search,
   Filter,
   Download,
+  Pencil,
 } from 'lucide-react';
 
 interface Referral {
@@ -78,11 +79,24 @@ export default function ReferralsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editingReferral, setEditingReferral] = useState<Referral | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [submitForm, setSubmitForm] = useState({
+    leadName: '',
+    leadEmail: '',
+    leadPhone: '',
+    programId: '',
+    address: '',
+    address2: '',
+    moveInDate: '',
+    notes: '',
+  });
+  const [editForm, setEditForm] = useState({
     leadName: '',
     leadEmail: '',
     leadPhone: '',
@@ -204,6 +218,58 @@ export default function ReferralsPage() {
     sold: referrals.filter((r) => r.status === 'SOLD').length,
     completed: referrals.filter((r) => r.status === 'COMPLETED').length,
     rejected: referrals.filter((r) => r.status === 'REJECTED').length,
+  };
+
+  const openEditLead = (referral: Referral) => {
+    setEditingReferral(referral);
+    setEditForm({
+      leadName: referral.leadName,
+      leadEmail: referral.leadEmail,
+      leadPhone: referral.leadPhone || '',
+      programId: referral.program?.id || '',
+      address: referral.address || '',
+      address2: referral.address2 || '',
+      moveInDate: referral.moveInDate || '',
+      notes: referral.notes || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReferral) return;
+
+    setEditLoading(true);
+    try {
+      const res = await fetch('/api/affiliate/referrals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingReferral.id,
+          leadName: editForm.leadName,
+          leadEmail: editForm.leadEmail,
+          leadPhone: editForm.leadPhone,
+          programId: editForm.programId || undefined,
+          address: editForm.address,
+          address2: editForm.address2,
+          moveInDate: editForm.moveInDate,
+          notes: editForm.notes,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification('success', 'Lead updated successfully!');
+        setShowEditModal(false);
+        setEditingReferral(null);
+        await fetchReferrals();
+      } else {
+        showNotification('error', data.error || 'Failed to update lead');
+      }
+    } catch {
+      showNotification('error', 'An error occurred while updating lead');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const exportCSV = () => {
@@ -358,6 +424,7 @@ export default function ReferralsPage() {
                   <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -370,6 +437,14 @@ export default function ReferralsPage() {
                     <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                      {(ref.status === 'PENDING' || ref.status === 'SOLD') && (
+                        <Button variant="ghost" size="sm" onClick={() => openEditLead(ref)}>
+                          <Pencil className="mr-1 h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -479,6 +554,113 @@ export default function ReferralsPage() {
               <Button type="submit" disabled={submitLoading}>
                 {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Submit Lead
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Lead Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Edit Lead</DialogTitle>
+            <DialogDescription>
+              Update lead details before the referral is completed.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateLead} className="space-y-4">
+            {programs.length > 0 && (
+              <div className="space-y-2">
+                <Label>Property Program *</Label>
+                <Select
+                  value={editForm.programId}
+                  onValueChange={(value) => setEditForm({ ...editForm, programId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map((program) => (
+                      <SelectItem key={program.id} value={program.id}>
+                        {program.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Lead&apos;s Name *</Label>
+              <Input
+                required
+                value={editForm.leadName}
+                onChange={(e) => setEditForm({ ...editForm, leadName: e.target.value })}
+                placeholder="Full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Email *</Label>
+              <Input
+                type="email"
+                required
+                value={editForm.leadEmail}
+                onChange={(e) => setEditForm({ ...editForm, leadEmail: e.target.value })}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number *</Label>
+              <Input
+                type="tel"
+                required
+                value={editForm.leadPhone}
+                onChange={(e) => setEditForm({ ...editForm, leadPhone: e.target.value })}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address *</Label>
+              <Input
+                required
+                value={editForm.address}
+                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                placeholder="Street address"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Unit / Apartment</Label>
+                <Input
+                  value={editForm.address2}
+                  onChange={(e) => setEditForm({ ...editForm, address2: e.target.value })}
+                  placeholder="Unit 4B"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Move-In Date *</Label>
+                <Input
+                  type="date"
+                  required
+                  value={editForm.moveInDate}
+                  onChange={(e) => setEditForm({ ...editForm, moveInDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Lead Notes</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="Add access instructions, preferences, source details, or anything the team should know."
+                rows={4}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" disabled={editLoading}>
+                {editLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
               </Button>
             </DialogFooter>
           </form>

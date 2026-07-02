@@ -65,7 +65,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' }
       }),
       prisma.program.findMany({
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          affiliateAssignments: {
+            some: { affiliateId: affiliate.id },
+          },
+        },
         orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
         select: {
           id: true,

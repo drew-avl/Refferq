@@ -574,6 +574,13 @@ export class DatabaseService {
         },
       });
 
+      await prisma.affiliateProgram.createMany({
+        data: [
+          { affiliateId: affiliate1.id, programId: defaultProgram.id },
+          { affiliateId: affiliate2.id, programId: defaultProgram.id },
+        ],
+      });
+
       // Create sample referrals
       const referral1 = await this.createReferral({
         affiliateId: affiliate1.id,

@@ -20,10 +20,40 @@ export async function GET(request: NextRequest) {
 
   try {
     const programs = await prisma.program.findMany({
+      include: {
+        affiliateAssignments: {
+          include: {
+            affiliate: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, programs });
+    return NextResponse.json({
+      success: true,
+      programs: programs.map((program) => ({
+        ...program,
+        assignedAffiliates: program.affiliateAssignments.map((assignment) => ({
+          id: assignment.affiliate.id,
+          name: assignment.affiliate.user.name,
+          email: assignment.affiliate.user.email,
+          status: assignment.affiliate.user.status,
+        })),
+      })),
+    });
   } catch (error) {
     console.error('Admin programs GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch programs' }, { status: 500 });
@@ -37,7 +67,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, slug, description, referralPayoutCents, commissionRate, commissionType, cookieDuration, currency, autoApprove, minPayoutCents, payoutFrequency, termsUrl, logoUrl, brandColor } = body;
+    const { name, slug, description, referralPayoutCents, commissionRate, commissionType, cookieDuration, currency, autoApprove, minPayoutCents, payoutFrequency, termsUrl, logoUrl, brandColor, affiliateIds } = body;
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
@@ -64,6 +94,11 @@ export async function POST(request: NextRequest) {
         termsUrl: termsUrl || null,
         logoUrl: logoUrl || null,
         brandColor: brandColor || '#10b981',
+        affiliateAssignments: Array.isArray(affiliateIds) && affiliateIds.length > 0
+          ? {
+              create: affiliateIds.map((affiliateId: string) => ({ affiliateId })),
+            }
+          : undefined,
       },
     });
 
@@ -81,7 +116,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id } = body;
+    const { id, affiliateIds } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Program ID required' }, { status: 400 });
@@ -118,9 +153,29 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const program = await prisma.program.update({
-      where: { id },
-      data: updates,
+    const program = await prisma.$transaction(async (tx) => {
+      const updated = await tx.program.update({
+        where: { id },
+        data: updates,
+      });
+
+      if (Array.isArray(affiliateIds)) {
+        await tx.affiliateProgram.deleteMany({
+          where: { programId: id },
+        });
+
+        if (affiliateIds.length > 0) {
+          await tx.affiliateProgram.createMany({
+            data: affiliateIds.map((affiliateId: string) => ({
+              affiliateId,
+              programId: id,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      return updated;
     });
 
     return NextResponse.json({ success: true, program });
