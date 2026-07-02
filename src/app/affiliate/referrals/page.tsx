@@ -5,15 +5,13 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -60,7 +58,7 @@ interface Referral {
   address2: string;
   moveInDate: string;
   company?: string;
-  estimatedValue: number;
+  notes?: string | null;
   status: string;
   createdAt: string;
 }
@@ -74,7 +72,6 @@ export default function ReferralsPage() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
@@ -82,7 +79,7 @@ export default function ReferralsPage() {
     address: '',
     address2: '',
     moveInDate: '',
-    estimatedValue: '0',
+    notes: '',
   });
 
   useEffect(() => {
@@ -96,7 +93,6 @@ export default function ReferralsPage() {
       const data = await res.json();
       if (data.success) {
         setReferrals(data.referrals || []);
-        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
@@ -119,7 +115,7 @@ export default function ReferralsPage() {
           address: submitForm.address,
           address2: submitForm.address2,
           moveInDate: submitForm.moveInDate,
-          estimatedValue: submitForm.estimatedValue,
+          notes: submitForm.notes,
         }),
       });
       const data = await res.json();
@@ -133,13 +129,13 @@ export default function ReferralsPage() {
           address: '',
           address2: '',
           moveInDate: '',
-          estimatedValue: '0',
+          notes: '',
         });
         fetchReferrals();
       } else {
         showNotification('error', data.error || 'Failed to submit lead');
       }
-    } catch (_e) {
+    } catch {
       showNotification('error', 'An error occurred while submitting lead');
     } finally {
       setSubmitLoading(false);
@@ -188,7 +184,7 @@ export default function ReferralsPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Address', 'Address 2', 'Move-In Date', 'Status', 'Value', 'Date'];
+    const headers = ['Name', 'Email', 'Phone', 'Address', 'Unit / Apartment', 'Move-In Date', 'Notes', 'Status', 'Date'];
     const rows = filteredReferrals.map((r) => [
       r.leadName,
       r.leadEmail,
@@ -196,17 +192,24 @@ export default function ReferralsPage() {
       r.address || '',
       r.address2 || '',
       r.moveInDate || '',
+      r.notes || '',
       r.status,
-      (Number(r.estimatedValue) || 0).toFixed(2),
       formatDate(r.createdAt),
     ]);
-    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCsvValue).join(','))
+      .join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `referrals-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
+  };
+
+  const escapeCsvValue = (value: string) => {
+    const safeValue = /^[=+\-@]/.test(value) ? `'${value}` : value;
+    return /[",\r\n]/.test(safeValue) ? `"${safeValue.replace(/"/g, '""')}"` : safeValue;
   };
 
   if (authLoading || loading) {
@@ -323,7 +326,6 @@ export default function ReferralsPage() {
                   <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Est. Value</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -335,9 +337,6 @@ export default function ReferralsPage() {
                     <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {`${currencySymbol}${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -396,11 +395,11 @@ export default function ReferralsPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Apt, Suite, or Address 2</Label>
+                <Label>Unit / Apartment</Label>
                 <Input
                   value={submitForm.address2}
                   onChange={(e) => setSubmitForm({ ...submitForm, address2: e.target.value })}
-                  placeholder="Apt 4B"
+                  placeholder="Unit 4B"
                 />
               </div>
               <div className="space-y-2">
@@ -414,15 +413,13 @@ export default function ReferralsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Estimated Deal Size ({currencySymbol}) *</Label>
-              <Input
-                type="number"
-                required
-                value={submitForm.estimatedValue}
-                onChange={(e) => setSubmitForm({ ...submitForm, estimatedValue: e.target.value })}
-                placeholder="0"
+              <Label>Lead Notes</Label>
+              <Textarea
+                value={submitForm.notes}
+                onChange={(e) => setSubmitForm({ ...submitForm, notes: e.target.value })}
+                placeholder="Add access instructions, preferences, source details, or anything the team should know."
+                rows={4}
               />
-              <p className="text-xs text-muted-foreground">Type 0 if unsure</p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowSubmitModal(false)}>Cancel</Button>

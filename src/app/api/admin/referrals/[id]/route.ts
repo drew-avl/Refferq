@@ -5,7 +5,7 @@ import { getReferralMetadataDetails } from '@/lib/referrals';
 
 function estimatedValueToCents(metadata: unknown): number {
   const details = getReferralMetadataDetails(metadata);
-  return Math.round(details.estimatedValue * 100) || 10000;
+  return Math.max(0, Math.round(details.estimatedValue * 100));
 }
 
 
@@ -228,6 +228,7 @@ export async function PATCH(
     if (leadName !== undefined) updateData.leadName = leadName;
     if (leadEmail !== undefined) updateData.leadEmail = leadEmail;
     if (leadPhone !== undefined) updateData.leadPhone = leadPhone;
+    if (notes !== undefined) updateData.notes = notes || null;
     if (status !== undefined) {
       // Map status values
       updateData.status = status;

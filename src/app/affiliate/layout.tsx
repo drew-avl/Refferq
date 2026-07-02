@@ -72,11 +72,10 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
   };
 
   const accentColor = brand.brandButtonColor || '#059669';
-  const textColor = brand.brandTextColor || undefined;
   const brandName = brand.companyName || 'Refferq';
 
   return (
-    <Sidebar variant="inset" style={textColor ? { color: textColor } : undefined}>
+    <Sidebar variant="inset">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -191,6 +190,21 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
   );
 }
 
+function hexToRgba(hex: string | undefined, alpha: number) {
+  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return null;
+  const value = hex.slice(1);
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getPortalBackground(backgroundColor: string | undefined) {
+  const tint = hexToRgba(backgroundColor, 0.12);
+  if (!tint) return undefined;
+  return `linear-gradient(180deg, ${tint} 0%, #f8fafc 280px, #f8fafc 100%)`;
+}
+
 export default function AffiliateLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const [brand, setBrand] = useState<BrandSettings>({});
@@ -235,11 +249,13 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
     );
   }
 
+  const portalBackground = getPortalBackground(brand.brandBackgroundColor);
+
   return (
     <SidebarProvider>
       <AffiliateSidebar brand={brand} />
-      <SidebarInset style={{ backgroundColor: brand.brandBackgroundColor || undefined, color: brand.brandTextColor || undefined }}>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+      <SidebarInset style={portalBackground ? { background: portalBackground } : undefined}>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 text-foreground shadow-sm backdrop-blur">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex flex-1 items-center justify-between">
@@ -255,7 +271,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 text-foreground sm:p-6">
           {children}
         </main>
       </SidebarInset>

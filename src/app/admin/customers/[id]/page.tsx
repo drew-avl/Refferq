@@ -57,7 +57,6 @@ interface Referral {
   status: string;
   notes: string | null;
   createdAt: string;
-  estimatedValue: number;
   company: string;
   affiliate: {
     id: string;
@@ -96,7 +95,6 @@ export default function CustomerDetailPage() {
   const [editAddress2, setEditAddress2] = useState('');
   const [editMoveInDate, setEditMoveInDate] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
-  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   useEffect(() => {
     fetchReferral();
@@ -117,7 +115,6 @@ export default function CustomerDetailPage() {
           setEditAddress2(found.address2 || '');
           setEditMoveInDate(found.moveInDate || '');
         }
-        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to fetch referral:', error);
@@ -220,8 +217,6 @@ export default function CustomerDetailPage() {
 
   const cfg = statusConfig[referral.status] || statusConfig.PENDING;
   const StatusIcon = cfg.icon;
-  const estimatedCommission = Math.round(referral.estimatedValue * referral.affiliate.commissionRate);
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -358,7 +353,7 @@ export default function CustomerDetailPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="address2">Apt, Suite, or Address 2</Label>
+                  <Label htmlFor="address2">Unit / Apartment</Label>
                   <Input
                     id="address2"
                     value={editAddress2}
@@ -437,30 +432,15 @@ export default function CustomerDetailPage() {
 
         {/* Right Column - Sidebar Info */}
         <div className="space-y-6">
-          {/* Value Card */}
+          {/* Partner Terms Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Financial Summary</CardTitle>
+              <CardTitle className="text-sm font-medium">Partner Terms</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Estimated Value</span>
-                <span className="flex items-center gap-1 font-semibold">
-                  {currencySymbol}
-                  {referral.estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Commission Rate</span>
                 <span className="font-semibold">{(referral.affiliate.commissionRate * 100).toFixed(0)}%</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Est. Commission</span>
-                <span className="flex items-center gap-1 text-lg font-bold text-primary">
-                  {currencySymbol}
-                  {estimatedCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
               </div>
             </CardContent>
           </Card>

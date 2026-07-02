@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
           leadName: referral.leadName,
           leadPhone: referral.leadPhone,
           status: referral.status,
-          notes: referral.notes,
+          notes: referral.notes || metadata.notes,
           createdAt: referral.createdAt,
           estimatedValue: metadata.estimatedValue,
           company: metadata.company,

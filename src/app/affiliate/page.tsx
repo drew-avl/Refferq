@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ import {
   ArrowRight,
   Banknote,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface AffiliateStats {
   totalEarnings: number;
@@ -68,7 +69,7 @@ interface Referral {
   address2: string;
   moveInDate: string;
   company?: string;
-  estimatedValue: number;
+  notes?: string | null;
   status: string;
   createdAt: string;
 }
@@ -91,7 +92,7 @@ export default function AffiliateDashboard() {
     address: '',
     address2: '',
     moveInDate: '',
-    estimatedValue: '0',
+    notes: '',
   });
 
   useEffect(() => {
@@ -143,7 +144,7 @@ export default function AffiliateDashboard() {
           address: submitForm.address,
           address2: submitForm.address2,
           moveInDate: submitForm.moveInDate,
-          estimatedValue: submitForm.estimatedValue,
+          notes: submitForm.notes,
         }),
       });
 
@@ -159,13 +160,13 @@ export default function AffiliateDashboard() {
           address: '',
           address2: '',
           moveInDate: '',
-          estimatedValue: '0',
+          notes: '',
         });
         loadDashboardData();
       } else {
         showNotification('error', data.error || 'Failed to submit lead');
       }
-    } catch (_e) {
+    } catch {
       showNotification('error', 'An error occurred while submitting lead');
     } finally {
       setSubmitLoading(false);
@@ -278,7 +279,7 @@ export default function AffiliateDashboard() {
             transition={{ delay: 0.3 + i * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="glass-card border-0">
+            <Card className="border bg-card shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} backdrop-blur-sm transition-transform group-hover:scale-110`}>
@@ -332,7 +333,6 @@ export default function AffiliateDashboard() {
                   <TableHead>Move-In</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -346,9 +346,6 @@ export default function AffiliateDashboard() {
                     </TableCell>
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {`${currencySymbol}${(Number(ref.estimatedValue) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -442,11 +439,11 @@ export default function AffiliateDashboard() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Apt, Suite, or Address 2</Label>
+                <Label>Unit / Apartment</Label>
                 <Input
                   value={submitForm.address2}
                   onChange={(e) => setSubmitForm({ ...submitForm, address2: e.target.value })}
-                  placeholder="Apt 4B"
+                  placeholder="Unit 4B"
                 />
               </div>
               <div className="space-y-2">
@@ -460,15 +457,13 @@ export default function AffiliateDashboard() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Estimated Deal Size ({currencySymbol}) *</Label>
-              <Input
-                type="number"
-                required
-                value={submitForm.estimatedValue}
-                onChange={(e) => setSubmitForm({ ...submitForm, estimatedValue: e.target.value })}
-                placeholder="0"
+              <Label>Lead Notes</Label>
+              <Textarea
+                value={submitForm.notes}
+                onChange={(e) => setSubmitForm({ ...submitForm, notes: e.target.value })}
+                placeholder="Add access instructions, preferences, source details, or anything the team should know."
+                rows={4}
               />
-              <p className="text-xs text-muted-foreground">Type 0 if unsure</p>
             </div>
 
             <DialogFooter>

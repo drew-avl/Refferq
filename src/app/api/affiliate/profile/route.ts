@@ -97,6 +97,7 @@ export async function GET(request: NextRequest) {
         ...ref,
         estimatedValue: metadata.estimatedValue,
         company: metadata.company,
+        notes: ref.notes || metadata.notes,
         address: metadata.address,
         address2: metadata.address2,
         moveInDate: metadata.moveInDate,

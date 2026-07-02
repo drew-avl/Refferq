@@ -29,14 +29,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import {
   Search,
   UserCheck,
   Clock,
   CheckCircle2,
   XCircle,
-  ExternalLink,
   Building2,
   Mail,
   Phone,
@@ -54,7 +52,6 @@ interface Referral {
   status: string;
   notes: string | null;
   createdAt: string;
-  estimatedValue: number;
   company: string;
   affiliate: {
     id: string;
@@ -79,7 +76,6 @@ export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   useEffect(() => {
     fetchReferrals();
@@ -91,7 +87,6 @@ export default function CustomersPage() {
       const data = await res.json();
       if (data.success) {
         setReferrals(data.referrals);
-        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
@@ -244,7 +239,6 @@ export default function CustomersPage() {
                   <TableHead>Lead</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Referred By</TableHead>
-                  <TableHead>Est. Value</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -295,12 +289,6 @@ export default function CustomersPage() {
                       <div className="text-sm">
                         <p className="font-medium">{referral.affiliate.name}</p>
                         <p className="text-xs text-muted-foreground">{referral.affiliate.partnerGroup}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm font-medium">
-                        {currencySymbol}
-                        {referral.estimatedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </TableCell>
                     <TableCell>
