@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { getPublicAppUrl } from './platform-defaults';
 
 // Initialize Resend with API key only when needed (server-side)
 let resendInstance: Resend | null = null;
@@ -79,6 +80,7 @@ export interface CommissionNotificationData {
   amountCents: number;
   commissionCents: number;
   commissionRate: number;
+  commissionType?: string;
   transactionId: string;
 }
 
@@ -432,7 +434,10 @@ class EmailService {
   private generateCommissionNotificationHTML(data: CommissionNotificationData, symbol: string): string {
     const amount = this.formatAmount(data.amountCents, symbol);
     const commission = this.formatAmount(data.commissionCents, symbol);
-    const rate = (data.commissionRate * 100).toFixed(0);
+    const isPercentageCommission =
+      data.commissionType === 'PERCENTAGE' || (!data.commissionType && data.commissionRate > 0);
+    const rate = (data.commissionRate > 1 ? data.commissionRate : data.commissionRate * 100).toFixed(0);
+    const termsLabel = isPercentageCommission ? `${rate}% commission` : 'Fixed referral payout';
 
     return `
       <!DOCTYPE html>
@@ -462,7 +467,7 @@ class EmailService {
           <div class="amount-box">
             <div style="font-size: 14px; color: #666; margin-bottom: 10px;">You earned</div>
             <div class="commission">${commission}</div>
-            <div style="font-size: 14px; color: #666; margin-top: 10px;">${rate}% commission</div>
+            <div style="font-size: 14px; color: #666; margin-top: 10px;">${termsLabel}</div>
           </div>
           
           <div class="details">
@@ -480,8 +485,8 @@ class EmailService {
               <strong style="color: #10b981;">${commission}</strong>
             </div>
             <div class="detail-row">
-              <span>Commission Rate:</span>
-              <strong>${rate}%</strong>
+              <span>Payout Terms:</span>
+              <strong>${termsLabel}</strong>
             </div>
             <div class="detail-row" style="border-bottom: none;">
               <span>Transaction ID:</span>
@@ -492,7 +497,7 @@ class EmailService {
           <p>This commission is currently <strong>pending</strong> and will be included in your next payout.</p>
           
           <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/affiliate" class="button">View Your Dashboard</a>
+            <a href="${getPublicAppUrl()}/affiliate" class="button">View Your Dashboard</a>
           </div>
           
           <p style="margin-top: 30px; color: #666; font-size: 14px;">
@@ -587,7 +592,7 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<{ success: boolean; message: string }> {
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${getPublicAppUrl()}/reset-password?token=${resetToken}`;
     return this.sendTemplatedEmail({
       to: email,
       templateType: 'PASSWORD_RESET',
@@ -640,7 +645,7 @@ class EmailService {
   }
 
   async sendVerificationEmail(email: string, verificationToken: string): Promise<{ success: boolean; message: string }> {
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${getPublicAppUrl()}/verify-email?token=${verificationToken}`;
     return this.sendTemplatedEmail({
       to: email,
       templateType: 'EMAIL_VERIFICATION',
@@ -692,6 +697,7 @@ class EmailService {
       amountCents: number;
       commissionCents: number;
       commissionRate: number;
+      commissionType?: string;
       transactionId: string;
     }
   ): Promise<{ success: boolean; message: string }> {

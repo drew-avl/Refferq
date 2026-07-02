@@ -65,12 +65,25 @@ interface Partner {
   email: string;
   referralCode: string;
   partnerGroup?: string;
-  commissionRate: number;
+  assignedPrograms: AssignedProgram[];
   status: string;
   totalClicks: number;
   totalLeads: number;
   totalRevenue: number;
   createdAt: string;
+}
+
+interface AssignedProgram {
+  id: string;
+  name: string;
+  slug: string;
+  isDefault: boolean;
+  isActive: boolean;
+  referralPayoutCents: number;
+  commissionRate: number;
+  commissionType: string;
+  currency: string;
+  minPayoutCents?: number;
 }
 
 interface Customer {
@@ -102,6 +115,59 @@ interface Payout {
   createdAt: string;
   processedAt?: string;
 }
+
+const getAssignedPrograms = (affiliate: any): AssignedProgram[] =>
+  (affiliate.programAssignments || [])
+    .map((assignment: any) => assignment.program)
+    .filter(Boolean);
+
+const getPrimaryProgram = (programs: AssignedProgram[]) =>
+  programs.find((program) => program.isDefault) || programs[0] || null;
+
+const formatProgramCurrency = (cents: number, currency = 'USD') => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(cents / 100);
+  } catch (_error) {
+    return `${currency} ${(cents / 100).toLocaleString(undefined, {
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+};
+
+const formatProgramNames = (programs: AssignedProgram[]) => {
+  if (programs.length === 0) return 'No program assigned';
+  if (programs.length <= 2) return programs.map((program) => program.name).join(', ');
+  return `${programs[0].name} +${programs.length - 1} more`;
+};
+
+const formatPayoutTerms = (programs: AssignedProgram[]) => {
+  if (programs.length === 0) return 'No program assigned';
+
+  const payouts = programs.map((program) => ({
+    cents: program.referralPayoutCents || 0,
+    currency: program.currency || 'USD',
+  }));
+  const uniquePayouts = Array.from(new Set(payouts.map((payout) => `${payout.currency}:${payout.cents}`)));
+
+  if (uniquePayouts.length === 1) {
+    const payout = payouts[0];
+    return `${formatProgramCurrency(payout.cents, payout.currency)} per completed referral`;
+  }
+
+  return `${programs.length} program-specific payouts`;
+};
+
+const formatCommissionTerms = (rate: number) => {
+  if (!rate || rate <= 0) return 'Fixed payout';
+  const normalizedRate = rate > 1 ? rate : rate * 100;
+  return `${normalizedRate.toFixed(0)}%`;
+};
 
 export default function PartnerDetailPage() {
   const params = useParams();
@@ -143,18 +209,19 @@ export default function PartnerDetailPage() {
         setCurrencySymbol(data.currencySymbol || '$');
         const affiliate = data.affiliates?.find((a: any) => a.id === partnerId);
         if (affiliate) {
+          const assignedPrograms = getAssignedPrograms(affiliate);
           setPartner({
             id: affiliate.id,
-            name: affiliate.name,
-            email: affiliate.email,
+            name: affiliate.user?.name || 'Unknown Partner',
+            email: affiliate.user?.email || '',
             referralCode: affiliate.referralCode,
-            partnerGroup: affiliate.partnerGroup,
-            commissionRate: affiliate.commissionRate || 0.20,
-            status: affiliate.status,
+            partnerGroup: affiliate.partnerGroup?.name,
+            assignedPrograms,
+            status: affiliate.user?.status || affiliate.status || 'PENDING',
             totalClicks: affiliate.totalClicks || 0,
-            totalLeads: affiliate.totalLeads || 0,
+            totalLeads: affiliate._count?.referrals || affiliate.totalLeads || 0,
             totalRevenue: affiliate.totalRevenue || 0,
-            createdAt: affiliate.createdAt,
+            createdAt: affiliate.createdAt || affiliate.user?.createdAt,
           });
         }
       }
@@ -341,6 +408,9 @@ export default function PartnerDetailPage() {
     );
   }
 
+  const primaryProgram = getPrimaryProgram(partner.assignedPrograms);
+  const payoutTerms = formatPayoutTerms(partner.assignedPrograms);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -370,7 +440,9 @@ export default function PartnerDetailPage() {
                   </Badge>
                 )}
                 <Badge variant="outline" className="text-xs">
-                  {(partner.commissionRate * 100).toFixed(0)}% commission
+                  {primaryProgram
+                    ? `${formatProgramCurrency(primaryProgram.referralPayoutCents || 0, primaryProgram.currency)} per referral`
+                    : 'No program assigned'}
                 </Badge>
               </div>
             </div>
@@ -463,8 +535,9 @@ export default function PartnerDetailPage() {
                   { label: 'Name', value: partner.name },
                   { label: 'Email', value: partner.email },
                   { label: 'Referral Code', value: partner.referralCode, mono: true },
-                  { label: 'Partner Group', value: partner.partnerGroup || 'Default' },
-                  { label: 'Commission Rate', value: `${(partner.commissionRate * 100).toFixed(0)}%` },
+                  { label: 'Partner Group', value: partner.partnerGroup || 'Not assigned' },
+                  { label: 'Property Program', value: formatProgramNames(partner.assignedPrograms) },
+                  { label: 'Referral Payout', value: payoutTerms },
                   { label: 'Partner Since', value: formatDate(partner.createdAt) },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between">
@@ -597,7 +670,7 @@ export default function PartnerDetailPage() {
                       <TableHead>Date</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="text-right">Rate</TableHead>
+                      <TableHead className="text-right">Terms</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -607,7 +680,7 @@ export default function PartnerDetailPage() {
                         <TableCell className="text-muted-foreground text-sm">{formatDate(comm.createdAt)}</TableCell>
                         <TableCell className="font-medium">{comm.customerName}</TableCell>
                         <TableCell className="text-right font-semibold text-primary">{formatCurrency(comm.amountCents)}</TableCell>
-                        <TableCell className="text-right text-muted-foreground">{(comm.rate * 100).toFixed(0)}%</TableCell>
+                        <TableCell className="text-right text-muted-foreground">{formatCommissionTerms(comm.rate)}</TableCell>
                         <TableCell>{getStatusBadge(comm.status)}</TableCell>
                       </TableRow>
                     ))}

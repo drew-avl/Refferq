@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
 import * as bcrypt from 'bcryptjs';
+import { PROGRAM_DEFAULTS } from './program-defaults';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -565,9 +566,9 @@ export class DatabaseService {
           name: 'Default Property Program',
           slug: 'default-property',
           description: 'Default fixed payout program for referral leads',
-          referralPayoutCents: 10000,
-          commissionRate: 0,
-          commissionType: 'FIXED',
+          referralPayoutCents: PROGRAM_DEFAULTS.referralPayoutCents,
+          commissionRate: PROGRAM_DEFAULTS.commissionRate,
+          commissionType: PROGRAM_DEFAULTS.commissionType,
           currency: 'USD',
           isDefault: true,
         },

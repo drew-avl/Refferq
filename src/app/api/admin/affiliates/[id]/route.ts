@@ -49,9 +49,10 @@ export async function PATCH(
       where: { id: params.id },
       include: {
         user: true,
-        programAssignments: {
-          include: { program: true }
-        }
+          programAssignments: {
+            include: { program: true }
+          },
+          partnerGroup: true
       }
     });
 
@@ -201,11 +202,20 @@ export async function PATCH(
                   isActive: true,
                   isDefault: true,
                   referralPayoutCents: true,
-                  currency: true
+                  commissionRate: true,
+                  commissionType: true,
+                  currency: true,
+                  minPayoutCents: true
                 }
               }
             },
             orderBy: { createdAt: 'asc' }
+          },
+          partnerGroup: {
+            select: {
+              id: true,
+              name: true
+            }
           },
           _count: {
             select: {

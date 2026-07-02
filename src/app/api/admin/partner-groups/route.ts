@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     if (!commissionRate || typeof commissionRate !== 'number' || commissionRate <= 0 || commissionRate > 1) {
       return NextResponse.json(
-        { error: 'Commission rate must be a number between 0 and 1 (e.g., 0.20 for 20%)' },
+        { error: 'Commission rate must be a decimal number greater than 0 and less than or equal to 1' },
         { status: 400 }
       );
     }

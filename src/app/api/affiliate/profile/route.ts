@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { isSoldReferralStatus } from '@/lib/referral-status';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 const allowedPayoutMethods = ['PayPal', 'Zelle'];
 
@@ -140,7 +141,7 @@ export async function GET(request: NextRequest) {
     const programMinPayouts = programs
       .map((program) => program.minPayoutCents)
       .filter((value): value is number => typeof value === 'number' && value >= 0);
-    const fallbackMinPayoutCents = programSettings?.minPayoutCents ?? 100000;
+    const fallbackMinPayoutCents = programSettings?.minPayoutCents ?? PROGRAM_DEFAULTS.minPayoutCents;
     const minPayoutCents = programMinPayouts.length > 0
       ? Math.min(...programMinPayouts)
       : fallbackMinPayoutCents;

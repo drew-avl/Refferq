@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import {
   SidebarProvider,
   Sidebar,
@@ -38,7 +39,6 @@ import {
   Settings,
   LogOut,
   ChevronsUpDown,
-  Bell,
 } from 'lucide-react';
 
 interface BrandSettings {
@@ -264,11 +264,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
                 Welcome back, {user.name?.split(' ')[0]}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-4 w-4" />
-              </Button>
-            </div>
+            <NotificationCenter />
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 text-foreground sm:p-6">

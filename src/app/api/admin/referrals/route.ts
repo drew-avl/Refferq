@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               referralPayoutCents: true,
+              commissionRate: true,
+              commissionType: true,
               currency: true,
             },
           },
@@ -57,9 +59,7 @@ export async function GET(request: NextRequest) {
       getCurrencySettings(),
     ]);
 
-    const partnerGroupMap = new Map(
-      partnerGroups.map(pg => [pg.id, { name: pg.name, rate: pg.commissionRate }])
-    );
+    const partnerGroupMap = new Map(partnerGroups.map(pg => [pg.id, pg.name]));
 
     return NextResponse.json({
       success: true,
@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
         
         return {
           id: referral.id,
+          affiliateId: referral.affiliateId,
           leadEmail: referral.leadEmail,
           leadName: referral.leadName,
           leadPhone: referral.leadPhone,
@@ -89,9 +90,11 @@ export async function GET(request: NextRequest) {
             name: affiliate.user.name,
             email: affiliate.user.email,
             referralCode: affiliate.referralCode,
-            partnerGroup: pgData?.name || 'Default',
+            partnerGroup: pgData || 'Not assigned',
             partnerGroupId: pgId,
-            commissionRate: pgData?.rate || 0.20
+            commissionRate: referral.program?.commissionType === 'PERCENTAGE'
+              ? (referral.program.commissionRate > 1 ? referral.program.commissionRate / 100 : referral.program.commissionRate)
+              : 0
           }
         };
       }),

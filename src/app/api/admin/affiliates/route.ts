@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getPublicAppUrl } from '@/lib/platform-defaults';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,6 +41,12 @@ export async function GET(request: NextRequest) {
             referrals: true
           }
         },
+        partnerGroup: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         programAssignments: {
           include: {
             program: {
@@ -50,7 +57,10 @@ export async function GET(request: NextRequest) {
                 isActive: true,
                 isDefault: true,
                 referralPayoutCents: true,
-                currency: true
+                commissionRate: true,
+                commissionType: true,
+                currency: true,
+                minPayoutCents: true
               }
             }
           },
@@ -172,7 +182,7 @@ export async function POST(request: NextRequest) {
     if (sendWelcomeEmail) {
       try {
         const { emailService } = await import('@/lib/email');
-        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com'}/login`;
+        const loginUrl = `${getPublicAppUrl()}/login`;
         const emailResult = await emailService.sendWelcomeEmail({
           name: newUser.name,
           email: newUser.email,

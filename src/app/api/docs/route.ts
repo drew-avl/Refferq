@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPublicAppUrl } from '@/lib/platform-defaults';
 
 // Auto-generated OpenAPI spec from Zod schemas
 export async function GET(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
             license: { name: 'MIT', url: 'https://opensource.org/licenses/MIT' },
         },
         servers: [
-            { url: process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com', description: 'Production' },
+            { url: getPublicAppUrl(), description: 'Production' },
         ],
         tags: [
             { name: 'Auth', description: 'Authentication endpoints' },

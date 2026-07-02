@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -83,17 +84,17 @@ export async function POST(request: NextRequest) {
         name,
         slug: slug.toLowerCase(),
         description: description || null,
-        referralPayoutCents: Number(referralPayoutCents) || 10000,
-        commissionRate: commissionRate || 0,
-        commissionType: commissionType || 'FIXED',
-        cookieDuration: cookieDuration || 30,
-        currency: currency || 'USD',
-        autoApprove: autoApprove || false,
-        minPayoutCents: minPayoutCents || 100000,
-        payoutFrequency: payoutFrequency || 'MONTHLY',
+        referralPayoutCents: referralPayoutCents === undefined ? PROGRAM_DEFAULTS.referralPayoutCents : Number(referralPayoutCents),
+        commissionRate: commissionRate ?? PROGRAM_DEFAULTS.commissionRate,
+        commissionType: commissionType || PROGRAM_DEFAULTS.commissionType,
+        cookieDuration: cookieDuration ?? PROGRAM_DEFAULTS.cookieDurationDays,
+        currency: currency || PROGRAM_DEFAULTS.currency,
+        autoApprove: autoApprove ?? PROGRAM_DEFAULTS.autoApprove,
+        minPayoutCents: minPayoutCents ?? PROGRAM_DEFAULTS.minPayoutCents,
+        payoutFrequency: payoutFrequency || PROGRAM_DEFAULTS.payoutFrequency,
         termsUrl: termsUrl || null,
         logoUrl: logoUrl || null,
-        brandColor: brandColor || '#10b981',
+        brandColor: brandColor || PROGRAM_DEFAULTS.brandColor,
         affiliateAssignments: Array.isArray(affiliateIds) && affiliateIds.length > 0
           ? {
               create: affiliateIds.map((affiliateId: string) => ({ affiliateId })),

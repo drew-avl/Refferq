@@ -78,6 +78,22 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   REJECTED: { label: 'Rejected', variant: 'destructive' },
 };
 
+const formatProgramPayout = (cents: number, currency = 'USD') => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(cents / 100);
+  } catch (_error) {
+    return `${currency} ${(cents / 100).toLocaleString(undefined, {
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+};
+
 export default function CustomersPage() {
   const router = useRouter();
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -311,7 +327,7 @@ export default function CustomersPage() {
                         <div className="text-sm">
                           <p className="font-medium">{referral.program.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            ${((referral.referralPayoutCents || 0) / 100).toFixed(2)} payout
+                            {formatProgramPayout(referral.referralPayoutCents || 0, referral.program.currency)} payout
                           </p>
                         </div>
                       ) : (

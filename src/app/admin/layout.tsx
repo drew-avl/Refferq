@@ -3,6 +3,7 @@
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import {
   SidebarProvider,
   Sidebar,
@@ -40,7 +41,6 @@ import {
   BarChart3,
   LogOut,
   ChevronsUpDown,
-  Bell,
   KeyRound,
   Activity,
   Ticket,
@@ -264,14 +264,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.name?.split(' ')[0]}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-4 w-4" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">
-                  3
-                </span>
-              </Button>
-            </div>
+            <NotificationCenter />
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6">

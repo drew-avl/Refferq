@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 
 async function verifyAdmin(request: NextRequest) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     const { dryRun = false } = await request.json().catch(() => ({ dryRun: false }));
 
     const settings = await prisma.programSettings.findFirst();
-    const fallbackMinPayoutCents = settings?.minPayoutCents || 100000;
+    const fallbackMinPayoutCents = settings?.minPayoutCents ?? PROGRAM_DEFAULTS.minPayoutCents;
 
     const activeAffiliates = await prisma.affiliate.findMany({
       where: {
@@ -181,7 +182,7 @@ export async function GET(request: NextRequest) {
   try {
     const settings = await prisma.programSettings.findFirst();
 
-    const fallbackMinPayoutCents = settings?.minPayoutCents || 100000;
+    const fallbackMinPayoutCents = settings?.minPayoutCents ?? PROGRAM_DEFAULTS.minPayoutCents;
     const activeAffiliates = await prisma.affiliate.findMany({
       where: {
         balanceCents: { gt: 0 },

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getPublicAppUrl } from '@/lib/platform-defaults';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 // ─── Open Redirect Protection ─────────────────────────────────
 function isAllowedRedirectUrl(url: string, appUrl: string, websiteUrl?: string): boolean {
@@ -40,7 +42,7 @@ export async function GET(
     const { code } = await params;
     const referralCode = code;
     const searchParams = request.nextUrl.searchParams;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com';
+    const appUrl = getPublicAppUrl();
 
     // Support both 'target' and 'dest' (Plan called it 'dest')
     const rawTarget = searchParams.get('dest') || searchParams.get('target');
@@ -146,9 +148,9 @@ export async function GET(
 
     const response = NextResponse.redirect(redirectUrl.toString());
 
-    // Set attribution cookie (expires in 30 days)
+    // Set attribution cookie using configured program duration.
     const cookieExpiry = new Date();
-    cookieExpiry.setDate(cookieExpiry.getDate() + 30);
+    cookieExpiry.setDate(cookieExpiry.getDate() + (settings?.cookieDuration ?? PROGRAM_DEFAULTS.cookieDurationDays));
 
     response.cookies.set('affiliate_attribution', JSON.stringify({
       referral_code: referralCode,
@@ -167,7 +169,7 @@ export async function GET(
     console.error('Referral tracking error:', error);
 
     // Fallback redirect on error (safe — always redirects to app URL)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.referconnect.com';
+    const appUrl = getPublicAppUrl();
     return NextResponse.redirect(appUrl);
   }
 }

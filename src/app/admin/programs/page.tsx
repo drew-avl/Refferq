@@ -23,6 +23,7 @@ import {
 import {
   Layers, Plus, Star, Banknote, Clock, Globe, Edit, Trash2,
 } from 'lucide-react';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 interface Program {
   id: string;
@@ -62,10 +63,26 @@ interface Affiliate {
   };
 }
 
-const emptyForm = {
-  name: '', slug: '', description: '', referralPayoutDollars: '100',
-  cookieDuration: '30', currency: 'USD', autoApprove: false, minPayoutCents: '100000',
-  payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
+interface ProgramForm {
+  name: string;
+  slug: string;
+  description: string;
+  referralPayoutDollars: string;
+  cookieDuration: string;
+  currency: string;
+  autoApprove: boolean;
+  minPayoutCents: string;
+  payoutFrequency: string;
+  termsUrl: string;
+  logoUrl: string;
+  brandColor: string;
+  assignedAffiliateIds: string[];
+}
+
+const emptyForm: ProgramForm = {
+  name: '', slug: '', description: '', referralPayoutDollars: String(PROGRAM_DEFAULTS.referralPayoutCents / 100),
+  cookieDuration: String(PROGRAM_DEFAULTS.cookieDurationDays), currency: PROGRAM_DEFAULTS.currency, autoApprove: PROGRAM_DEFAULTS.autoApprove, minPayoutCents: String(PROGRAM_DEFAULTS.minPayoutCents),
+  payoutFrequency: PROGRAM_DEFAULTS.payoutFrequency, termsUrl: '', logoUrl: '', brandColor: PROGRAM_DEFAULTS.brandColor,
   assignedAffiliateIds: [] as string[],
 };
 
@@ -113,7 +130,7 @@ export default function ProgramsPage() {
       cookieDuration: String(p.cookieDuration), currency: p.currency,
       autoApprove: p.autoApprove, minPayoutCents: String(p.minPayoutCents),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
-      logoUrl: p.logoUrl || '', brandColor: p.brandColor || '#6366f1',
+      logoUrl: p.logoUrl || '', brandColor: p.brandColor || PROGRAM_DEFAULTS.brandColor,
       assignedAffiliateIds: p.assignedAffiliates?.map((affiliate) => affiliate.id) || [],
     });
     setDialogOpen(true);
@@ -134,7 +151,7 @@ export default function ProgramsPage() {
       const body: any = {
         name: form.name, slug: form.slug, description: form.description || null,
         referralPayoutCents: Math.round((parseFloat(form.referralPayoutDollars) || 0) * 100),
-        commissionRate: 0, commissionType: 'FIXED',
+        commissionRate: PROGRAM_DEFAULTS.commissionRate, commissionType: PROGRAM_DEFAULTS.commissionType,
         cookieDuration: parseInt(form.cookieDuration), currency: form.currency,
         autoApprove: form.autoApprove, minPayoutCents: parseInt(form.minPayoutCents),
         payoutFrequency: form.payoutFrequency,
@@ -195,8 +212,16 @@ export default function ProgramsPage() {
   };
 
   const formatCurrency = (cents: number, currency: string = 'USD') => {
-    const symbol = currency === 'INR' ? 'INR ' : currency === 'USD' ? '$' : currency === 'EUR' ? '\u20AC' : currency;
-    return `${symbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+        maximumFractionDigits: 2,
+      }).format(cents / 100);
+    } catch (_error) {
+      return `${currency} ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+    }
   };
 
   const stats = {

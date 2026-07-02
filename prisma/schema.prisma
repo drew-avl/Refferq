@@ -220,7 +220,7 @@ model ProgramSettings {
   autoApprovePayouts        Boolean  @default(false) @map("auto_approve_payouts")
   payoutFrequency           String   @default("MONTHLY") @map("payout_frequency")
   commissionHoldDays        Int      @default(30) @map("commission_hold_days")
-  minPayoutCents            Int      @default(100000) @map("min_payout_cents")
+  minPayoutCents            Int      @default(0) @map("min_payout_cents")
   companyName               String?  @map("company_name")
   createdAt                 DateTime @default(now()) @map("created_at")
   updatedAt                 DateTime @updatedAt @map("updated_at")
@@ -637,7 +637,7 @@ model Program {
   name              String
   slug              String   @unique
   description       String?
-  referralPayoutCents Int    @default(10000) @map("referral_payout_cents")
+  referralPayoutCents Int    @default(0) @map("referral_payout_cents")
   commissionRate    Float    @default(20) @map("commission_rate")
   commissionType    String   @default("PERCENTAGE") @map("commission_type")
   cookieDuration    Int      @default(30) @map("cookie_duration") // days
@@ -645,7 +645,7 @@ model Program {
   isActive          Boolean  @default(true) @map("is_active")
   isDefault         Boolean  @default(false) @map("is_default")
   autoApprove       Boolean  @default(false) @map("auto_approve")
-  minPayoutCents    Int      @default(100000) @map("min_payout_cents")
+  minPayoutCents    Int      @default(0) @map("min_payout_cents")
   payoutFrequency   String   @default("MONTHLY") @map("payout_frequency")
   termsUrl          String?  @map("terms_url")
   logoUrl           String?  @map("logo_url")

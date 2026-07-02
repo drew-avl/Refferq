@@ -30,6 +30,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 interface Payout {
   id: string;
@@ -53,8 +54,8 @@ export default function PayoutsPage() {
   const [balance, setBalance] = useState(0);
   const [currencySymbol, setCurrencySymbol] = useState('$');
   const [payoutSettings, setPayoutSettings] = useState<PayoutSettings>({
-    minPayoutCents: 100000,
-    maxPayoutCents: 100000,
+    minPayoutCents: PROGRAM_DEFAULTS.minPayoutCents,
+    maxPayoutCents: PROGRAM_DEFAULTS.minPayoutCents,
     source: 'GLOBAL',
   });
 

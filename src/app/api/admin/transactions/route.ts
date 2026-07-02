@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+function normalizeCommissionRate(rate: number | null | undefined) {
+  if (!rate || rate <= 0) return 0;
+  return rate > 1 ? rate / 100 : rate;
+}
 
 // GET - Fetch all transactions (Admin only)
 export async function GET(request: NextRequest) {
@@ -138,11 +142,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get referral with affiliate and partner group
+    // Get referral with affiliate and assigned program terms
     const referral = await prisma.referral.findUnique({
       where: { id: referralId },
       include: {
-        affiliate: true
+        affiliate: true,
+        program: true
       }
     });
 
@@ -153,22 +158,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get partner group commission rate
-    const affiliate = referral.affiliate as any;
-    let commissionRate = 0.20; // Default 20%
-
-    if (affiliate.partnerGroupId) {
-      const partnerGroup = await prisma.partnerGroup.findUnique({
-        where: { id: affiliate.partnerGroupId }
-      });
-      if (partnerGroup) {
-        commissionRate = partnerGroup.commissionRate;
-      }
-    }
-
-    // Calculate commission
     const amountCents = Math.floor(Number(amount) * 100);
-    const commissionCents = Math.floor(amountCents * commissionRate);
+    const fallbackProgram = referral.program
+      ? null
+      : await prisma.program.findFirst({
+          where: { isActive: true },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+        });
+    const program = referral.program || fallbackProgram;
+    const commissionRate = program?.commissionType === 'PERCENTAGE'
+      ? normalizeCommissionRate(program.commissionRate)
+      : 0;
+    const commissionCents = program?.commissionType === 'PERCENTAGE'
+      ? Math.floor(amountCents * commissionRate)
+      : program?.referralPayoutCents || 0;
+    const affiliate = referral.affiliate as any;
 
     const { currency } = await import('@/lib/currency').then(m => m.getCurrencySettings());
 
@@ -204,7 +208,10 @@ export async function POST(request: NextRequest) {
         eventMetadata: {
           transactionId: transaction.id,
           commissionCents,
-          commissionRate
+          commissionRate,
+          commissionType: program?.commissionType || null,
+          referralPayoutCents: program?.referralPayoutCents || null,
+          programId: program?.id || null
         }
       }
     });
@@ -223,6 +230,7 @@ export async function POST(request: NextRequest) {
           amountCents,
           commissionCents,
           commissionRate,
+          commissionType: program?.commissionType || 'FIXED',
           transactionId: transaction.id
         });
       }

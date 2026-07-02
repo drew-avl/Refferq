@@ -283,8 +283,8 @@ export default function InvoicesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Amount (cents) *</Label>
-                <Input type="number" value={form.amountCents} onChange={e => setForm({...form, amountCents: e.target.value})} placeholder="100000" />
-                <p className="text-xs text-muted-foreground">100000 = {currencySymbol}1,000</p>
+                <Input type="number" value={form.amountCents} onChange={e => setForm({...form, amountCents: e.target.value})} placeholder="Amount in cents" />
+                <p className="text-xs text-muted-foreground">Enter the payout amount in cents.</p>
               </div>
               <div className="grid gap-2">
                 <Label>Tax (cents)</Label>

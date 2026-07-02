@@ -11,7 +11,8 @@ export interface NotificationData {
 }
 
 class NotificationService {
-  private readonly STORAGE_KEY = 'affiliate_platform_notifications';
+  private readonly STORAGE_KEY = 'referconnect_notifications';
+  private readonly LEGACY_STORAGE_KEYS = ['affiliate_platform_notifications'];
 
   private generateId(): string {
     return `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -20,7 +21,17 @@ class NotificationService {
   private getNotifications(): NotificationData[] {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      if (data) return JSON.parse(data);
+
+      for (const key of this.LEGACY_STORAGE_KEYS) {
+        const legacyData = localStorage.getItem(key);
+        if (legacyData) {
+          localStorage.setItem(this.STORAGE_KEY, legacyData);
+          return JSON.parse(legacyData);
+        }
+      }
+
+      return [];
     } catch (_e) {
       return [];
     }

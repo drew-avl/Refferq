@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, prisma } from '@/lib/prisma';
+import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 import crypto from 'crypto';
 
 // ─── Webhook Signature Verification ────────────────────────────
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
     const commissionRules = await db.getCommissionRules();
     let applicableRule = commissionRules.find((rule: any) => rule.isDefault);
 
-    const commissionRate = applicableRule?.value || 15;
+    const commissionRate = applicableRule?.value ?? PROGRAM_DEFAULTS.commissionRate;
     let commissionAmount = 0;
 
     if (applicableRule?.type === 'PERCENTAGE' && amount_cents) {
@@ -136,9 +137,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Commission Hold Period ─────────────────────────────────
-    // Fetch hold days from ProgramSettings (default 30)
+    // Fetch hold days from ProgramSettings.
     const settings = await prisma.programSettings.findFirst();
-    const holdDays = (settings as any)?.commissionHoldDays ?? 30;
+    const holdDays = (settings as any)?.commissionHoldDays ?? PROGRAM_DEFAULTS.commissionHoldDays;
     const maturesAt = new Date();
     maturesAt.setDate(maturesAt.getDate() + holdDays);
 

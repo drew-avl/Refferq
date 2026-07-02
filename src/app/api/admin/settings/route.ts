@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
+import { getDefaultProgramSettings } from '@/lib/platform-defaults';
 
 
 export async function GET(request: NextRequest) {
@@ -28,21 +29,7 @@ export async function GET(request: NextRequest) {
     // If no settings exist, create default settings
     if (!programSettings) {
       programSettings = await prisma.programSettings.create({
-        data: {
-          programId: `prg_${Date.now()}`,
-          productName: 'BsBot',
-          programName: "BsBot's Referral Program",
-          websiteUrl: 'https://kyns.com',
-          currency: 'USD',
-          portalSubdomain: 'bsbot.tolt.io',
-          companyName: 'ReferConnect',
-          brandBackgroundColor: '#f8fafc',
-          brandButtonColor: '#059669',
-          brandTextColor: '#0f172a',
-          minimumPayoutThreshold: 0,
-          payoutTerm: 'NET-15',
-          commissionHoldDays: 30
-        }
+        data: getDefaultProgramSettings()
       });
     }
 
@@ -104,18 +91,7 @@ export async function PUT(request: NextRequest) {
 
     if (!programSettings) {
       programSettings = await prisma.programSettings.create({
-        data: {
-          programId: `prg_${Date.now()}`,
-          productName: 'BsBot',
-          programName: "BsBot's Referral Program",
-          websiteUrl: 'https://kyns.com',
-          currency: 'USD',
-          portalSubdomain: 'bsbot.tolt.io',
-          companyName: 'ReferConnect',
-          brandBackgroundColor: '#f8fafc',
-          brandButtonColor: '#059669',
-          brandTextColor: '#0f172a'
-        }
+        data: getDefaultProgramSettings()
       });
     }
 
