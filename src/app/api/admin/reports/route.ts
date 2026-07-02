@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
 
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     const user = await prisma.user.findUnique({
       where: { id: userId }
@@ -22,6 +26,7 @@ export async function GET(request: NextRequest) {
     const format = url.searchParams.get('format') || 'json';
     const startDate = url.searchParams.get('startDate');
     const endDate = url.searchParams.get('endDate');
+    const { currency, currencySymbol } = await getCurrencySettings();
 
     const dateFilter = startDate && endDate ? {
       createdAt: {
@@ -168,21 +173,27 @@ export async function GET(request: NextRequest) {
       };
     } else {
       // Summary Report (default)
-      const totalAffiliates = await prisma.affiliate.count();
-      const totalReferrals = await prisma.referral.count({ where: dateFilter });
-      const approvedReferrals = await prisma.referral.count({ 
-        where: { ...dateFilter, status: 'APPROVED' } 
-      });
-      const totalCommissions = await prisma.commission.aggregate({
-        where: dateFilter,
-        _sum: { amountCents: true },
-        _count: true
-      });
-      const totalPayouts = await prisma.payout.aggregate({
-        where: dateFilter,
-        _sum: { amountCents: true },
-        _count: true
-      });
+      const [
+        totalAffiliates,
+        totalReferrals,
+        approvedReferrals,
+        totalCommissions,
+        totalPayouts,
+      ] = await Promise.all([
+        prisma.affiliate.count(),
+        prisma.referral.count({ where: dateFilter }),
+        prisma.referral.count({ where: { ...dateFilter, status: 'APPROVED' } }),
+        prisma.commission.aggregate({
+          where: dateFilter,
+          _sum: { amountCents: true },
+          _count: true
+        }),
+        prisma.payout.aggregate({
+          where: dateFilter,
+          _sum: { amountCents: true },
+          _count: true
+        }),
+      ]);
 
       reportData = {
         type: 'Summary Report',
@@ -215,7 +226,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      report: reportData
+      report: reportData,
+      currency,
+      currencySymbol
     });
 
   } catch (error) {
@@ -232,10 +245,15 @@ function convertToCSV(data: any[]): string {
   
   const headers = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
-    Object.values(row).map(val => 
-      typeof val === 'string' && val.includes(',') ? `"${val}"` : val
-    ).join(',')
+    Object.values(row).map(escapeCsvValue).join(',')
   );
   
   return [headers, ...rows].join('\n');
+}
+
+function escapeCsvValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  const stringValue = value instanceof Date ? value.toISOString() : String(value);
+  const safeValue = /^[=+\-@]/.test(stringValue) ? `'${stringValue}` : stringValue;
+  return /[",\r\n]/.test(safeValue) ? `"${safeValue.replace(/"/g, '""')}"` : safeValue;
 }

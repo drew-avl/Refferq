@@ -52,7 +52,7 @@ import {
   Loader2,
   Users,
   Link2,
-  IndianRupee,
+  DollarSign,
   Wallet,
   Calendar,
   Clock,
@@ -132,7 +132,7 @@ const reportTypes: { value: ReportType; label: string; description: string; icon
   { value: 'summary', label: 'Summary', description: 'Overview of all metrics', icon: BarChart3 },
   { value: 'affiliates', label: 'Affiliates', description: 'Partner performance data', icon: Users },
   { value: 'referrals', label: 'Referrals', description: 'Referral lead details', icon: Link2 },
-  { value: 'commissions', label: 'Commissions', description: 'Commission records', icon: IndianRupee },
+  { value: 'commissions', label: 'Commissions', description: 'Commission records', icon: DollarSign },
   { value: 'payouts', label: 'Payouts', description: 'Payout history', icon: Wallet },
 ];
 
@@ -144,6 +144,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [tableRows, setTableRows] = useState<Record<string, unknown>[]>([]);
+  const [currencySymbol, setCurrencySymbol] = useState('$');
 
   // ── Scheduled Reports ──
   const [scheduled, setScheduled] = useState<ScheduledReport[]>([]);
@@ -205,6 +206,7 @@ export default function ReportsPage() {
       }
       const json = await res.json();
       if (json.success) {
+        setCurrencySymbol(json.currencySymbol || '$');
         setData(json.report || json);
         if (json.report) {
           const report = json.report;
@@ -355,7 +357,10 @@ export default function ReportsPage() {
       const params = new URLSearchParams({ period: cohortPeriod, groupBy: cohortGroupBy });
       const res = await fetch(`/api/admin/reports/cohort?${params}`);
       const json = await res.json();
-      if (json.success) setCohort(json.cohortAnalysis);
+      if (json.success) {
+        setCurrencySymbol(json.currencySymbol || '$');
+        setCohort(json.cohortAnalysis);
+      }
     } catch (error) {
       console.error('Failed to fetch cohort analysis:', error);
     } finally {
@@ -393,6 +398,30 @@ export default function ReportsPage() {
   };
 
   // ───────────── Renderers ─────────────
+  const isMoneyKey = (key: string) => {
+    const normalized = key.toLowerCase();
+    return (
+      normalized.includes('cents') ||
+      normalized.includes('amount') ||
+      normalized.includes('earnings') ||
+      normalized === 'balance'
+    );
+  };
+
+  const formatMoney = (cents: number) =>
+    `${currencySymbol}${(cents / 100).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+  const formatReportValue = (key: string, value: unknown) => {
+    if (value === null || value === undefined) return '—';
+    if (typeof value === 'number') {
+      return isMoneyKey(key) ? formatMoney(value) : value.toLocaleString();
+    }
+    return String(value);
+  };
+
   const renderSummary = () => {
     if (!data) return null;
     const entries = Object.entries(data).filter(([key]) => !['type', 'generatedAt', 'dateRange', 'period'].includes(key));
@@ -410,13 +439,7 @@ export default function ReportsPage() {
                     {Object.entries(value as Record<string, unknown>).map(([k, v]) => (
                       <div key={k} className="flex justify-between text-sm">
                         <span className="text-muted-foreground capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <span className="font-medium">
-                          {typeof v === 'number'
-                            ? k.toLowerCase().includes('cents')
-                              ? `₹${(v / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                              : v.toLocaleString()
-                            : String(v)}
-                        </span>
+                        <span className="font-medium">{formatReportValue(k, v)}</span>
                       </div>
                     ))}
                   </div>
@@ -430,13 +453,7 @@ export default function ReportsPage() {
                 <CardTitle className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">
-                  {typeof value === 'number'
-                    ? key.toLowerCase().includes('cents')
-                      ? `₹${(value / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                      : value.toLocaleString()
-                    : String(value)}
-                </p>
+                <p className="text-2xl font-bold">{formatReportValue(key, value)}</p>
               </CardContent>
             </Card>
           );
@@ -465,12 +482,7 @@ export default function ReportsPage() {
               <TableRow key={idx}>
                 {columns.map((col: any) => {
                   const val = row[col];
-                  let display: string;
-                  if (val === null || val === undefined) display = '—';
-                  else if (typeof val === 'number' && col.toLowerCase().includes('cents'))
-                    display = `₹${(val / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-                  else if (typeof val === 'number') display = val.toLocaleString();
-                  else display = String(val);
+                  const display = formatReportValue(col, val);
                   return <TableCell key={col} className="text-sm whitespace-nowrap">{display}</TableCell>;
                 })}
               </TableRow>
@@ -619,7 +631,7 @@ export default function ReportsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{reportTypes.find((r) => r.value === reportType)?.label} Report</CardTitle>
-                <CardDescription>{startDate && endDate ? `${new Date(startDate).toLocaleDateString('en-IN')} — ${new Date(endDate).toLocaleDateString('en-IN')}` : 'All time'}</CardDescription>
+                <CardDescription>{startDate && endDate ? `${new Date(startDate).toLocaleDateString()} — ${new Date(endDate).toLocaleDateString()}` : 'All time'}</CardDescription>
               </CardHeader>
               <CardContent>
                 {reportType === 'summary' ? renderSummary() : renderTable()}
@@ -738,7 +750,7 @@ export default function ReportsPage() {
                         <TableCell className="text-sm">{s.frequency}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{(s.recipients as string[]).length} recipient(s)</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {s.nextRunAt ? new Date(s.nextRunAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}
+                          {s.nextRunAt ? new Date(s.nextRunAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '—'}
                         </TableCell>
                         <TableCell><Switch checked={s.isActive} onCheckedChange={() => handleToggleScheduled(s.id, s.isActive)} /></TableCell>
                         <TableCell className="text-right">
@@ -802,7 +814,7 @@ export default function ReportsPage() {
                         <TableCell><Badge variant="outline">{r.reportType}</Badge></TableCell>
                         <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{r.description || '—'}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          {new Date(r.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
@@ -903,10 +915,10 @@ export default function ReportsPage() {
                             <TableCell className="text-right">{c.conversionRate}%</TableCell>
                             <TableCell className="text-right">{c.totalCommissions}</TableCell>
                             <TableCell className="text-right font-medium">
-                              ₹{(c.totalEarningsCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                              {formatMoney(c.totalEarningsCents)}
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
-                              ₹{(c.avgEarningsPerAffiliateCents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                              {formatMoney(c.avgEarningsPerAffiliateCents)}
                             </TableCell>
                           </TableRow>
                         ))}

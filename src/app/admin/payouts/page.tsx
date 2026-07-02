@@ -32,7 +32,6 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  IndianRupee,
   ArrowUpRight,
   Ban,
   Download,

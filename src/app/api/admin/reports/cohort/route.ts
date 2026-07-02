@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrencySettings } from '@/lib/currency';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -8,7 +9,7 @@ async function verifyAdmin(request: NextRequest) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.role !== 'ADMIN') return null;
     return user;
-  } catch (_e) {
+  } catch {
     return null;
   }
 }
@@ -28,20 +29,22 @@ export async function GET(request: NextRequest) {
     const months = monthsMap[period] || 6;
     const startDate = new Date(now.getFullYear(), now.getMonth() - months, 1);
 
-    // Get all affiliates created within the period
-    const affiliates = await prisma.affiliate.findMany({
-      where: { createdAt: { gte: startDate } },
-      include: {
-        user: { select: { name: true, email: true, status: true, createdAt: true } },
-        referrals: {
-          select: { id: true, status: true, createdAt: true },
+    const [affiliates, currencySettings] = await Promise.all([
+      prisma.affiliate.findMany({
+        where: { createdAt: { gte: startDate } },
+        include: {
+          user: { select: { name: true, email: true, status: true, createdAt: true } },
+          referrals: {
+            select: { id: true, status: true, createdAt: true },
+          },
+          commissions: {
+            select: { id: true, amountCents: true, status: true, createdAt: true },
+          },
         },
-        commissions: {
-          select: { id: true, amountCents: true, status: true, createdAt: true },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+        orderBy: { createdAt: 'asc' },
+      }),
+      getCurrencySettings(),
+    ]);
 
     // Group affiliates into cohorts by join month/week
     const cohorts = new Map<string, {
@@ -66,11 +69,11 @@ export async function GET(request: NextRequest) {
         weekStart.setDate(weekStart.getDate() - weekStart.getDay());
         weekStart.setHours(0, 0, 0, 0);
         cohortKey = weekStart.toISOString().slice(0, 10);
-        cohortLabel = `Week of ${weekStart.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}`;
+        cohortLabel = `Week of ${weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
         cohortStart = weekStart;
       } else {
         cohortKey = `${joinDate.getFullYear()}-${String(joinDate.getMonth() + 1).padStart(2, '0')}`;
-        cohortLabel = joinDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        cohortLabel = joinDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
         cohortStart = new Date(joinDate.getFullYear(), joinDate.getMonth(), 1);
       }
 
@@ -135,6 +138,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      ...currencySettings,
       cohortAnalysis: {
         period,
         groupBy,

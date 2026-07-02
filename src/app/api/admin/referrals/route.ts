@@ -6,7 +6,10 @@ import { getReferralMetadataDetails } from '@/lib/referrals';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     // Get user from database
     const user = await prisma.user.findUnique({
@@ -27,27 +30,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all referrals with affiliate information
-    const referrals = await prisma.referral.findMany({
-      include: {
-        affiliate: {
-          include: {
-            user: true
+    const [referrals, partnerGroups, currencySettings] = await Promise.all([
+      prisma.referral.findMany({
+        include: {
+          affiliate: {
+            include: {
+              user: true
+            }
           }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-    
-    // Get all partner groups for commission rate lookup
-    const partnerGroups = await prisma.partnerGroup.findMany();
+      }),
+      prisma.partnerGroup.findMany(),
+      getCurrencySettings(),
+    ]);
+
     const partnerGroupMap = new Map(
       partnerGroups.map(pg => [pg.id, { name: pg.name, rate: pg.commissionRate }])
     );
-
-    const currencySettings = await getCurrencySettings();
 
     return NextResponse.json({
       success: true,
@@ -95,7 +97,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     // Get user from database
     const user = await prisma.user.findUnique({

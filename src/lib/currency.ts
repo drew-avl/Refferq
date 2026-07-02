@@ -3,7 +3,7 @@ import { prisma } from './prisma';
 const CURRENCY_SYMBOLS: Record<string, string> = {
     'USD': '$',
     'EUR': '€',
-    'INR': '₹',
+    'INR': 'INR ',
     'GBP': '£',
     'BGN': 'лв.',
     'CAD': 'CA$',

@@ -45,7 +45,6 @@ import {
   ArrowLeft,
   Users,
   Wallet,
-  IndianRupee,
   CreditCard,
   Copy,
   ExternalLink,
@@ -115,6 +114,7 @@ export default function PartnerDetailPage() {
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [payoutLoading, setPayoutLoading] = useState(false);
@@ -140,6 +140,7 @@ export default function PartnerDetailPage() {
       const res = await fetch('/api/admin/affiliates');
       if (res.ok) {
         const data = await res.json();
+        setCurrencySymbol(data.currencySymbol || '$');
         const affiliate = data.affiliates?.find((a: any) => a.id === partnerId);
         if (affiliate) {
           setPartner({
@@ -289,10 +290,10 @@ export default function PartnerDetailPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
   const pendingCommissions = commissions.filter((c) => c.status === 'PENDING');
   const pendingAmount = pendingCommissions.reduce((sum, c) => sum + c.amountCents, 0);
@@ -614,7 +615,7 @@ export default function PartnerDetailPage() {
                 </Table>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <IndianRupee className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <Wallet className="h-10 w-10 text-muted-foreground/40 mb-3" />
                   <p className="text-sm font-medium text-muted-foreground">No commissions yet</p>
                 </div>
               )}

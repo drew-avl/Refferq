@@ -4,7 +4,10 @@ import { getReferralMetadataDetails } from '@/lib/referrals';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Get user from database to ensure they still exist and get latest data
     const user = await prisma.user.findUnique({
@@ -37,20 +40,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Get affiliate statistics
-    const referrals = await prisma.referral.findMany({
-      where: { affiliateId: affiliate.id },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    const conversions = await prisma.conversion.findMany({
-      where: { affiliateId: affiliate.id },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    const commissions = await prisma.commission.findMany({
-      where: { affiliateId: affiliate.id },
-      orderBy: { createdAt: 'desc' }
-    });
+    const [referrals, conversions, commissions] = await Promise.all([
+      prisma.referral.findMany({
+        where: { affiliateId: affiliate.id },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.conversion.findMany({
+        where: { affiliateId: affiliate.id },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.commission.findMany({
+        where: { affiliateId: affiliate.id },
+        orderBy: { createdAt: 'desc' }
+      }),
+    ]);
 
     // Calculate stats
     // Available earnings = COMPLETED (PAID) + APPROVED but not yet paid
@@ -130,7 +133,10 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Get user from database
     const user = await prisma.user.findUnique({

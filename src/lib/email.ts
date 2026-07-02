@@ -129,10 +129,7 @@ class EmailService {
     html: string;
   }): Promise<{ success: boolean; message: string }> {
     try {
-      const { Resend } = await import('resend');
-      const resend = new Resend(process.env.RESEND_API_KEY);
-
-      const result = await resend.emails.send({
+      await getResendClient().emails.send({
         from: this.defaultFrom,
         to: params.to,
         subject: params.subject,
@@ -285,7 +282,7 @@ class EmailService {
     `;
   }
 
-  private generateApprovalEmailHTML(data: ApprovalEmailData, _symbol?: string): string {
+  private generateApprovalEmailHTML(data: ApprovalEmailData, symbol = '$'): string {
     const isApproved = data.status === 'approved';
     const statusColor = isApproved ? '#28a745' : '#dc3545';
     const statusText = isApproved ? 'Approved' : 'Rejected';
@@ -317,7 +314,7 @@ class EmailService {
           <h3>Referral Details:</h3>
           <p><strong>Lead Name:</strong> ${this.escapeHtml(data.leadName)}</p>
           <p><strong>Status:</strong> ${statusText}</p>
-          ${isApproved ? `<p><strong>Commission Amount:</strong> $${(data.commissionAmount / 100).toFixed(2)}</p>` : ''}
+          ${isApproved ? `<p><strong>Commission Amount:</strong> ${this.formatAmount(data.commissionAmount, symbol)}</p>` : ''}
           ${data.notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(data.notes)}</p>` : ''}
         </div>
         
@@ -806,7 +803,7 @@ class EmailService {
   ): Promise<{ success: boolean; message: string }> {
     const symbol = await this.getCurrencySymbol();
     const amount = this.formatAmount(data.amountCents, symbol);
-    const date = new Date(data.processedAt).toLocaleDateString('en-IN', {
+    const date = new Date(data.processedAt).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -882,9 +879,7 @@ class EmailService {
 
   async sendCustomEmail(to: string, subject: string, html: string): Promise<{ success: boolean; message: string }> {
     try {
-      const { Resend } = await import('resend');
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const result = await resend.emails.send({
+      const result = await getResendClient().emails.send({
         from: this.defaultFrom,
         to,
         subject,
