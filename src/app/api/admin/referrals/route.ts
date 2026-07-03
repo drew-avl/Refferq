@@ -4,6 +4,11 @@ import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { createCompletedReferralCommission } from '@/lib/referral-payouts';
 import { canTransitionReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
+import {
+  REFERRAL_AUDIT_OBJECT_TYPE,
+  REFERRAL_STATUS_CHANGED_ACTION,
+  recordReferralStatusChange,
+} from '@/lib/referral-audit';
 
 
 export async function GET(request: NextRequest) {
@@ -60,6 +65,30 @@ export async function GET(request: NextRequest) {
     ]);
 
     const partnerGroupMap = new Map(partnerGroups.map(pg => [pg.id, pg.name]));
+    const referralIds = referrals.map((referral) => referral.id);
+    const auditLogs = referralIds.length > 0
+      ? await prisma.auditLog.findMany({
+          where: {
+            objectType: REFERRAL_AUDIT_OBJECT_TYPE,
+            objectId: { in: referralIds },
+            action: REFERRAL_STATUS_CHANGED_ACTION,
+          },
+          include: {
+            actor: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        })
+      : [];
+    const auditLogsByReferral = auditLogs.reduce<Record<string, typeof auditLogs>>((acc, log) => {
+      if (!acc[log.objectId]) acc[log.objectId] = [];
+      acc[log.objectId].push(log);
+      return acc;
+    }, {});
 
     return NextResponse.json({
       success: true,
@@ -85,6 +114,19 @@ export async function GET(request: NextRequest) {
           moveInDate: metadata.moveInDate,
           program: referral.program,
           referralPayoutCents: referral.program?.referralPayoutCents ?? null,
+          statusHistory: (auditLogsByReferral[referral.id] || []).map((log) => {
+            const payload = (log.payload || {}) as Record<string, unknown>;
+            return {
+              id: log.id,
+              fromStatus: typeof payload.fromStatus === 'string' ? payload.fromStatus : null,
+              toStatus: typeof payload.toStatus === 'string' ? payload.toStatus : null,
+              reviewNotes: typeof payload.reviewNotes === 'string' ? payload.reviewNotes : null,
+              source: typeof payload.source === 'string' ? payload.source : null,
+              actorName: log.actor?.name || null,
+              actorEmail: log.actor?.email || null,
+              createdAt: log.createdAt,
+            };
+          }),
           affiliate: {
             id: affiliate.id,
             name: affiliate.user.name,
@@ -177,13 +219,26 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const updatedReferral = await prisma.referral.update({
-        where: { id: referralId },
-        data: {
-          status: targetStatus,
-          reviewedBy: user.id,
-          reviewedAt: new Date()
-        }
+      const updatedReferral = await prisma.$transaction(async (tx) => {
+        const changedReferral = await tx.referral.update({
+          where: { id: referralId },
+          data: {
+            status: targetStatus,
+            reviewedBy: user.id,
+            reviewedAt: new Date()
+          }
+        });
+
+        await recordReferralStatusChange({
+          tx,
+          actorId: user.id,
+          referralId,
+          fromStatus: referral.status,
+          toStatus: targetStatus,
+          source: 'batch',
+        });
+
+        return changedReferral;
       });
 
       updatedCount += 1;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createCompletedReferralCommission } from '@/lib/referral-payouts';
 import { canTransitionReferralStatus, isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
+import { recordReferralStatusChange } from '@/lib/referral-audit';
 
 
 export async function PUT(
@@ -61,14 +62,28 @@ export async function PUT(
       );
     }
 
-    const updatedReferral = await prisma.referral.update({
-      where: { id: params.id },
-      data: {
-        status: targetStatus,
-        reviewNotes: reviewNotes || null,
-        reviewedBy: user.id,
-        reviewedAt: new Date()
-      }
+    const updatedReferral = await prisma.$transaction(async (tx) => {
+      const changedReferral = await tx.referral.update({
+        where: { id: params.id },
+        data: {
+          status: targetStatus,
+          reviewNotes: reviewNotes || null,
+          reviewedBy: user.id,
+          reviewedAt: new Date()
+        }
+      });
+
+      await recordReferralStatusChange({
+        tx,
+        actorId: user.id,
+        referralId: params.id,
+        fromStatus: referral.status,
+        toStatus: targetStatus,
+        reviewNotes,
+        source: 'single',
+      });
+
+      return changedReferral;
     });
 
     const payoutResult = updatedReferral.status === 'COMPLETED'
@@ -92,7 +107,7 @@ export async function PUT(
   }
 }
 
-// Add PATCH method for updating referral/customer details
+// Add PATCH method for updating referral/lead details
 export async function PATCH(
   request: NextRequest, 
   context: { params: Promise<{ id: string }> }
@@ -155,14 +170,28 @@ export async function PATCH(
         );
       }
 
-      const updatedReferral = await prisma.referral.update({
-        where: { id: params.id },
-        data: {
-          status: targetStatus,
-          reviewNotes: reviewNotes || null,
-          reviewedBy: user.id,
-          reviewedAt: new Date()
-        }
+      const updatedReferral = await prisma.$transaction(async (tx) => {
+        const changedReferral = await tx.referral.update({
+          where: { id: params.id },
+          data: {
+            status: targetStatus,
+            reviewNotes: reviewNotes || null,
+            reviewedBy: user.id,
+            reviewedAt: new Date()
+          }
+        });
+
+        await recordReferralStatusChange({
+          tx,
+          actorId: user.id,
+          referralId: params.id,
+          fromStatus: referral.status,
+          toStatus: targetStatus,
+          reviewNotes,
+          source: 'single',
+        });
+
+        return changedReferral;
       });
 
       const payoutResult = updatedReferral.status === 'COMPLETED'
@@ -178,7 +207,7 @@ export async function PATCH(
       });
     }
 
-    // Otherwise, handle customer detail updates
+    // Otherwise, handle lead detail updates
     const updateData: any = {};
     
     if (leadName !== undefined) updateData.leadName = leadName;
@@ -212,9 +241,25 @@ export async function PATCH(
       };
     }
 
-    const updatedReferral = await prisma.referral.update({
-      where: { id: params.id },
-      data: updateData
+    const updatedReferral = await prisma.$transaction(async (tx) => {
+      const changedReferral = await tx.referral.update({
+        where: { id: params.id },
+        data: updateData
+      });
+
+      if (status !== undefined && status !== referral.status) {
+        await recordReferralStatusChange({
+          tx,
+          actorId: user.id,
+          referralId: params.id,
+          fromStatus: referral.status,
+          toStatus: status,
+          reviewNotes,
+          source: 'direct',
+        });
+      }
+
+      return changedReferral;
     });
 
     if (updatedReferral.status === 'COMPLETED') {
@@ -223,7 +268,7 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      message: 'Customer updated successfully',
+      message: 'Lead updated successfully',
       referral: updatedReferral
     });
 

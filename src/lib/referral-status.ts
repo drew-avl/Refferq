@@ -29,11 +29,11 @@ export function referralStatusFromAction(action: string): ReferralStatusValue | 
 
 export function canTransitionReferralStatus(current: string, next: ReferralStatusValue) {
   if (next === 'REJECTED') {
-    return current === 'NEW' || current === 'PENDING' || current === 'SOLD';
+    return current === 'NEW' || current === 'PENDING' || current === 'SOLD' || current === 'COMPLETED';
   }
 
   if (current === 'NEW') return next === 'PENDING';
   if (current === 'PENDING') return next === 'SOLD';
-  if (current === 'SOLD') return next === 'COMPLETED';
+  if (current === 'SOLD') return next === 'COMPLETED' || next === 'PENDING';
   return false;
 }

@@ -64,12 +64,24 @@ interface Referral {
     currency: string;
   } | null;
   referralPayoutCents: number | null;
+  statusHistory?: ReferralStatusHistoryItem[];
   affiliate: {
     id: string;
     name: string;
     email: string;
     commissionRate: number;
   };
+}
+
+interface ReferralStatusHistoryItem {
+  id: string;
+  fromStatus: string | null;
+  toStatus: string | null;
+  reviewNotes: string | null;
+  source: string | null;
+  actorName: string | null;
+  actorEmail: string | null;
+  createdAt: string;
 }
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
@@ -95,6 +107,24 @@ const formatProgramPayout = (cents: number, currency = 'USD') => {
     })}`;
   }
 };
+
+const formatDateTime = (date: string) => {
+  const value = new Date(date);
+  return {
+    date: value.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
+    time: value.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  };
+};
+
+const formatStatusLabel = (status: string | null) =>
+  status ? statusConfig[status]?.label || status : 'Unknown';
 
 export default function CustomerDetailPage() {
   const params = useParams();
@@ -401,19 +431,23 @@ export default function CustomerDetailPage() {
           </Card>
 
           {/* Review Actions Card */}
-          {(referral.status === 'NEW' || referral.status === 'PENDING' || referral.status === 'SOLD') && (
+          {(referral.status === 'NEW' || referral.status === 'PENDING' || referral.status === 'SOLD' || referral.status === 'COMPLETED') && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  {referral.status === 'SOLD'
+                  {referral.status === 'COMPLETED'
+                    ? 'Adjust Completed Lead'
+                    : referral.status === 'SOLD'
                     ? 'Confirm Installation'
                     : referral.status === 'NEW'
                       ? 'Start Review'
                       : 'Review Lead'}
                 </CardTitle>
                 <CardDescription>
-                  {referral.status === 'SOLD'
+                  {referral.status === 'COMPLETED'
+                    ? 'Use this only when a completed lead needs to be reversed because of a chargeback, cancellation, or invalid install.'
+                    : referral.status === 'SOLD'
                     ? 'Mark completed only after service is installed. Completed referrals are eligible for payout.'
                     : referral.status === 'NEW'
                       ? 'Move this lead to pending when review starts, or reject it if it is not viable.'
@@ -431,7 +465,7 @@ export default function CustomerDetailPage() {
                     rows={3}
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {referral.status === 'NEW' && (
                     <>
                       <Button
@@ -489,6 +523,18 @@ export default function CustomerDetailPage() {
                   {referral.status === 'SOLD' && (
                     <>
                       <Button
+                        variant="outline"
+                        onClick={() => handleAction('pending')}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Clock className="mr-2 h-4 w-4" />
+                        )}
+                        Move Back to Pending
+                      </Button>
+                      <Button
                         onClick={() => handleAction('complete')}
                         disabled={actionLoading}
                       >
@@ -512,6 +558,20 @@ export default function CustomerDetailPage() {
                         Reject Lead
                       </Button>
                     </>
+                  )}
+                  {referral.status === 'COMPLETED' && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleAction('reject')}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <XCircle className="mr-2 h-4 w-4" />
+                      )}
+                      Reject / Chargeback
+                    </Button>
                   )}
                 </div>
               </CardContent>
@@ -572,9 +632,10 @@ export default function CustomerDetailPage() {
                 <Calendar className="h-4 w-4" />
                 Timeline
               </CardTitle>
+              <CardDescription>Status changes are recorded from the audit log.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 rounded-full bg-blue-100 p-1">
                     <FileText className="h-3 w-3 text-blue-600" />
@@ -582,68 +643,65 @@ export default function CustomerDetailPage() {
                   <div>
                     <p className="text-sm font-medium">Lead Submitted</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(referral.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                      {' at '}
-                      {new Date(referral.createdAt).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatDateTime(referral.createdAt).date} at {formatDateTime(referral.createdAt).time}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 rounded-full p-1 ${
-                    referral.status === 'COMPLETED'
-                      ? 'bg-green-100'
-                      : referral.status === 'SOLD'
-                        ? 'bg-blue-100'
-                      : referral.status === 'REJECTED'
-                        ? 'bg-red-100'
-                      : referral.status === 'NEW'
-                        ? 'bg-slate-100'
-                        : 'bg-yellow-100'
-                  }`}>
-                    <StatusIcon className={`h-3 w-3 ${
-                      referral.status === 'COMPLETED'
-                        ? 'text-green-600'
-                        : referral.status === 'SOLD'
-                          ? 'text-blue-600'
-                        : referral.status === 'REJECTED'
-                          ? 'text-red-600'
-                        : referral.status === 'NEW'
-                          ? 'text-slate-600'
-                          : 'text-yellow-600'
-                    }`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {referral.status === 'COMPLETED'
-                        ? 'Completed'
-                        : referral.status === 'SOLD'
-                          ? 'Sold'
-                        : referral.status === 'REJECTED'
-                          ? 'Rejected'
-                        : referral.status === 'NEW'
-                          ? 'New'
-                          : 'Awaiting Review'}
-                    </p>
+                {(referral.statusHistory || []).length > 0 ? (
+                  referral.statusHistory!.map((event) => {
+                    const eventStatus = event.toStatus || 'PENDING';
+                    const eventConfig = statusConfig[eventStatus] || statusConfig.PENDING;
+                    const EventIcon = eventConfig.icon;
+                    const eventDate = formatDateTime(event.createdAt);
+                    return (
+                      <div key={event.id} className="flex items-start gap-3">
+                        <div className={`mt-0.5 rounded-full p-1 ${
+                          eventStatus === 'COMPLETED'
+                            ? 'bg-green-100'
+                            : eventStatus === 'SOLD'
+                              ? 'bg-blue-100'
+                              : eventStatus === 'REJECTED'
+                                ? 'bg-red-100'
+                                : eventStatus === 'NEW'
+                                  ? 'bg-slate-100'
+                                  : 'bg-yellow-100'
+                        }`}>
+                          <EventIcon className={`h-3 w-3 ${
+                            eventStatus === 'COMPLETED'
+                              ? 'text-green-600'
+                              : eventStatus === 'SOLD'
+                                ? 'text-blue-600'
+                                : eventStatus === 'REJECTED'
+                                  ? 'text-red-600'
+                                  : eventStatus === 'NEW'
+                                    ? 'text-slate-600'
+                                    : 'text-yellow-600'
+                          }`} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">
+                            {formatStatusLabel(event.fromStatus)} -> {formatStatusLabel(event.toStatus)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {eventDate.date} at {eventDate.time}
+                            {event.actorName ? ` by ${event.actorName}` : ''}
+                          </p>
+                          {event.reviewNotes && (
+                            <p className="mt-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                              {event.reviewNotes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-md border border-dashed p-3">
                     <p className="text-xs text-muted-foreground">
-                      {referral.status === 'PENDING'
-                        ? 'Needs admin review'
-                        : referral.status === 'NEW'
-                          ? 'New lead, not reviewed yet'
-                        : referral.status === 'SOLD'
-                          ? 'Waiting for service installation'
-                          : referral.status === 'COMPLETED'
-                            ? 'Service installed; payout eligible'
-                        : 'Decision recorded'}
+                      No status changes have been recorded in the audit log yet. Future status changes will appear here in order.
                     </p>
                   </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
