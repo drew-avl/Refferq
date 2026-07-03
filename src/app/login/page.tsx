@@ -21,22 +21,55 @@ import {
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Target, Mail, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
+import { Target, Mail, ShieldCheck, ArrowLeft, Loader2, LockKeyhole } from 'lucide-react';
 
-type Step = 'email' | 'otp';
+type Step = 'password' | 'otp';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<Step>('password');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const redirectForUser = (user: { role?: string }) => {
+    router.push(user.role === 'ADMIN' ? '/admin' : '/affiliate');
+  };
+
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setMessage('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        redirectForUser(data.user);
+      } else {
+        setError(data.message || 'Invalid email or password');
+      }
+    } catch (_e) {
+      setError('Sign in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    setError('');
+    setMessage('');
     setLoading(true);
 
     try {
@@ -50,9 +83,9 @@ export default function LoginPage() {
 
       if (otpRes.ok && otpData.success) {
         setStep('otp');
-        setMessage(otpData.message || 'A verification code has been sent to your email.');
+        setMessage(otpData.message || 'A one-time code has been sent to your email.');
       } else {
-        setError(otpData.message || 'Failed to send verification code');
+        setError(otpData.message || otpData.error || 'Failed to send verification code');
       }
     } catch (_e) {
       setError('Something went wrong. Please try again.');
@@ -67,6 +100,7 @@ export default function LoginPage() {
       setError('Please enter the full 6-digit code');
       return;
     }
+
     setError('');
     setLoading(true);
 
@@ -81,12 +115,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        const user = data.user;
-        if (user.role === 'ADMIN') {
-          router.push('/admin');
-        } else {
-          router.push('/affiliate');
-        }
+        redirectForUser(data.user);
       } else {
         setError(data.error || 'Invalid verification code');
       }
@@ -97,55 +126,34 @@ export default function LoginPage() {
     }
   };
 
-  const handleResendOTP = async () => {
+  const resetToPassword = () => {
+    setStep('password');
+    setOtp('');
     setError('');
     setMessage('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (res.ok) {
-        setMessage('A new verification code has been sent.');
-      } else {
-        setError('Failed to resend code. Please try again.');
-      }
-    } catch (_e) {
-      setError('Failed to resend code.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Logo & Branding */}
         <div className="text-center space-y-2">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
             <Target className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">ReferConnect</h1>
-          <p className="text-sm text-muted-foreground">
-            Referral Platform
-          </p>
+          <p className="text-sm text-muted-foreground">Referral Platform</p>
         </div>
 
-        {/* Login Card */}
         <Card className="border-0 shadow-xl shadow-black/5">
-          {step === 'email' ? (
+          {step === 'password' ? (
             <>
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl">Welcome back</CardTitle>
                 <CardDescription>
-                  Enter your email to sign in to your account
+                  Sign in with your password or request a one-time email code.
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleSendOTP}>
+              <form onSubmit={handlePasswordSignIn}>
                 <CardContent className="space-y-4">
                   {error && (
                     <Alert variant="destructive">
@@ -169,15 +177,38 @@ export default function LoginPage() {
                       />
                     </div>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                        autoComplete="current-password"
+                      />
+                    </div>
+                  </div>
                 </CardContent>
-                <CardFooter className="flex-col gap-4">
-                  <Button type="submit" className="w-full" size="lg" disabled={loading || !email}>
-                    {loading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Mail className="mr-2 h-4 w-4" />
-                    )}
-                    {loading ? 'Sending code...' : 'Continue with Email'}
+                <CardFooter className="flex-col gap-3">
+                  <Button type="submit" className="w-full" size="lg" disabled={loading || !email || !password}>
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LockKeyhole className="mr-2 h-4 w-4" />}
+                    {loading ? 'Signing in...' : 'Sign in with Password'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    disabled={loading || !email}
+                    onClick={handleSendOTP}
+                  >
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
+                    Send One-Time Code
                   </Button>
                 </CardFooter>
               </form>
@@ -206,11 +237,7 @@ export default function LoginPage() {
                     </Alert>
                   )}
                   <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otp}
-                      onChange={(value) => setOtp(value)}
-                    >
+                    <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
                       <InputOTPGroup>
                         <InputOTPSlot index={0} />
                         <InputOTPSlot index={1} />
@@ -226,41 +253,16 @@ export default function LoginPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-3">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    size="lg"
-                    disabled={loading || otp.length < 6}
-                  >
-                    {loading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                    )}
+                  <Button type="submit" className="w-full" size="lg" disabled={loading || otp.length < 6}>
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
                     {loading ? 'Verifying...' : 'Verify & Sign in'}
                   </Button>
                   <div className="flex items-center justify-between w-full">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setStep('email');
-                        setOtp('');
-                        setError('');
-                        setMessage('');
-                      }}
-                    >
+                    <Button type="button" variant="ghost" size="sm" onClick={resetToPassword}>
                       <ArrowLeft className="mr-1 h-3 w-3" />
-                      Change email
+                      Change method
                     </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleResendOTP}
-                      disabled={loading}
-                    >
+                    <Button type="button" variant="ghost" size="sm" onClick={handleSendOTP} disabled={loading}>
                       Resend code
                     </Button>
                   </div>
@@ -269,6 +271,13 @@ export default function LoginPage() {
             </>
           )}
         </Card>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Need an account?{' '}
+          <Link href="/register" className="font-medium text-primary hover:underline">
+            Create one
+          </Link>
+        </p>
       </div>
     </div>
   );

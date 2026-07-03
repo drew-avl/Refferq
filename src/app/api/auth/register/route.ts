@@ -19,12 +19,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, name, role } = body;
+    const { email, name, password, role } = body;
 
     // Validate required fields
-    if (!email || !name) {
+    if (!email || !name || !password) {
       return NextResponse.json(
-        { success: false, message: 'Email and name are required' },
+        { success: false, message: 'Email, name, and password are required' },
         { status: 400 }
       );
     }
@@ -38,16 +38,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json(
+        { success: false, message: 'Password must be at least 8 characters' },
+        { status: 400 }
+      );
+    }
+
     // SECURITY: Never allow self-registration as admin
     const userRole = 'AFFILIATE';
 
-    // Generate a cryptographically secure random password
-    const crypto = await import('crypto');
-    const randomPassword = crypto.randomBytes(24).toString('base64url');
-
     const result = await auth.register({
       email: email.toLowerCase().trim(),
-      password: randomPassword,
+      password,
       name: name.trim(),
       role: userRole,
     });
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
         email: result.user!.email,
         role: result.user!.role.toLowerCase() as 'affiliate' | 'admin',
         loginUrl,
-        accountStatus: 'pending',
+        accountStatus: 'active',
       });
       console.log('✅ Welcome email sent to:', result.user!.email);
     } catch (emailError) {

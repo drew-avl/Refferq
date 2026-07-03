@@ -196,12 +196,12 @@ export default function SettingsPage() {
             <Key className="h-5 w-5" />
             Security
           </CardTitle>
-          <CardDescription>Authentication is managed via OTP</CardDescription>
+          <CardDescription>Authentication is managed locally</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            This platform uses passwordless OTP-based authentication. A one-time code is sent to your
-            email each time you log in. No password management is required.
+            Users can sign in with their password or request a one-time email code. Password hashes,
+            OTP records, and session cookies are managed by this application.
           </p>
         </CardContent>
       </Card>
