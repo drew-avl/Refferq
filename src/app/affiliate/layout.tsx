@@ -108,11 +108,6 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
-                    {item.badge && (
-                      <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                        {item.badge}
-                      </span>
-                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
