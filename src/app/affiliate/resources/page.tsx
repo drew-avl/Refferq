@@ -218,7 +218,7 @@ export default function ResourcesPage() {
             size="sm"
             onClick={() => setProgramFilter('ALL')}
           >
-            All Programs
+            All Sources
           </Button>
           {resources.some((r) => !r.programId) && (
             <Button

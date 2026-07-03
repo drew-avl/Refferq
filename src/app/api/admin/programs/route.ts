@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
     const { id, affiliateIds } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Program ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'Lead source ID required' }, { status: 400 });
     }
 
     // Only allow specific fields (prevent mass assignment)
@@ -196,7 +196,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Program ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'Lead source ID required' }, { status: 400 });
     }
 
     await prisma.program.delete({ where: { id } });

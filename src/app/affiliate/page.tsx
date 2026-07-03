@@ -207,7 +207,7 @@ export default function AffiliateDashboard() {
   };
 
   const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   const formatCurrency = (cents: number) =>
     `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -264,8 +264,8 @@ export default function AffiliateDashboard() {
                 <span className="text-2xl font-bold">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-sm text-white/90 font-medium tracking-wide">Submit qualified leads by property program</p>
-                <p className="text-xl font-bold mt-1 tracking-tight">Payouts unlock after service is installed and marked completed.</p>
+                <p className="text-sm text-white/90 font-medium tracking-wide">Send a resident lead to the field team</p>
+                <p className="text-xl font-bold mt-1 tracking-tight">Add the renter, unit, move-in date, and notes in one step.</p>
               </div>
             </div>
             <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="flex w-full gap-2 bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95 sm:w-auto">
@@ -339,7 +339,7 @@ export default function AffiliateDashboard() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base">Recent Referrals</CardTitle>
-            <CardDescription>Latest 5 referrals</CardDescription>
+              <CardDescription>Latest leads submitted from your properties</CardDescription>
           </div>
           {referrals.length > 5 && (
             <Button variant="ghost" size="sm" asChild>
@@ -351,56 +351,74 @@ export default function AffiliateDashboard() {
         </CardHeader>
         <CardContent className="p-0">
           {referrals.length === 0 ? (
-            <EmptyState icon={Users} message="No referrals yet" />
+            <EmptyState icon={Users} message="No leads yet" />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Move-In</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Move-In</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {referrals.slice(0, 5).map((ref) => (
+                      <TableRow key={ref.id}>
+                        <TableCell className="font-medium">{ref.leadName}</TableCell>
+                        <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                        <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(ref.status)}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="divide-y sm:hidden">
                 {referrals.slice(0, 5).map((ref) => (
-                  <TableRow key={ref.id}>
-                    <TableCell className="font-medium">{ref.leadName}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(ref.status)}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                  </TableRow>
+                  <div key={ref.id} className="space-y-3 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{ref.leadName}</p>
+                        <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
+                        <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
+                      </div>
+                      {getStatusBadge(ref.status)}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                      <div>
+                        <p className="font-medium text-foreground">Move-in</p>
+                        <p>{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">Submitted</p>
+                        <p>{formatDate(ref.createdAt)}</p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/affiliate/referrals'}>
           <CardContent className="p-5 flex items-center gap-3">
             <Users className="h-5 w-5 text-blue-600" />
             <div>
-              <p className="font-medium">Manage Referrals</p>
-              <p className="text-xs text-muted-foreground">View all your submissions</p>
-            </div>
-            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = '/affiliate/reports'}>
-          <CardContent className="p-5 flex items-center gap-3">
-            <TrendingUp className="h-5 w-5 text-emerald-600" />
-            <div>
-              <p className="font-medium">View Reports</p>
-              <p className="text-xs text-muted-foreground">Analyze your performance</p>
+              <p className="font-medium">Lead Queue</p>
+              <p className="text-xs text-muted-foreground">Search, edit, and export submitted leads</p>
             </div>
             <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
           </CardContent>
@@ -410,7 +428,7 @@ export default function AffiliateDashboard() {
             <Target className="h-5 w-5 text-violet-600" />
             <div>
               <p className="font-medium">Resources</p>
-              <p className="text-xs text-muted-foreground">Marketing materials</p>
+              <p className="text-xs text-muted-foreground">Property handouts and talking points</p>
             </div>
             <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
           </CardContent>
@@ -423,20 +441,20 @@ export default function AffiliateDashboard() {
           <DialogHeader>
             <DialogTitle>Submit Lead</DialogTitle>
             <DialogDescription>
-              Enter the details below to submit a lead. Ensure all information is accurate for proper tracking.
+              Add the renter details a rep needs to follow up quickly.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmitLead} className="space-y-4">
             {programs.length > 0 && (
               <div className="space-y-2">
-                <Label>Property Program *</Label>
+                <Label>Lead Source *</Label>
                 <Select
                   value={submitForm.programId}
                   onValueChange={(value) => setSubmitForm({ ...submitForm, programId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select property" />
+                    <SelectValue placeholder="Select property, business, or location" />
                   </SelectTrigger>
                   <SelectContent>
                     {programs.map((program) => (

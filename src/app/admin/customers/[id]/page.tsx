@@ -225,11 +225,11 @@ export default function CustomerDetailPage() {
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => router.push('/admin/customers')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Customers
+          Back to Leads
         </Button>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <User className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-semibold">Customer not found</h3>
+          <h3 className="mt-4 text-lg font-semibold">Lead not found</h3>
           <p className="text-sm text-muted-foreground">This referral lead may have been deleted</p>
         </div>
       </div>
@@ -303,7 +303,7 @@ export default function CustomerDetailPage() {
                     <User className="h-5 w-5" />
                     Lead Details
                   </CardTitle>
-                  <CardDescription>View and edit customer information</CardDescription>
+                  <CardDescription>View and edit lead information</CardDescription>
                 </div>
                 <Button onClick={handleSave} disabled={saving} size="sm">
                   {saved ? (
@@ -528,7 +528,7 @@ export default function CustomerDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Property Program</span>
+                <span className="text-sm text-muted-foreground">Lead Source</span>
                 <span className="font-semibold text-right">{referral.program?.name || 'Not selected'}</span>
               </div>
               <div className="flex items-center justify-between">

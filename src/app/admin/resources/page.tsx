@@ -314,7 +314,7 @@ export default function ResourcesPage() {
               <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
             </div>
             <div className="grid gap-2">
-              <Label>Property Program</Label>
+                  <Label>Lead Source</Label>
               <Select
                 value={form.programId || SHARED_PROGRAM_VALUE}
                 onValueChange={v => setForm({...form, programId: v === SHARED_PROGRAM_VALUE ? '' : v})}
@@ -323,7 +323,7 @@ export default function ResourcesPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={SHARED_PROGRAM_VALUE}>Shared across all programs</SelectItem>
+                  <SelectItem value={SHARED_PROGRAM_VALUE}>Shared across all sources</SelectItem>
                   {programs.map((program) => (
                     <SelectItem key={program.id} value={program.id}>
                       {program.name}{!program.isActive ? ' (Inactive)' : ''}

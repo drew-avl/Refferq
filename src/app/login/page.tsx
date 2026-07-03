@@ -131,7 +131,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">ReferConnect</h1>
           <p className="text-sm text-muted-foreground">
-            Referral Program Platform
+            Referral Platform
           </p>
         </div>
 

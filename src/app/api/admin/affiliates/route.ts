@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
       if (programs.length !== uniqueProgramIds.length) {
         return NextResponse.json(
-          { error: 'One or more selected property programs do not exist' },
+          { error: 'One or more selected lead sources do not exist' },
           { status: 400 }
         );
       }

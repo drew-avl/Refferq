@@ -231,8 +231,8 @@ export default function ProgramSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Program Settings</h1>
-        <p className="text-muted-foreground">Configure your referral program</p>
+        <h1 className="text-2xl font-bold tracking-tight">Portal Settings</h1>
+        <p className="text-muted-foreground">Configure the referral portal experience</p>
       </div>
 
       {/* General Settings */}
@@ -244,7 +244,7 @@ export default function ProgramSettingsPage() {
                 <Settings2 className="h-5 w-5" />
                 General Settings
               </CardTitle>
-              <CardDescription>Basic program configuration</CardDescription>
+              <CardDescription>Basic portal configuration</CardDescription>
             </div>
             <Button onClick={handleSaveSettings} disabled={saving}>
               {saved ? (
@@ -272,7 +272,7 @@ export default function ProgramSettingsPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="programName">Program Name</Label>
+              <Label htmlFor="programName">Portal Name</Label>
               <Input
                 id="programName"
                 value={settings.programName}
@@ -369,7 +369,7 @@ export default function ProgramSettingsPage() {
           </div>
           <div className="rounded-md bg-muted p-3">
             <p className="text-xs text-muted-foreground">
-              Program ID: <span className="font-mono">{settings.programId}</span>
+              Portal ID: <span className="font-mono">{settings.programId}</span>
             </p>
           </div>
           <Separator />
@@ -587,7 +587,7 @@ export default function ProgramSettingsPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Use the partner portal or admin lead form to add leads. No tracking setup is required for this program.
+            Use the partner portal or admin lead form to add leads. No tracking setup is required for manual lead entry.
           </p>
 
 

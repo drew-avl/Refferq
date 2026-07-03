@@ -175,8 +175,8 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
-        <p className="text-muted-foreground">Manage referral leads and customer conversions</p>
+        <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
+        <p className="text-muted-foreground">Review new referrals and move qualified leads through the queue</p>
       </div>
 
       {/* Stats */}
@@ -242,15 +242,15 @@ export default function CustomersPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>All Leads</CardTitle>
-              <CardDescription>Review and manage referral leads from your partners</CardDescription>
+              <CardTitle>Lead Review Queue</CardTitle>
+              <CardDescription>Review referral leads from leasing teams, businesses, and field partners</CardDescription>
             </div>
-            <div className="flex gap-2">
-              <div className="relative">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search leads..."
-                  className="pl-8 w-64"
+                  placeholder="Search name, contact, address, or source..."
+                  className="w-full pl-8 sm:w-72"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -279,173 +279,222 @@ export default function CustomersPage() {
               <p className="text-sm text-muted-foreground">Leads submitted by your partners will appear here</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Lead</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Program</TableHead>
-                  <TableHead>Referred By</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((referral) => (
-                  <TableRow key={referral.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-xs bg-primary/10">
-                            {referral.leadName?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{referral.leadName}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            {referral.leadEmail}
-                          </div>
-                          {referral.leadPhone && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Phone className="h-3 w-3" />
-                              {referral.leadPhone}
+            <>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Lead</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Referred By</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((referral) => (
+                      <TableRow key={referral.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="text-xs bg-primary/10">
+                                {referral.leadName?.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{referral.leadName}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Mail className="h-3 w-3" />
+                                {referral.leadEmail}
+                              </div>
+                              {referral.leadPhone && (
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Phone className="h-3 w-3" />
+                                  {referral.leadPhone}
+                                </div>
+                              )}
+                              <div className="text-xs text-muted-foreground">
+                                {[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}
+                              </div>
                             </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {referral.company ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              {referral.company}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
                           )}
-                          <div className="text-xs text-muted-foreground">
-                            {[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}
+                        </TableCell>
+                        <TableCell>
+                          {referral.program ? (
+                            <div className="text-sm">
+                              <p className="font-medium">{referral.program.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatProgramPayout(referral.referralPayoutCents || 0, referral.program.currency)} payout
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No source</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p className="font-medium">{referral.affiliate.name}</p>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}
-                          </div>
-                        </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusConfig[referral.status]?.variant || 'outline'}>
+                            {statusConfig[referral.status]?.label || referral.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(referral.createdAt).toLocaleDateString('en-US', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <LeadActions
+                            referral={referral}
+                            actionLoading={actionLoading}
+                            onView={() => router.push(`/admin/customers/${referral.id}`)}
+                            onAction={handleAction}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="divide-y md:hidden">
+                {filtered.map((referral) => (
+                  <div key={referral.id} className="space-y-4 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{referral.leadName}</p>
+                        <p className="truncate text-sm text-muted-foreground">{referral.leadEmail}</p>
+                        <p className="text-sm text-muted-foreground">{referral.leadPhone || 'No phone'}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {referral.company ? (
-                        <div className="flex items-center gap-1 text-sm">
-                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          {referral.company}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {referral.program ? (
-                        <div className="text-sm">
-                          <p className="font-medium">{referral.program.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatProgramPayout(referral.referralPayoutCents || 0, referral.program.currency)} payout
-                          </p>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">No program</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p className="font-medium">{referral.affiliate.name}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       <Badge variant={statusConfig[referral.status]?.variant || 'outline'}>
                         {statusConfig[referral.status]?.label || referral.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(referral.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => router.push(`/admin/customers/${referral.id}`)}
-                        >
-                          <Eye className="mr-1 h-3.5 w-3.5" />
-                          View
-                        </Button>
-                        {referral.status === 'NEW' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'pending'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <Clock className="mr-1 h-3.5 w-3.5" />
-                              Pending
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'reject'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <XCircle className="mr-1 h-3.5 w-3.5" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {referral.status === 'PENDING' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'sell'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <ShoppingBag className="mr-1 h-3.5 w-3.5" />
-                              Sold
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'reject'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <XCircle className="mr-1 h-3.5 w-3.5" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {referral.status === 'SOLD' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'complete'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                              Completed
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'reject'); }}
-                              disabled={actionLoading === referral.id}
-                            >
-                              <XCircle className="mr-1 h-3.5 w-3.5" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <p>{[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}</p>
+                      <p>Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}</p>
+                      <p>Source: {referral.program?.name || referral.company || 'No source'}</p>
+                      <p>Referred by {referral.affiliate.name}</p>
+                    </div>
+                    <LeadActions
+                      referral={referral}
+                      actionLoading={actionLoading}
+                      onView={() => router.push(`/admin/customers/${referral.id}`)}
+                      onAction={handleAction}
+                    />
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function LeadActions({
+  referral,
+  actionLoading,
+  onView,
+  onAction,
+}: {
+  referral: Referral;
+  actionLoading: string | null;
+  onView: () => void;
+  onAction: (referralIds: string[], action: 'pending' | 'sell' | 'complete' | 'reject') => void;
+}) {
+  return (
+    <div className="flex flex-wrap justify-end gap-1">
+      <Button size="sm" variant="ghost" onClick={onView}>
+        <Eye className="mr-1 h-3.5 w-3.5" />
+        View
+      </Button>
+      {referral.status === 'NEW' && (
+        <>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'pending'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <Clock className="mr-1 h-3.5 w-3.5" />
+            Pending
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'reject'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <XCircle className="mr-1 h-3.5 w-3.5" />
+            Reject
+          </Button>
+        </>
+      )}
+      {referral.status === 'PENDING' && (
+        <>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'sell'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <ShoppingBag className="mr-1 h-3.5 w-3.5" />
+            Sold
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'reject'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <XCircle className="mr-1 h-3.5 w-3.5" />
+            Reject
+          </Button>
+        </>
+      )}
+      {referral.status === 'SOLD' && (
+        <>
+          <Button
+            size="sm"
+            variant="default"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'complete'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+            Completed
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={(e) => { e.stopPropagation(); onAction([referral.id], 'reject'); }}
+            disabled={actionLoading === referral.id}
+          >
+            <XCircle className="mr-1 h-3.5 w-3.5" />
+            Reject
+          </Button>
+        </>
+      )}
     </div>
   );
 }

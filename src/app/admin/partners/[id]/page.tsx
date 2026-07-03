@@ -139,13 +139,13 @@ const formatProgramCurrency = (cents: number, currency = 'USD') => {
 };
 
 const formatProgramNames = (programs: AssignedProgram[]) => {
-  if (programs.length === 0) return 'No program assigned';
+  if (programs.length === 0) return 'No lead source assigned';
   if (programs.length <= 2) return programs.map((program) => program.name).join(', ');
   return `${programs[0].name} +${programs.length - 1} more`;
 };
 
 const formatPayoutTerms = (programs: AssignedProgram[]) => {
-  if (programs.length === 0) return 'No program assigned';
+  if (programs.length === 0) return 'No lead source assigned';
 
   const payouts = programs.map((program) => ({
     cents: program.referralPayoutCents || 0,
@@ -158,7 +158,7 @@ const formatPayoutTerms = (programs: AssignedProgram[]) => {
     return `${formatProgramCurrency(payout.cents, payout.currency)} per completed referral`;
   }
 
-  return `${programs.length} program-specific payouts`;
+  return `${programs.length} source-specific payouts`;
 };
 
 const formatCommissionTerms = (rate: number) => {
@@ -432,7 +432,7 @@ export default function PartnerDetailPage() {
                 <Badge variant="outline" className="text-xs">
                   {primaryProgram
                     ? `${formatProgramCurrency(primaryProgram.referralPayoutCents || 0, primaryProgram.currency)} per referral`
-                    : 'No program assigned'}
+                    : 'No lead source assigned'}
                 </Badge>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function PartnerDetailPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{customers.length}</p>
-                <p className="text-xs text-muted-foreground">Customers</p>
+                <p className="text-xs text-muted-foreground">Leads</p>
               </div>
             </div>
           </CardContent>
@@ -508,7 +508,7 @@ export default function PartnerDetailPage() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="customers">Customers ({customers.length})</TabsTrigger>
+          <TabsTrigger value="customers">Leads ({customers.length})</TabsTrigger>
           <TabsTrigger value="commissions">Commissions ({commissions.length})</TabsTrigger>
           <TabsTrigger value="payouts">Payouts ({payouts.length})</TabsTrigger>
         </TabsList>
@@ -524,7 +524,7 @@ export default function PartnerDetailPage() {
                 {[
                   { label: 'Name', value: partner.name },
                   { label: 'Email', value: partner.email },
-                  { label: 'Property Program', value: formatProgramNames(partner.assignedPrograms) },
+                  { label: 'Lead Sources', value: formatProgramNames(partner.assignedPrograms) },
                   { label: 'Referral Payout', value: payoutTerms },
                   { label: 'Partner Since', value: formatDate(partner.createdAt) },
                 ].map((item) => (
@@ -586,12 +586,12 @@ export default function PartnerDetailPage() {
           </div>
         </TabsContent>
 
-        {/* Customers */}
+        {/* Leads */}
         <TabsContent value="customers">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Referred Customers</CardTitle>
-              <CardDescription>{customers.length} customer{customers.length !== 1 ? 's' : ''} referred</CardDescription>
+              <CardTitle className="text-base">Referred Leads</CardTitle>
+              <CardDescription>{customers.length} lead{customers.length !== 1 ? 's' : ''} referred</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {customers.length > 0 ? (
@@ -626,7 +626,7 @@ export default function PartnerDetailPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground">No customers yet</p>
+                  <p className="text-sm font-medium text-muted-foreground">No leads yet</p>
                 </div>
               )}
             </CardContent>
@@ -656,7 +656,7 @@ export default function PartnerDetailPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
-                      <TableHead>Customer</TableHead>
+                      <TableHead>Lead</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
                       <TableHead className="text-right">Terms</TableHead>
                       <TableHead>Status</TableHead>

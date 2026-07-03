@@ -189,8 +189,8 @@ export default function AdminDashboardPage() {
       bg: 'bg-blue-500/10',
     },
     {
-      title: 'Customers',
-      description: 'View referrals',
+      title: 'Leads',
+      description: 'Review referral leads',
       icon: UserCheck,
       href: '/admin/customers',
       color: 'text-emerald-600',
@@ -221,7 +221,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of your referral program performance
+            Overview of referral lead performance
           </p>
         </div>
 
@@ -393,12 +393,12 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Customers */}
+          {/* Recent Leads */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-base font-semibold">Recent Customers</CardTitle>
-                <CardDescription>Latest referred customers</CardDescription>
+                <CardTitle className="text-base font-semibold">Recent Leads</CardTitle>
+                <CardDescription>Latest referral leads</CardDescription>
               </div>
               <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/customers')}>
                 View all
@@ -432,7 +432,7 @@ export default function AdminDashboardPage() {
                 <EmptyState
                   icon={UserCheck}
                   title="No customers yet"
-                  description="Referred customers will appear here"
+                  description="Referral leads will appear here"
                 />
               )}
             </CardContent>

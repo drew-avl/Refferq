@@ -563,7 +563,7 @@ export class DatabaseService {
 
       const defaultProgram = await prisma.program.create({
         data: {
-          name: 'Default Property Program',
+          name: 'Default Lead Source',
           slug: 'default-property',
           description: 'Default fixed payout program for referral leads',
           referralPayoutCents: PROGRAM_DEFAULTS.referralPayoutCents,

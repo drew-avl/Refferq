@@ -171,7 +171,7 @@ export default function ProgramsPage() {
         await fetchPrograms();
         setDialogOpen(false);
       } else {
-        alert(data.error || 'Failed to save program');
+        alert(data.error || 'Failed to save lead source');
       }
     } catch (error) {
       console.error('Failed to save program:', error);
@@ -204,7 +204,7 @@ export default function ProgramsPage() {
   };
 
   const deleteProgram = async (id: string) => {
-    if (!confirm('Delete this program? This cannot be undone.')) return;
+    if (!confirm('Delete this lead source? This cannot be undone.')) return;
     try {
       await fetch(`/api/admin/programs?id=${id}`, { method: 'DELETE' });
       await fetchPrograms();
@@ -244,19 +244,19 @@ export default function ProgramsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
-          <p className="text-muted-foreground">Manage property programs with fixed referral payouts</p>
+          <h1 className="text-2xl font-bold tracking-tight">Lead Sources</h1>
+          <p className="text-muted-foreground">Separate referrals by property, business, location, or partner channel</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Create Program
+          Create Lead Source
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Programs</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Sources</CardTitle>
             <Layers className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{stats.total}</div></CardContent>
@@ -270,7 +270,7 @@ export default function ProgramsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Default Program</CardTitle>
+            <CardTitle className="text-sm font-medium">Default Source</CardTitle>
             <Star className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent><div className="text-lg font-bold truncate">{stats.defaultProgram?.name || 'Not set'}</div></CardContent>
@@ -279,21 +279,21 @@ export default function ProgramsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Programs</CardTitle>
-          <CardDescription>Configure property payout amounts, cookie durations, and payout rules per program</CardDescription>
+          <CardTitle>All Lead Sources</CardTitle>
+          <CardDescription>Configure payout amounts, tracking windows, and assigned reps per source</CardDescription>
         </CardHeader>
         <CardContent>
           {programs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Layers className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No programs yet</h3>
-              <p className="text-sm text-muted-foreground">Create your first referral program</p>
+              <h3 className="mt-4 text-lg font-semibold">No lead sources yet</h3>
+              <p className="text-sm text-muted-foreground">Create your first property, business, or location source</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Program</TableHead>
+                  <TableHead>Lead Source</TableHead>
                   <TableHead>Referral Payout</TableHead>
                   <TableHead>Cookie</TableHead>
                   <TableHead>Min Payout</TableHead>
@@ -385,18 +385,18 @@ export default function ProgramsPage() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Program Dialog */}
+      {/* Create/Edit Lead Source Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Program' : 'Create Program'}</DialogTitle>
-            <DialogDescription>{editing ? 'Update program configuration' : 'Set up a new referral program'}</DialogDescription>
+            <DialogTitle>{editing ? 'Edit Lead Source' : 'Create Lead Source'}</DialogTitle>
+            <DialogDescription>{editing ? 'Update source configuration' : 'Set up a new property, business, or location source'}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label>Program Name *</Label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Premium Partners" />
+                <Label>Source Name *</Label>
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="The Elm Apartments" />
               </div>
               <div className="grid gap-2">
                 <Label>Slug *</Label>
@@ -405,7 +405,7 @@ export default function ProgramsPage() {
             </div>
             <div className="grid gap-2">
               <Label>Description</Label>
-              <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe this program..." />
+              <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe this property, business, or source..." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -487,7 +487,7 @@ export default function ProgramsPage() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Reps only see property programs assigned here when submitting or editing leads.
+                Reps only see lead sources assigned here when submitting or editing leads.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function ProgramsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving || !form.name || !form.slug}>
-              {saving ? 'Saving...' : editing ? 'Update Program' : 'Create Program'}
+              {saving ? 'Saving...' : editing ? 'Update Source' : 'Create Source'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -97,21 +97,21 @@ export async function POST(request: NextRequest) {
     const selectedProgramId = programId || null;
     if (activeProgramCount > 0 && assignedPrograms.length === 0) {
       return NextResponse.json(
-        { error: 'No property programs are assigned to your account yet. Please contact an admin.' },
+        { error: 'No lead sources are assigned to your account yet. Please contact an admin.' },
         { status: 400 }
       );
     }
 
     if (assignedPrograms.length > 0 && !selectedProgramId) {
       return NextResponse.json(
-        { error: 'Please select a property program for this lead' },
+        { error: 'Please select a lead source for this lead' },
         { status: 400 }
       );
     }
 
     if (selectedProgramId && !assignedPrograms.some((program) => program.id === selectedProgramId)) {
       return NextResponse.json(
-        { error: 'Selected property program is not assigned to your account' },
+        { error: 'Selected lead source is not assigned to your account' },
         { status: 400 }
       );
     }
@@ -336,21 +336,21 @@ export async function PATCH(request: NextRequest) {
     const selectedProgramId = programId || null;
     if (activeProgramCount > 0 && assignedPrograms.length === 0) {
       return NextResponse.json(
-        { error: 'No property programs are assigned to your account yet. Please contact an admin.' },
+        { error: 'No lead sources are assigned to your account yet. Please contact an admin.' },
         { status: 400 }
       );
     }
 
     if (assignedPrograms.length > 0 && !selectedProgramId) {
       return NextResponse.json(
-        { error: 'Please select a property program for this lead' },
+        { error: 'Please select a lead source for this lead' },
         { status: 400 }
       );
     }
 
     if (selectedProgramId && !assignedPrograms.some((program) => program.id === selectedProgramId)) {
       return NextResponse.json(
-        { error: 'Selected property program is not assigned to your account' },
+        { error: 'Selected lead source is not assigned to your account' },
         { status: 400 }
       );
     }

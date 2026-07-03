@@ -104,7 +104,7 @@ export default function PayoutsPage() {
       return `Minimum payout threshold is ${formatThresholdCurrency(payoutSettings.minPayoutCents)}.`;
     }
 
-    return `Minimum payout thresholds range from ${formatThresholdCurrency(payoutSettings.minPayoutCents)} to ${formatThresholdCurrency(payoutSettings.maxPayoutCents)}, depending on the property program.`;
+    return `Minimum payout thresholds range from ${formatThresholdCurrency(payoutSettings.minPayoutCents)} to ${formatThresholdCurrency(payoutSettings.maxPayoutCents)}, depending on the lead source.`;
   };
 
   const getStatusBadge = (status: string) => {

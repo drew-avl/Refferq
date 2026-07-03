@@ -14,7 +14,7 @@ export const PROGRAM_DEFAULTS = {
 export const APP_DEFAULTS = {
   publicAppUrl: 'https://app.referconnect.com',
   productName: 'ReferConnect',
-  programName: 'ReferConnect Referral Program',
+  programName: 'ReferConnect Referral Portal',
 } as const;
 
 export const NOTIFICATION_POLL_INTERVAL_MS = 30_000;

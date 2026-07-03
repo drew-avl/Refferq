@@ -183,7 +183,7 @@ export default function ReferralsPage() {
   };
 
   const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
@@ -328,8 +328,8 @@ export default function ReferralsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Referrals</h1>
-          <p className="text-muted-foreground">Track and manage your referral submissions</p>
+          <h1 className="text-2xl font-bold tracking-tight">Lead Queue</h1>
+          <p className="text-muted-foreground">Search, update, and export the leads you have submitted</p>
         </div>
         <Button onClick={() => setShowSubmitModal(true)} className="gap-1.5">
           <Plus className="h-4 w-4" />
@@ -382,7 +382,7 @@ export default function ReferralsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search name, email, phone, or address..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -414,50 +414,81 @@ export default function ReferralsPage() {
           {filteredReferrals.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Users className="h-12 w-12 text-muted-foreground/40 mb-3" />
-              <p className="font-medium">No referrals found</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {referrals.length === 0 ? 'Start submitting leads to earn commissions' : 'Try adjusting your filters'}
+            <p className="font-medium">No leads found</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+                {referrals.length === 0 ? 'Submit your first resident lead when you are ready' : 'Try adjusting your filters'}
               </p>
               {referrals.length === 0 && (
                 <Button className="mt-4" onClick={() => setShowSubmitModal(true)}>Submit your first lead</Button>
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Lead Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Program</TableHead>
-                  <TableHead>Move-In</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Lead Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Program</TableHead>
+                      <TableHead>Move-In</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredReferrals.map((ref) => (
+                      <TableRow key={ref.id}>
+                        <TableCell className="font-medium">{ref.leadName}</TableCell>
+                        <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                        <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">{ref.program?.name || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
+                        <TableCell>{getStatusBadge(ref.status)}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                        <TableCell className="text-right">
+                          {(ref.status === 'NEW' || ref.status === 'PENDING' || ref.status === 'SOLD') && (
+                            <Button variant="ghost" size="sm" onClick={() => openEditLead(ref)}>
+                              <Pencil className="mr-1 h-3.5 w-3.5" />
+                              Edit
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="divide-y md:hidden">
                 {filteredReferrals.map((ref) => (
-                  <TableRow key={ref.id}>
-                    <TableCell className="font-medium">{ref.leadName}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
-                    <TableCell className="text-muted-foreground">{ref.program?.name || '-'}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</TableCell>
-                    <TableCell>{getStatusBadge(ref.status)}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                    <TableCell className="text-right">
+                  <div key={ref.id} className="space-y-3 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">{ref.leadName}</p>
+                        <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
+                        <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
+                      </div>
+                      {getStatusBadge(ref.status)}
+                    </div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <p>{[ref.address, ref.address2].filter(Boolean).join(', ') || 'No address'}</p>
+                      <p>{ref.program?.name || 'No lead source'} · Move-in {ref.moveInDate ? formatDate(ref.moveInDate) : 'not set'}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">Submitted {formatDate(ref.createdAt)}</p>
                       {(ref.status === 'NEW' || ref.status === 'PENDING' || ref.status === 'SOLD') && (
-                        <Button variant="ghost" size="sm" onClick={() => openEditLead(ref)}>
+                        <Button variant="outline" size="sm" onClick={() => openEditLead(ref)}>
                           <Pencil className="mr-1 h-3.5 w-3.5" />
                           Edit
                         </Button>
                       )}
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -474,13 +505,13 @@ export default function ReferralsPage() {
           <form onSubmit={handleSubmitLead} className="space-y-4">
             {programs.length > 0 && (
               <div className="space-y-2">
-                <Label>Property Program *</Label>
+                <Label>Lead Source *</Label>
                 <Select
                   value={submitForm.programId}
                   onValueChange={(value) => setSubmitForm({ ...submitForm, programId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select property" />
+                    <SelectValue placeholder="Select property, business, or location" />
                   </SelectTrigger>
                   <SelectContent>
                     {programs.map((program) => (
@@ -581,13 +612,13 @@ export default function ReferralsPage() {
           <form onSubmit={handleUpdateLead} className="space-y-4">
             {programs.length > 0 && (
               <div className="space-y-2">
-                <Label>Property Program *</Label>
+                <Label>Lead Source *</Label>
                 <Select
                   value={editForm.programId}
                   onValueChange={(value) => setEditForm({ ...editForm, programId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select property" />
+                    <SelectValue placeholder="Select property, business, or location" />
                   </SelectTrigger>
                   <SelectContent>
                     {programs.map((program) => (

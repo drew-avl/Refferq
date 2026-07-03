@@ -53,7 +53,7 @@ import {
 const mainNavItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Partners', url: '/admin/partners', icon: Users },
-  { title: 'Customers', url: '/admin/customers', icon: UserCheck },
+  { title: 'Leads', url: '/admin/customers', icon: UserCheck },
   { title: 'Payouts', url: '/admin/payouts', icon: Wallet },
   { title: 'Invoices', url: '/admin/invoices', icon: FileText },
   { title: 'Emails', url: '/admin/emails', icon: Mail },
@@ -62,11 +62,11 @@ const mainNavItems = [
 const marketingNavItems = [
   { title: 'Coupons', url: '/admin/coupons', icon: Ticket },
   { title: 'Resources', url: '/admin/resources', icon: FolderOpen },
-  { title: 'Programs', url: '/admin/programs', icon: Layers, badge: 'NEW' },
+  { title: 'Lead Sources', url: '/admin/programs', icon: Layers },
 ];
 
 const configNavItems = [
-  { title: 'Program Settings', url: '/admin/program-settings', icon: Sliders },
+  { title: 'Portal Settings', url: '/admin/program-settings', icon: Sliders },
   { title: 'Team Members', url: '/admin/team', icon: UsersRound },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
   { title: 'Reports', url: '/admin/reports', icon: BarChart3 },

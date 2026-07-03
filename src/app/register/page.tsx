@@ -154,7 +154,7 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">ReferConnect</h1>
           <p className="text-sm text-muted-foreground">
-            Referral Program Platform
+            Referral Platform
           </p>
         </div>
 

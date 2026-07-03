@@ -402,7 +402,7 @@ export default function PartnersPage() {
     }
 
     const csv = [
-      ['Name', 'Email', 'Status', 'Signed Up', 'Clicks', 'Leads', 'Customers', 'Revenue', 'Earnings'].join(','),
+      ['Name', 'Email', 'Status', 'Signed Up', 'Clicks', 'Leads', 'Converted', 'Revenue', 'Earnings'].join(','),
       ...partnersToExport.map((p: Partner) =>
         [
           `"${p.name}"`, p.email, p.status,
@@ -618,7 +618,7 @@ export default function PartnersPage() {
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('customers')}>
                     <div className="flex items-center">
-                      Customers <SortIcon field="customers" />
+                      Converted <SortIcon field="customers" />
                     </div>
                   </TableHead>
                   <TableHead className="cursor-pointer text-right" onClick={() => handleSort('revenue')}>
@@ -765,10 +765,10 @@ export default function PartnersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Property Programs</Label>
+                <Label>Lead Sources</Label>
                 <div className="max-h-44 overflow-y-auto rounded-md border p-3">
                   {programs.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No property programs available yet</p>
+                    <p className="text-sm text-muted-foreground">No lead sources available yet</p>
                   ) : (
                     <div className="space-y-3">
                       {programs.map((program) => (
@@ -849,7 +849,7 @@ export default function PartnersPage() {
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Partner</DialogTitle>
-            <DialogDescription>Update partner details, payout information, and property program access</DialogDescription>
+            <DialogDescription>Update partner details, payout information, and lead source access</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdatePartner}>
             <div className="grid gap-4 py-4">
@@ -927,10 +927,10 @@ export default function PartnersPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Property Programs</Label>
+                <Label>Lead Sources</Label>
                 <div className="max-h-52 overflow-y-auto rounded-md border p-3">
                   {programs.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No property programs available yet</p>
+                    <p className="text-sm text-muted-foreground">No lead sources available yet</p>
                   ) : (
                     <div className="space-y-3">
                       {programs.map((program) => (

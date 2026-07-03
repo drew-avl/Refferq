@@ -35,7 +35,6 @@ import {
   Users,
   Wallet,
   BookOpen,
-  BarChart3,
   Settings,
   LogOut,
   ChevronsUpDown,
@@ -54,7 +53,6 @@ const mainNavItems = [
   { title: 'Referrals', url: '/affiliate/referrals', icon: Users },
   { title: 'Payouts', url: '/affiliate/payouts', icon: Wallet },
   { title: 'Resources', url: '/affiliate/resources', icon: BookOpen },
-  { title: 'Reports', url: '/affiliate/reports', icon: BarChart3, badge: 'BETA' },
 ];
 
 const accountNavItems = [
@@ -89,7 +87,7 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
               )}
               <div className="flex flex-col">
                 <span className="text-sm font-bold">{brandName}</span>
-                <span className="text-xs text-muted-foreground">Referral Portal</span>
+                <span className="text-xs text-muted-foreground">Lead Portal</span>
               </div>
             </div>
           </SidebarMenuItem>
@@ -226,7 +224,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
             <div className="absolute inset-0 rounded-full border-4 border-muted" />
             <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent" style={{ borderTopColor: brand.brandButtonColor || '#059669' }} />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading your dashboard...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading your leads...</p>
         </div>
       </div>
     );
