@@ -577,24 +577,6 @@ export default function ProgramSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Manual Lead Entry */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Manual Lead Entry</CardTitle>
-          <CardDescription>
-            Leads are entered manually by partners or admins.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Use the partner portal or admin lead form to add leads. No tracking setup is required for manual lead entry.
-          </p>
-
-
-
-
-        </CardContent>
-      </Card>
     </div>
   );
 }
