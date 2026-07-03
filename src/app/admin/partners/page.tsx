@@ -86,7 +86,6 @@ interface Partner {
   userId: string;
   name: string;
   email: string;
-  referralCode: string;
   status: string;
   createdAt: string;
   clicks: number;
@@ -187,7 +186,6 @@ export default function PartnersPage() {
             userId: aff.userId,
             name: aff.user.name,
             email: aff.user.email,
-            referralCode: aff.referralCode,
             status: aff.user.status,
             createdAt: aff.createdAt,
             clicks: 0,
@@ -242,8 +240,7 @@ export default function PartnersPage() {
       filtered = filtered.filter(
         (p: Partner) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.referralCode.toLowerCase().includes(searchQuery.toLowerCase())
+          p.email.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -292,7 +289,7 @@ export default function PartnersPage() {
 
       if (data.success) {
         alert(
-          `Partner created successfully!\n\nName: ${data.affiliate.name}\nEmail: ${data.affiliate.email}\nReferral Code: ${data.affiliate.referralCode}\nWelcome Email Sent: ${data.welcomeEmailSent ? 'Yes' : 'No'}`
+          `Partner created successfully!\n\nName: ${data.affiliate.name}\nEmail: ${data.affiliate.email}\nWelcome Email Sent: ${data.welcomeEmailSent ? 'Yes' : 'No'}`
         );
         setShowCreateModal(false);
         setNewPartner({
@@ -405,10 +402,10 @@ export default function PartnersPage() {
     }
 
     const csv = [
-      ['Name', 'Email', 'Referral Code', 'Status', 'Signed Up', 'Clicks', 'Leads', 'Customers', 'Revenue', 'Earnings'].join(','),
+      ['Name', 'Email', 'Status', 'Signed Up', 'Clicks', 'Leads', 'Customers', 'Revenue', 'Earnings'].join(','),
       ...partnersToExport.map((p: Partner) =>
         [
-          `"${p.name}"`, p.email, p.referralCode, p.status,
+          `"${p.name}"`, p.email, p.status,
           new Date(p.createdAt).toLocaleDateString(), p.clicks, p.leads,
           p.customers, (p.revenue / 100).toFixed(2), (p.earnings / 100).toFixed(2),
         ].join(',')
@@ -614,7 +611,6 @@ export default function PartnersPage() {
                       Partner <SortIcon field="name" />
                     </div>
                   </TableHead>
-                  <TableHead>Referral Code</TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('leads')}>
                     <div className="flex items-center">
                       Leads <SortIcon field="leads" />
@@ -675,9 +671,6 @@ export default function PartnersPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{partner.referralCode}</code>
-                      </TableCell>
                       <TableCell>{partner.leads}</TableCell>
                       <TableCell>{partner.customers}</TableCell>
                       <TableCell className="text-right font-medium">
@@ -707,7 +700,7 @@ export default function PartnersPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9}>
+                    <TableCell colSpan={8}>
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <Users className="h-10 w-10 text-muted-foreground/50 mb-3" />
                         <p className="text-sm font-medium text-muted-foreground">No partners found</p>

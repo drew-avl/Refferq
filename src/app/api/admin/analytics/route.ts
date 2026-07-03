@@ -23,18 +23,17 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    // Top performing affiliates
+    // Top performing affiliates by total referrals
     const topAffiliates = await prisma.affiliate.findMany({
       take: 10,
-      orderBy: {
-        balanceCents: 'desc'
-      },
+      orderBy: [
+        { referrals: { _count: 'desc' } },
+        { createdAt: 'desc' },
+      ],
       include: {
         user: true,
-        referrals: {
-          where: {
-            status: 'COMPLETED'
-          }
+        _count: {
+          select: { referrals: true }
         },
         commissions: {
           where: {
@@ -111,8 +110,7 @@ export async function GET(request: NextRequest) {
         id: affiliate.id,
         name: affiliate.user.name,
         email: affiliate.user.email,
-        referralCode: affiliate.referralCode,
-        totalReferrals: affiliate.referrals.length,
+        totalReferrals: affiliate._count.referrals,
         totalEarnings: affiliate.balanceCents,
         totalCommissions: affiliate.commissions.length
       })),

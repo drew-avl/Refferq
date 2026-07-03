@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -36,6 +37,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Textarea } from '@/components/ui/textarea';
+import {
   Wallet,
   Clock,
   CheckCircle2,
@@ -43,8 +53,13 @@ import {
   Loader2,
   Download,
   Plus,
+  MoreHorizontal,
+  ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
+
+type PayoutStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
 interface Payout {
   id: string;
@@ -53,7 +68,7 @@ interface Payout {
   affiliateEmail: string;
   amountCents: number;
   commissionCount: number;
-  status: string;
+  status: PayoutStatus;
   method: string;
   notes: string | null;
   createdAt: string;
@@ -70,14 +85,20 @@ interface EligiblePayout {
   method: string;
 }
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
+const payoutStatuses: PayoutStatus[] = ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'];
+
+const statusConfig: Record<PayoutStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
   PENDING: { label: 'Pending', variant: 'secondary', icon: Clock },
   PROCESSING: { label: 'Processing', variant: 'outline', icon: Loader2 },
   COMPLETED: { label: 'Completed', variant: 'default', icon: CheckCircle2 },
   FAILED: { label: 'Failed', variant: 'destructive', icon: XCircle },
 };
 
+const asPayoutStatus = (status: string): PayoutStatus =>
+  payoutStatuses.includes(status as PayoutStatus) ? status as PayoutStatus : 'PENDING';
+
 export default function PayoutsPage() {
+  const router = useRouter();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -86,7 +107,14 @@ export default function PayoutsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedAffiliateId, setSelectedAffiliateId] = useState('');
   const [payoutMethod, setPayoutMethod] = useState('PayPal');
+  const [payoutNotes, setPayoutNotes] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
+  const [editPayoutStatus, setEditPayoutStatus] = useState<PayoutStatus>('PENDING');
+  const [editPayoutMethod, setEditPayoutMethod] = useState('PayPal');
+  const [editPayoutNotes, setEditPayoutNotes] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPayouts();
@@ -129,6 +157,7 @@ export default function PayoutsPage() {
     const firstEligible = eligiblePartners[0];
     setSelectedAffiliateId(firstEligible?.affiliateId || '');
     setPayoutMethod(getAllowedPayoutMethod(firstEligible?.method));
+    setPayoutNotes('');
     setShowCreateDialog(true);
   };
 
@@ -150,11 +179,13 @@ export default function PayoutsPage() {
           affiliateId: selectedEligible.affiliateId,
           commissionIds: selectedEligible.commissionIds,
           method: payoutMethod,
+          notes: payoutNotes.trim(),
         }),
       });
       const data = await res.json();
       if (data.success) {
         setShowCreateDialog(false);
+        setPayoutNotes('');
         await fetchPayouts();
       } else {
         alert(data.error || 'Failed to create payout');
@@ -164,6 +195,77 @@ export default function PayoutsPage() {
       alert('Failed to create payout');
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const openUpdateDialog = (payout: Payout) => {
+    setEditingPayout(payout);
+    setEditPayoutStatus(asPayoutStatus(payout.status));
+    setEditPayoutMethod(getAllowedPayoutMethod(payout.method));
+    setEditPayoutNotes(payout.notes || '');
+    setShowUpdateDialog(true);
+  };
+
+  const updatePayout = async (
+    payout: Payout,
+    updates: { status?: PayoutStatus; method?: string; notes?: string }
+  ) => {
+    setActionLoading(payout.id);
+    try {
+      const res = await fetch('/api/admin/payouts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: payout.id, ...updates }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchPayouts();
+        return true;
+      }
+
+      alert(data.error || 'Failed to update payout');
+    } catch (error) {
+      console.error('Failed to update payout:', error);
+      alert('Failed to update payout');
+    } finally {
+      setActionLoading(null);
+    }
+
+    return false;
+  };
+
+  const handleSavePayoutUpdates = async () => {
+    if (!editingPayout) return;
+
+    const updated = await updatePayout(editingPayout, {
+      status: editPayoutStatus,
+      method: editPayoutMethod,
+      notes: editPayoutNotes.trim(),
+    });
+
+    if (updated) {
+      setShowUpdateDialog(false);
+      setEditingPayout(null);
+    }
+  };
+
+  const handleDeletePayout = async (payout: Payout) => {
+    if (!confirm(`Delete payout for ${payout.affiliateName}? This action cannot be undone.`)) return;
+
+    setActionLoading(payout.id);
+    try {
+      const res = await fetch(`/api/admin/payouts?id=${payout.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        await fetchPayouts();
+      } else {
+        alert(data.error || 'Failed to delete payout');
+      }
+    } catch (error) {
+      console.error('Failed to delete payout:', error);
+      alert('Failed to delete payout');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -291,17 +393,22 @@ export default function PayoutsPage() {
                   <TableHead>Status</TableHead>
                   <TableHead>Payout Date</TableHead>
                   <TableHead>Processed</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((payout) => {
                   const cfg = statusConfig[payout.status] || statusConfig.PENDING;
+                  const StatusIcon = cfg.icon;
                   return (
                     <TableRow key={payout.id}>
                       <TableCell>
                         <div>
                           <p className="font-medium text-sm">{payout.affiliateName}</p>
                           <p className="text-xs text-muted-foreground">{payout.affiliateEmail}</p>
+                          {payout.notes && (
+                            <p className="max-w-[240px] truncate text-xs text-muted-foreground">{payout.notes}</p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -310,9 +417,12 @@ export default function PayoutsPage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-sm">{payout.commissionCount}</TableCell>
-                      <TableCell className="text-sm">{payout.method || '—'}</TableCell>
+                      <TableCell className="text-sm">{payout.method || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                        <Badge variant={cfg.variant} className="gap-1">
+                          <StatusIcon className="h-3 w-3" />
+                          {cfg.label}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(payout.createdAt).toLocaleDateString('en-IN', {
@@ -328,7 +438,59 @@ export default function PayoutsPage() {
                             month: 'short',
                             year: 'numeric',
                           })
-                          : '—'}
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={actionLoading === payout.id}
+                            >
+                              {actionLoading === payout.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <MoreHorizontal className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">Open payout actions</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => router.push(`/admin/partners/${payout.affiliateId}`)}>
+                              <ExternalLink className="h-4 w-4" />
+                              View Partner
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openUpdateDialog(payout)}>
+                              <Wallet className="h-4 w-4" />
+                              Edit Payout
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {payoutStatuses.map((status) => (
+                              <DropdownMenuItem
+                                key={status}
+                                disabled={payout.status === status}
+                                onClick={() => updatePayout(payout, { status })}
+                              >
+                                {statusConfig[status].label}
+                              </DropdownMenuItem>
+                            ))}
+                            {payout.status !== 'COMPLETED' && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => handleDeletePayout(payout)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete Payout
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );
@@ -394,6 +556,15 @@ export default function PayoutsPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={payoutNotes}
+                onChange={(event) => setPayoutNotes(event.target.value)}
+                placeholder="Optional payout notes"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
@@ -402,6 +573,89 @@ export default function PayoutsPage() {
             <Button onClick={handleCreatePayout} disabled={createLoading || !selectedEligible}>
               {createLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Payout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showUpdateDialog} onOpenChange={(open) => {
+        setShowUpdateDialog(open);
+        if (!open) setEditingPayout(null);
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Payout</DialogTitle>
+            <DialogDescription>Update payout status, payment method, and notes</DialogDescription>
+          </DialogHeader>
+
+          {editingPayout && (
+            <div className="space-y-4">
+              <div className="grid gap-3 rounded-md border bg-muted/40 p-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Amount</p>
+                  <p className="text-lg font-semibold">
+                    {currencySymbol}{(editingPayout.amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Commissions</p>
+                  <p className="text-lg font-semibold">{editingPayout.commissionCount}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Created</p>
+                  <p className="text-lg font-semibold">
+                    {new Date(editingPayout.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={editPayoutStatus} onValueChange={(value) => setEditPayoutStatus(value as PayoutStatus)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PENDING">Pending - Awaiting processing</SelectItem>
+                    <SelectItem value="PROCESSING">Processing - Payment in progress</SelectItem>
+                    <SelectItem value="COMPLETED">Completed - Payment successful</SelectItem>
+                    <SelectItem value="FAILED">Failed - Payment failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select value={editPayoutMethod} onValueChange={setEditPayoutMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYOUT_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>{method}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  value={editPayoutNotes}
+                  onChange={(event) => setEditPayoutNotes(event.target.value)}
+                  placeholder="Optional payout notes"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowUpdateDialog(false); setEditingPayout(null); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePayoutUpdates} disabled={!editingPayout || actionLoading === editingPayout.id}>
+              {editingPayout && actionLoading === editingPayout.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Payout
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -65,7 +65,6 @@ interface Referral {
     id: string;
     name: string;
     email: string;
-    referralCode: string;
     commissionRate: number;
   };
 }

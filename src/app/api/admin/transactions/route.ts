@@ -83,7 +83,6 @@ export async function GET(request: NextRequest) {
             id: affiliate.id,
             name: affiliate.user.name,
             email: affiliate.user.email,
-            referralCode: affiliate.referralCode,
             partnerGroup: affiliate.partnerGroupId ? 
               (affiliate.partnerGroup?.name || 'Default') : 
               'Default'

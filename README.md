@@ -57,7 +57,7 @@
 - **Referral Management**
   - Review and approve lead submissions
   - Track referral status (Pending, Approved, Rejected)
-  - Manual lead conversion tracking
+  - Manual lead management
   - Bulk operations support
 
 - **Commission & Payouts**
@@ -95,8 +95,8 @@
   - Filter by status (All, Pending, Approved)
 
 - **Marketing Resources**
-  - Unique referral link
-  - Shareable referral code
+  - Manual lead submission
+  - Partner lead tracking
   - Copy-to-clipboard functionality
   - Social media sharing buttons
 

@@ -69,9 +69,8 @@ interface EmailTemplate {
 const AVAILABLE_VARIABLES = [
   { name: 'name', desc: 'Recipient name' },
   { name: 'email', desc: 'Recipient email' },
-  { name: 'code', desc: 'OTP or referral code' },
+  { name: 'code', desc: 'OTP code' },
   { name: 'amount', desc: 'Payout amount' },
-  { name: 'referralCode', desc: 'Referral code' },
   { name: 'companyName', desc: 'Company name' },
   { name: 'dashboardUrl', desc: 'Dashboard link' },
   { name: 'reason', desc: 'Approval/rejection reason' },

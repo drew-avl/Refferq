@@ -288,8 +288,7 @@ export async function DELETE(
         objectId: params.id,
         payload: {
           affiliateName: affiliate.user.name,
-          affiliateEmail: affiliate.user.email,
-          referralCode: affiliate.referralCode
+          affiliateEmail: affiliate.user.email
         }
       }
     });

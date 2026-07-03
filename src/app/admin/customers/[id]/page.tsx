@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   AlertDialog,
@@ -40,7 +39,6 @@ import {
   Clock,
   Save,
   Trash2,
-  Link2,
   FileText,
   Shield,
   Loader2,
@@ -70,7 +68,6 @@ interface Referral {
     id: string;
     name: string;
     email: string;
-    referralCode: string;
     commissionRate: number;
   };
 }
@@ -549,7 +546,7 @@ export default function CustomerDetailPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Link2 className="h-4 w-4" />
+                <User className="h-4 w-4" />
                 Referring Partner
               </CardTitle>
             </CardHeader>
@@ -563,15 +560,6 @@ export default function CustomerDetailPage() {
                 <div>
                   <p className="text-sm font-medium">{referral.affiliate.name}</p>
                   <p className="text-xs text-muted-foreground">{referral.affiliate.email}</p>
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Referral Code</span>
-                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-                    {referral.affiliate.referralCode}
-                  </code>
                 </div>
               </div>
             </CardContent>

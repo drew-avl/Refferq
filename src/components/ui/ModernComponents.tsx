@@ -133,7 +133,6 @@ export const MetricCard = ({
 export const PartnerRow = ({
   name,
   email,
-  code,
   revenue,
   currency = '$',
   status,
@@ -142,7 +141,6 @@ export const PartnerRow = ({
 }: {
   name: string;
   email: string;
-  code: string;
   revenue: number;
   currency?: string;
   status: 'ACTIVE' | 'PENDING' | 'SUSPENDED';
@@ -175,11 +173,6 @@ export const PartnerRow = ({
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-gray-900">{name}</div>
         <div className="text-sm text-gray-500 truncate">{email}</div>
-      </div>
-
-      <div className="text-center px-4">
-        <div className="text-xs text-gray-500 mb-1">Referral Code</div>
-        <div className="font-mono text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{code}</div>
       </div>
 
       <div className="text-right px-4">

@@ -75,10 +75,23 @@ export async function GET(request: NextRequest) {
     // Get currency symbol
     const { getCurrencySymbol } = await import('@/lib/currency');
     const currencySymbol = await getCurrencySymbol();
+    const affiliatesForResponse = affiliates.map((affiliate) => ({
+      id: affiliate.id,
+      userId: affiliate.userId,
+      payoutDetails: affiliate.payoutDetails,
+      balanceCents: affiliate.balanceCents,
+      createdAt: affiliate.createdAt,
+      updatedAt: affiliate.updatedAt,
+      partnerGroupId: affiliate.partnerGroupId,
+      user: affiliate.user,
+      _count: affiliate._count,
+      partnerGroup: affiliate.partnerGroup,
+      programAssignments: affiliate.programAssignments,
+    }));
 
     return NextResponse.json({
       success: true,
-      affiliates,
+      affiliates: affiliatesForResponse,
       currencySymbol, // Add currency symbol to response
     });
   } catch (error) {
@@ -247,7 +260,6 @@ export async function POST(request: NextRequest) {
         userId: newUser.id,
         name: newUser.name,
         email: newUser.email,
-        referralCode: affiliate.referralCode,
         balanceCents: affiliate.balanceCents,
         createdAt: affiliate.createdAt,
         assignedProgramIds: programIdsToAssign

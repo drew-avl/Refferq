@@ -46,7 +46,6 @@ import {
   Users,
   Wallet,
   CreditCard,
-  Copy,
   ExternalLink,
   Loader2,
   MousePointerClick,
@@ -64,7 +63,6 @@ interface Partner {
   id: string;
   name: string;
   email: string;
-  referralCode: string;
   assignedPrograms: AssignedProgram[];
   status: string;
   totalClicks: number;
@@ -215,7 +213,6 @@ export default function PartnerDetailPage() {
             id: affiliate.id,
             name: affiliate.user?.name || 'Unknown Partner',
             email: affiliate.user?.email || '',
-            referralCode: affiliate.referralCode,
             assignedPrograms,
             status: affiliate.user?.status || affiliate.status || 'PENDING',
             totalClicks: affiliate.totalClicks || 0,
@@ -432,10 +429,6 @@ export default function PartnerDetailPage() {
               <h1 className="text-2xl font-bold tracking-tight">{partner.name}</h1>
               <p className="text-sm text-muted-foreground">{partner.email}</p>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="font-mono text-xs gap-1">
-                  <Copy className="h-3 w-3" />
-                  {partner.referralCode}
-                </Badge>
                 <Badge variant="outline" className="text-xs">
                   {primaryProgram
                     ? `${formatProgramCurrency(primaryProgram.referralPayoutCents || 0, primaryProgram.currency)} per referral`
@@ -531,14 +524,13 @@ export default function PartnerDetailPage() {
                 {[
                   { label: 'Name', value: partner.name },
                   { label: 'Email', value: partner.email },
-                  { label: 'Referral Code', value: partner.referralCode, mono: true },
                   { label: 'Property Program', value: formatProgramNames(partner.assignedPrograms) },
                   { label: 'Referral Payout', value: payoutTerms },
                   { label: 'Partner Since', value: formatDate(partner.createdAt) },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className={`text-sm font-medium ${item.mono ? 'font-mono' : ''}`}>{item.value}</span>
+                    <span className="text-sm font-medium">{item.value}</span>
                   </div>
                 ))}
               </CardContent>

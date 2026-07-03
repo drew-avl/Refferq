@@ -206,8 +206,7 @@ class EmailService {
         <p>Once approved, you'll be able to:</p>
         `}
         <ul>
-          <li>Generate unique referral links</li>
-          <li>Submit manual referrals</li>
+          <li>Submit leads manually</li>
           <li>Track your commissions and earnings</li>
           <li>Access marketing materials</li>
         </ul>

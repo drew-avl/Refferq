@@ -530,9 +530,53 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Payout ID is required' }, { status: 400 });
     }
 
-    // Delete payout
-    await (prisma as any).payout.delete({
+    const payout = await (prisma as any).payout.findUnique({
       where: { id },
+      include: {
+        commissions: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!payout) {
+      return NextResponse.json({ error: 'Payout not found' }, { status: 404 });
+    }
+
+    if (payout.status === 'COMPLETED') {
+      return NextResponse.json(
+        { error: 'Completed payouts cannot be deleted' },
+        { status: 400 }
+      );
+    }
+
+    const commissionIds = payout.commissions.map((commission: { id: string }) => commission.id);
+
+    await prisma.$transaction(async (tx) => {
+      if (commissionIds.length > 0) {
+        await tx.commission.updateMany({
+          where: { id: { in: commissionIds } },
+          data: {
+            status: 'APPROVED',
+            payoutId: null,
+            paidAt: null,
+            updatedAt: new Date(),
+          },
+        });
+      }
+
+      await tx.affiliate.update({
+        where: { id: payout.affiliateId },
+        data: {
+          balanceCents: {
+            increment: payout.amountCents,
+          },
+        },
+      });
+
+      await (tx as any).payout.delete({
+        where: { id },
+      });
     });
 
     // Log the action
@@ -540,7 +584,12 @@ export async function DELETE(request: NextRequest) {
       actorId: auth.user.id,
       action: 'DELETE_PAYOUT',
       objectType: 'PAYOUT',
-      objectId: id
+      objectId: id,
+      payload: {
+        affiliateId: payout.affiliateId,
+        amountCents: payout.amountCents,
+        restoredCommissionCount: commissionIds.length,
+      }
     });
 
     return NextResponse.json({

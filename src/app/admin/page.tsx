@@ -52,8 +52,6 @@ interface TopAffiliate {
   id: string;
   name: string;
   email: string;
-  referralCode: string;
-  totalRevenue: number;
   totalReferrals: number;
 }
 
@@ -374,11 +372,13 @@ export default function AdminDashboardPage() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{affiliate.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{affiliate.referralCode}</p>
+                        <p className="text-xs text-muted-foreground truncate">{affiliate.email}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">{currencySymbol}{(affiliate.totalRevenue / 100).toFixed(2)}</p>
-                        <p className="text-[11px] text-muted-foreground">{affiliate.totalReferrals} referrals</p>
+                        <p className="text-sm font-semibold">{Number(affiliate.totalReferrals || 0).toLocaleString()}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {Number(affiliate.totalReferrals || 0) === 1 ? 'referral' : 'referrals'}
+                        </p>
                       </div>
                     </div>
                   ))}

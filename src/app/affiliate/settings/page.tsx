@@ -31,9 +31,6 @@ import {
   Shield,
   CheckCircle2,
   AlertCircle,
-  Key,
-  Copy,
-  Check,
 } from 'lucide-react';
 import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
 
@@ -41,8 +38,6 @@ export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [referralCode, setReferralCode] = useState('');
   const [saving, setSaving] = useState(false);
 
   const [settingsForm, setSettingsForm] = useState({
@@ -65,7 +60,6 @@ export default function SettingsPage() {
       const data = await res.json();
       if (data.success) {
         const pd = data.affiliate?.payoutDetails || {};
-        setReferralCode(data.affiliate?.referralCode || '');
         setSettingsForm({
           name: data.user?.name || user?.name || '',
           company: pd.company || '',
@@ -103,27 +97,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleGenerateCode = async () => {
-    try {
-      const res = await fetch('/api/affiliate/generate-code', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        showNotification('success', 'Referral code generated!');
-        loadProfile();
-      } else {
-        showNotification('error', 'Failed to generate code: ' + data.error);
-      }
-    } catch (_e) {
-      showNotification('error', 'Failed to generate code');
-    }
-  };
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 5000);
@@ -151,32 +124,6 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your account and payment preferences</p>
       </div>
-
-      {/* Referral Code */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Key className="h-4 w-4" />
-            Referral Code
-          </CardTitle>
-          <CardDescription>Your unique referral identifier</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {referralCode ? (
-            <div className="flex items-center gap-2">
-              <Input readOnly value={referralCode} className="font-mono max-w-xs" />
-              <Button variant="outline" size="icon" onClick={copyCode}>
-                {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">No referral code generated yet.</p>
-              <Button onClick={handleGenerateCode}>Generate Code</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Personal Details */}
       <Card>

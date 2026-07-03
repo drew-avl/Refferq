@@ -40,12 +40,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
   Settings2,
   Save,
   Plus,
@@ -54,10 +48,6 @@ import {
   Percent,
   CheckCircle2,
   Globe,
-  Code2,
-  Copy,
-  ExternalLink,
-  Zap,
   Clock,
 } from 'lucide-react';
 
@@ -108,15 +98,6 @@ export default function ProgramSettingsPage() {
     isDefault: false,
   });
   const [savingRule, setSavingRule] = useState(false);
-  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
-
-  const appUrl = typeof window !== 'undefined' ? window.location.origin : '';
-
-  const handleCopySnippet = async (id: string, text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedSnippet(id);
-    setTimeout(() => setCopiedSnippet(null), 2000);
-  };
 
   useEffect(() => {
     fetchSettings();
@@ -596,131 +577,22 @@ export default function ProgramSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Tracking Widget / Integration */}
+      {/* Manual Lead Entry */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code2 className="h-5 w-5" />
-            Referral Tracking Widget
-          </CardTitle>
+          <CardTitle>Manual Lead Entry</CardTitle>
           <CardDescription>
-            Embed this script on <strong>{settings.websiteUrl || 'your website'}</strong> to automatically track referral visits and conversions
+            Leads are entered manually by partners or admins.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Step 1 — website URL reminder */}
-          {!settings.websiteUrl && (
-            <div className="rounded-md border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-950">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                Set your <strong>Website URL</strong> in General Settings above first so the snippet is pre-configured.
-              </p>
-            </div>
-          )}
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Use the partner portal or admin lead form to add leads. No tracking setup is required for this program.
+          </p>
 
-          <Tabs defaultValue="script" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="script">Tracking Script</TabsTrigger>
-              <TabsTrigger value="conversion">Conversion Tracking</TabsTrigger>
-              <TabsTrigger value="referral">Referral Links</TabsTrigger>
-            </TabsList>
 
-            {/* ── Tab: Tracking Script ── */}
-            <TabsContent value="script" className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">1. Add this script before <code className="rounded bg-muted px-1.5 py-0.5 text-xs">&lt;/body&gt;</code> on every page</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('script', `<script src="${appUrl}/scripts/referconnect-tracker.js" data-api-url="${appUrl}"></script>`)}>
-                    {copiedSnippet === 'script' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
-                  </Button>
-                </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto">
-                  <span className="text-blue-600">&lt;script</span>
-                  {' '}<span className="text-purple-600">src</span>=<span className="text-green-600">&quot;{appUrl}/scripts/referconnect-tracker.js&quot;</span><br />
-                  {'  '}<span className="text-purple-600">data-api-url</span>=<span className="text-green-600">&quot;{appUrl}&quot;</span>
-                  <span className="text-blue-600">&gt;&lt;/script&gt;</span>
-                </div>
-              </div>
 
-              <Separator />
 
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium flex items-center gap-2"><Zap className="h-4 w-4" />How it works</h4>
-                <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                  <li>A visitor arrives on <strong>{settings.websiteUrl || 'your site'}</strong> via a referral link (e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs">?ref=CODE</code>)</li>
-                  <li>The script automatically detects the <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> parameter and stores a 30-day cookie</li>
-                  <li>When the visitor converts (signup, purchase, etc.), you call <code className="rounded bg-muted px-1 py-0.5 text-xs">ReferConnect.trackConversion()</code></li>
-                  <li>The referral and commission are recorded in your dashboard automatically</li>
-                </ol>
-              </div>
-            </TabsContent>
-
-            {/* ── Tab: Conversion Tracking ── */}
-            <TabsContent value="conversion" className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Call this when a visitor completes a conversion event</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nReferConnect.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. cents)\n  currency: '${settings.currency || 'USD'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
-                    {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
-                  </Button>
-                </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
-                  {`// Track a conversion (e.g. after signup or purchase)
-ReferConnect.trackConversion({
-  email: customer.email,
-  name: customer.name,
-  amount: 4999,        // amount in smallest unit (e.g. paise / cents)
-  currency: '${settings.currency || 'USD'}',
-  orderId: 'ORD-12345' // optional
-});`}
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Other helpers</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('helpers', `// Get the current referral code (or null)\nconst code = ReferConnect.getReferralCode();\n\n// Clear the stored referral code\nReferConnect.clearReferralCode();`)}>
-                    {copiedSnippet === 'helpers' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
-                  </Button>
-                </div>
-                <div className="rounded-md bg-muted p-4 font-mono text-sm overflow-x-auto whitespace-pre">
-                  {`// Get the current referral code (or null)
-const code = ReferConnect.getReferralCode();
-
-// Clear the stored referral code
-ReferConnect.clearReferralCode();`}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* ── Tab: Referral Links ── */}
-            <TabsContent value="referral" className="space-y-4">
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium">Referral link format</h4>
-                <p className="text-sm text-muted-foreground">
-                  Referral partners share links to your website with a <code className="rounded bg-muted px-1 py-0.5 text-xs">ref</code> query parameter.
-                  The tracking script picks this up automatically.
-                </p>
-                <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">
-                  {settings.websiteUrl || 'https://yoursite.com'}/<span className="text-blue-600">?ref=</span><span className="text-green-600">PARTNER-CODE</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  The script also recognizes <code className="rounded bg-muted px-1 py-0.5 text-xs">?referral=</code> and <code className="rounded bg-muted px-1 py-0.5 text-xs">?affiliate=</code> parameters.
-                </p>
-              </div>
-
-              <div className="rounded-md border p-4 space-y-3">
-                <h4 className="text-sm font-medium">Direct referral route</h4>
-                <p className="text-sm text-muted-foreground">
-                  You can also use the built-in redirect route to send visitors through ReferConnect first:
-                </p>
-                <div className="rounded-md bg-muted p-3 font-mono text-sm break-all">
-                  {appUrl}/<span className="text-blue-600">r/</span><span className="text-green-600">PARTNER-CODE</span>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
         </CardContent>
       </Card>
     </div>

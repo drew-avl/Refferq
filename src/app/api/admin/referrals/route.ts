@@ -89,7 +89,6 @@ export async function GET(request: NextRequest) {
             id: affiliate.id,
             name: affiliate.user.name,
             email: affiliate.user.email,
-            referralCode: affiliate.referralCode,
             partnerGroup: pgData || 'Not assigned',
             partnerGroupId: pgId,
             commissionRate: referral.program?.commissionType === 'PERCENTAGE'

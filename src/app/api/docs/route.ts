@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
             { name: 'Auth', description: 'Authentication endpoints' },
             { name: 'Referral Partner', description: 'Referral partner-facing endpoints' },
             { name: 'Admin', description: 'Admin management endpoints' },
-            { name: 'Tracking', description: 'Click and conversion tracking' },
             { name: 'Webhooks', description: 'External webhook receivers' },
         ],
         paths: {
@@ -162,20 +161,6 @@ export async function GET(request: NextRequest) {
             },
 
             // ─── Tracking ──────────────────────────────────────────
-            '/r/{code}': {
-                get: {
-                    tags: ['Tracking'],
-                    summary: 'Referral redirect (deep linking supported)',
-                    parameters: [
-                        { name: 'code', in: 'path', required: true, schema: { type: 'string' }, description: 'Referral code' },
-                        { name: 'dest', in: 'query', schema: { type: 'string', format: 'uri' }, description: 'Deep link destination URL' },
-                    ],
-                    responses: {
-                        '302': { description: 'Redirects to target URL with ref and attr params, sets attribution cookie' },
-                    },
-                },
-            },
-
             // ─── Webhooks ──────────────────────────────────────────
             '/api/webhook/conversion': {
                 post: {
@@ -289,7 +274,6 @@ export async function GET(request: NextRequest) {
                 ConversionWebhook: {
                     type: 'object',
                     properties: {
-                        referralCode: { type: 'string' },
                         eventType: { type: 'string', enum: ['SIGNUP', 'PURCHASE', 'TRIAL', 'LEAD'] },
                         amountCents: { type: 'integer' },
                         currency: { type: 'string' },

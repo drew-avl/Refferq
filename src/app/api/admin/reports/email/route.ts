@@ -142,7 +142,6 @@ async function generateReportData(reportType: string, startDate?: string, endDat
       data: affiliates.map((a) => ({
         name: a.user.name,
         email: a.user.email,
-        referralCode: a.referralCode,
         totalReferrals: a.referrals.length,
         completed: a.referrals.filter((r) => r.status === 'COMPLETED').length,
         totalEarningsCents: a.commissions.reduce((s, c) => s + c.amountCents, 0),
