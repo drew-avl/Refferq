@@ -680,7 +680,7 @@ export default function CustomerDetailPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium">
-                            {formatStatusLabel(event.fromStatus)} -> {formatStatusLabel(event.toStatus)}
+                            {formatStatusLabel(event.fromStatus)}{' -> '}{formatStatusLabel(event.toStatus)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {eventDate.date} at {eventDate.time}
