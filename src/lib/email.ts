@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { getPublicAppUrl } from './platform-defaults';
+import { PayoutMethod } from './payout-methods';
 
 // Initialize Resend with API key only when needed (server-side)
 let resendInstance: Resend | null = null;
@@ -35,7 +36,7 @@ export interface WelcomeEmailData {
   email: string;
   role: 'affiliate' | 'admin';
   loginUrl: string;
-  password?: string;
+  accountStatus?: 'active' | 'pending';
 }
 
 export interface ReferralNotificationData {
@@ -59,7 +60,7 @@ export interface PayoutNotificationData {
   affiliateName: string;
   affiliateEmail: string;
   amount: number;
-  method: 'PayPal' | 'Zelle';
+  method: PayoutMethod;
   processingDate: string;
 }
 
@@ -172,6 +173,8 @@ class EmailService {
   }
 
   private generateWelcomeEmailHTML(data: WelcomeEmailData): string {
+    const isActiveAffiliate = data.role === 'affiliate' && data.accountStatus === 'active';
+
     return `
     <!DOCTYPE html>
     <html>
@@ -195,8 +198,13 @@ class EmailService {
         <p>Thank you for joining our referral portal as a <strong>${this.escapeHtml(data.role === 'affiliate' ? 'referral partner' : data.role)}</strong>.</p>
         
         ${data.role === 'affiliate' ? `
+        ${isActiveAffiliate ? `
+        <p>Your referral partner account has been approved and is ready to use.</p>
+        <p>You can now:</p>
+        ` : `
         <p>Your account is currently pending approval. Our admin team will review your application and activate your account within 24-48 hours.</p>
         <p>Once approved, you'll be able to:</p>
+        `}
         <ul>
           <li>Generate unique referral links</li>
           <li>Submit manual referrals</li>
@@ -214,14 +222,6 @@ class EmailService {
         </ul>
         `}
 
-        ${data.password ? `
-        <div style="background: #ffffff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; margin: 20px 0;">
-          <p style="margin-top: 0; font-weight: bold; color: #64748b;">Your Initial Password:</p>
-          <code style="background: #f1f5f9; padding: 10px; display: block; border-radius: 4px; font-size: 18px; text-align: center; color: #0f172a;">${this.escapeHtml(data.password)}</code>
-          <p style="margin-bottom: 0; font-size: 13px; color: #94a3b8; text-align: center; margin-top: 10px;">For security, please change your password after your first login.</p>
-        </div>
-        ` : ''}
-        
         <div style="text-align: center;">
           <a href="${data.loginUrl}" class="button">Login to Your Account</a>
         </div>

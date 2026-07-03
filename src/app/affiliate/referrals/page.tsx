@@ -187,6 +187,7 @@ export default function ReferralsPage() {
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
+      NEW: { variant: 'outline', icon: Clock },
       SOLD: { variant: 'outline', icon: CheckCircle2 },
       COMPLETED: { variant: 'default', icon: CheckCircle2 },
       PENDING: { variant: 'secondary', icon: Clock },
@@ -214,6 +215,7 @@ export default function ReferralsPage() {
 
   const stats = {
     total: referrals.length,
+    new: referrals.filter((r) => r.status === 'NEW').length,
     pending: referrals.filter((r) => r.status === 'PENDING').length,
     sold: referrals.filter((r) => r.status === 'SOLD').length,
     completed: referrals.filter((r) => r.status === 'COMPLETED').length,
@@ -306,8 +308,8 @@ export default function ReferralsPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-5">
-          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20" />)}
+        <div className="grid gap-4 md:grid-cols-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-20" />)}
         </div>
         <Skeleton className="h-96" />
       </div>
@@ -336,7 +338,7 @@ export default function ReferralsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Total</p>
@@ -353,6 +355,12 @@ export default function ReferralsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Sold</p>
             <p className="text-2xl font-bold text-blue-600">{stats.sold}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">New</p>
+            <p className="text-2xl font-bold text-slate-600">{stats.new}</p>
           </CardContent>
         </Card>
         <Card>
@@ -387,6 +395,7 @@ export default function ReferralsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Status</SelectItem>
+            <SelectItem value="NEW">New</SelectItem>
             <SelectItem value="PENDING">Pending</SelectItem>
             <SelectItem value="SOLD">Sold</SelectItem>
             <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -438,7 +447,7 @@ export default function ReferralsPage() {
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      {(ref.status === 'PENDING' || ref.status === 'SOLD') && (
+                      {(ref.status === 'NEW' || ref.status === 'PENDING' || ref.status === 'SOLD') && (
                         <Button variant="ghost" size="sm" onClick={() => openEditLead(ref)}>
                           <Pencil className="mr-1 h-3.5 w-3.5" />
                           Edit

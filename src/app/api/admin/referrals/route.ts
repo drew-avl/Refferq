@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { createCompletedReferralCommission } from '@/lib/referral-payouts';
-import { referralStatusFromAction } from '@/lib/referral-status';
+import { canTransitionReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
 
 
 export async function GET(request: NextRequest) {
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { referralIds, action } = body; // action: 'sell' | 'complete' | 'reject'
+    const { referralIds, action } = body; // action: 'pending' | 'sell' | 'complete' | 'reject'
 
     if (!referralIds || !Array.isArray(referralIds) || referralIds.length === 0) {
       return NextResponse.json(
@@ -148,9 +148,9 @@ export async function POST(request: NextRequest) {
 
     const targetStatus = action ? referralStatusFromAction(action) : null;
 
-    if (!targetStatus || targetStatus === 'PENDING') {
+    if (!targetStatus || targetStatus === 'NEW') {
       return NextResponse.json(
-        { error: 'Invalid action. Must be "sell", "complete", or "reject"' },
+        { error: 'Invalid action. Must be "pending", "sell", "complete", or "reject"' },
         { status: 400 }
       );
     }
@@ -159,6 +159,25 @@ export async function POST(request: NextRequest) {
     let payoutEligibleCount = 0;
 
     for (const referralId of referralIds) {
+      const referral = await prisma.referral.findUnique({
+        where: { id: referralId },
+        select: { status: true }
+      });
+
+      if (!referral) {
+        return NextResponse.json(
+          { error: `Referral ${referralId} was not found` },
+          { status: 404 }
+        );
+      }
+
+      if (!canTransitionReferralStatus(referral.status, targetStatus)) {
+        return NextResponse.json(
+          { error: `Cannot move referral from ${referral.status.toLowerCase()} to ${targetStatus.toLowerCase()}` },
+          { status: 400 }
+        );
+      }
+
       const updatedReferral = await prisma.referral.update({
         where: { id: referralId },
         data: {

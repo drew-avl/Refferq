@@ -66,12 +66,12 @@ interface Referral {
     name: string;
     email: string;
     referralCode: string;
-    partnerGroup: string;
     commissionRate: number;
   };
 }
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  NEW: { label: 'New', variant: 'outline' },
   PENDING: { label: 'Pending', variant: 'secondary' },
   SOLD: { label: 'Sold', variant: 'outline' },
   COMPLETED: { label: 'Completed', variant: 'default' },
@@ -120,7 +120,7 @@ export default function CustomersPage() {
     }
   };
 
-  const handleAction = async (referralIds: string[], action: 'sell' | 'complete' | 'reject') => {
+  const handleAction = async (referralIds: string[], action: 'pending' | 'sell' | 'complete' | 'reject') => {
     setActionLoading(referralIds[0]);
     try {
       const res = await fetch('/api/admin/referrals', {
@@ -152,6 +152,7 @@ export default function CustomersPage() {
 
   const stats = {
     total: referrals.length,
+    new: referrals.filter((r) => r.status === 'NEW').length,
     pending: referrals.filter((r) => r.status === 'PENDING').length,
     sold: referrals.filter((r) => r.status === 'SOLD').length,
     completed: referrals.filter((r) => r.status === 'COMPLETED').length,
@@ -162,7 +163,7 @@ export default function CustomersPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-6">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-24" />
           ))}
@@ -180,7 +181,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
@@ -206,6 +207,15 @@ export default function CustomersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.sold}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">New</CardTitle>
+            <Clock className="h-4 w-4 text-slate-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.new}</div>
           </CardContent>
         </Card>
         <Card>
@@ -252,6 +262,7 @@ export default function CustomersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="NEW">New</SelectItem>
                   <SelectItem value="PENDING">Pending</SelectItem>
                   <SelectItem value="SOLD">Sold</SelectItem>
                   <SelectItem value="COMPLETED">Completed</SelectItem>
@@ -337,7 +348,6 @@ export default function CustomersPage() {
                     <TableCell>
                       <div className="text-sm">
                         <p className="font-medium">{referral.affiliate.name}</p>
-                        <p className="text-xs text-muted-foreground">{referral.affiliate.partnerGroup}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -362,6 +372,28 @@ export default function CustomersPage() {
                           <Eye className="mr-1 h-3.5 w-3.5" />
                           View
                         </Button>
+                        {referral.status === 'NEW' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'pending'); }}
+                              disabled={actionLoading === referral.id}
+                            >
+                              <Clock className="mr-1 h-3.5 w-3.5" />
+                              Pending
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'reject'); }}
+                              disabled={actionLoading === referral.id}
+                            >
+                              <XCircle className="mr-1 h-3.5 w-3.5" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
                         {referral.status === 'PENDING' && (
                           <>
                             <Button
@@ -385,15 +417,26 @@ export default function CustomersPage() {
                           </>
                         )}
                         {referral.status === 'SOLD' && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'complete'); }}
-                            disabled={actionLoading === referral.id}
-                          >
-                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                            Completed
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'complete'); }}
+                              disabled={actionLoading === referral.id}
+                            >
+                              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                              Completed
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={(e) => { e.stopPropagation(); handleAction([referral.id], 'reject'); }}
+                              disabled={actionLoading === referral.id}
+                            >
+                              <XCircle className="mr-1 h-3.5 w-3.5" />
+                              Reject
+                            </Button>
+                          </>
                         )}
                       </div>
                     </TableCell>

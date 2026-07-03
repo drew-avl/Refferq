@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         leadName: leadName.trim(),
         leadEmail: leadEmail.toLowerCase().trim(),
         leadPhone: leadPhone.trim(),
-        status: 'PENDING',
+        status: 'NEW',
         notes: notes?.trim() || null,
         metadata: {
           company: company || '',

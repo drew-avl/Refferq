@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { PAYOUT_METHODS } from './payout-methods';
 
-export const payoutMethodSchema = z.enum(['PayPal', 'Zelle']);
+export const payoutMethodSchema = z.enum(PAYOUT_METHODS);
 
 // Referral Validation
 export const referralSchema = z.object({
@@ -25,6 +26,7 @@ export const affiliateCreateSchema = z.object({
     payoutMethod: payoutMethodSchema.optional(),
     paypalEmail: z.string().max(200, 'Payout account is too long').optional().or(z.literal('')),
     sendWelcomeEmail: z.boolean().optional(),
+    assignedProgramIds: z.array(z.string()).optional(),
 });
 
 export const affiliateUpdateSchema = z.object({

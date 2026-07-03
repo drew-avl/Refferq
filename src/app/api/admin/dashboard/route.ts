@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const totalConversions = await prisma.conversion.count();
     
     const pendingReferrals = await prisma.referral.count({
-      where: { status: 'PENDING' }
+      where: { status: { in: ['NEW', 'PENDING'] } }
     });
     
     const soldReferrals = await prisma.referral.count({

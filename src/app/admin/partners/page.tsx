@@ -65,6 +65,7 @@ import {
   ArrowUpDown,
   Edit,
 } from 'lucide-react';
+import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
 
 interface AssignedProgram {
   id: string;
@@ -101,10 +102,10 @@ interface Partner {
   assignedProgramIds: string[];
 }
 
-const payoutMethodOptions = ['PayPal', 'Zelle'] as const;
-
-const getAllowedPayoutMethod = (method?: string) =>
-  payoutMethodOptions.includes(method as (typeof payoutMethodOptions)[number]) ? method! : 'PayPal';
+const getDefaultProgramIds = (programs: Program[]) => {
+  const defaultProgram = programs.find((program) => program.isDefault) || programs[0];
+  return defaultProgram ? [defaultProgram.id] : [];
+};
 
 export default function PartnersPage() {
   const router = useRouter();
@@ -129,17 +130,14 @@ export default function PartnersPage() {
     lastName: '',
     email: '',
     company: '',
-    partnerGroup: 'Default',
-    country: 'N/A',
     payoutMethod: 'PayPal',
     paypalEmail: '',
     sendWelcomeEmail: true,
-    trackingParameter: 'ref',
+    assignedProgramIds: [] as string[],
   });
 
   const [invitePartner, setInvitePartner] = useState({
     email: '',
-    partnerGroup: 'Default',
     inviteType: 'single',
   });
 
@@ -157,6 +155,14 @@ export default function PartnersPage() {
     fetchPartners();
     fetchPrograms();
   }, []);
+
+  useEffect(() => {
+    if (programs.length === 0 || newPartner.assignedProgramIds.length > 0) return;
+    setNewPartner((current) => ({
+      ...current,
+      assignedProgramIds: getDefaultProgramIds(programs),
+    }));
+  }, [programs, newPartner.assignedProgramIds.length]);
 
   useEffect(() => {
     filterPartners();
@@ -278,6 +284,7 @@ export default function PartnersPage() {
           payoutMethod: newPartner.payoutMethod,
           paypalEmail: newPartner.paypalEmail || newPartner.email,
           sendWelcomeEmail: newPartner.sendWelcomeEmail,
+          assignedProgramIds: newPartner.assignedProgramIds,
         }),
       });
 
@@ -285,13 +292,13 @@ export default function PartnersPage() {
 
       if (data.success) {
         alert(
-          `Partner created successfully!\n\nName: ${data.affiliate.name}\nEmail: ${data.affiliate.email}\nReferral Code: ${data.affiliate.referralCode}\nPassword: ${data.temporaryPassword}\nWelcome Email Sent: ${data.welcomeEmailSent ? 'Yes' : 'No'}`
+          `Partner created successfully!\n\nName: ${data.affiliate.name}\nEmail: ${data.affiliate.email}\nReferral Code: ${data.affiliate.referralCode}\nWelcome Email Sent: ${data.welcomeEmailSent ? 'Yes' : 'No'}`
         );
         setShowCreateModal(false);
         setNewPartner({
           firstName: '', lastName: '', email: '', company: '',
-          partnerGroup: 'Default', country: 'N/A', payoutMethod: 'PayPal',
-          paypalEmail: '', sendWelcomeEmail: true, trackingParameter: 'ref',
+          payoutMethod: 'PayPal',
+          paypalEmail: '', sendWelcomeEmail: true, assignedProgramIds: getDefaultProgramIds(programs),
         });
         fetchPartners();
       } else {
@@ -319,6 +326,15 @@ export default function PartnersPage() {
 
   const toggleEditProgram = (programId: string) => {
     setEditPartner((current) => ({
+      ...current,
+      assignedProgramIds: current.assignedProgramIds.includes(programId)
+        ? current.assignedProgramIds.filter((id) => id !== programId)
+        : [...current.assignedProgramIds, programId],
+    }));
+  };
+
+  const toggleNewProgram = (programId: string) => {
+    setNewPartner((current) => ({
       ...current,
       assignedProgramIds: current.assignedProgramIds.includes(programId)
         ? current.assignedProgramIds.filter((id) => id !== programId)
@@ -755,36 +771,48 @@ export default function PartnersPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPartner({ ...newPartner, company: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Partner Group</Label>
-                  <Select
-                    value={newPartner.partnerGroup}
-                    onValueChange={(value: string) => setNewPartner({ ...newPartner, partnerGroup: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Default">Default</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-2">
+                <Label>Property Programs</Label>
+                <div className="max-h-44 overflow-y-auto rounded-md border p-3">
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No property programs available yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((program) => (
+                        <label key={program.id} className="flex cursor-pointer items-start gap-3">
+                          <Checkbox
+                            checked={newPartner.assignedProgramIds.includes(program.id)}
+                            onCheckedChange={() => toggleNewProgram(program.id)}
+                          />
+                          <span className="grid gap-1 text-sm leading-none">
+                            <span className="font-medium">{program.name}</span>
+                            <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                              <span>/{program.slug}</span>
+                              {program.isDefault && <Badge variant="secondary" className="text-[10px]">Default</Badge>}
+                              {!program.isActive && <Badge variant="outline" className="text-[10px]">Inactive</Badge>}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label>Payout Method</Label>
-                  <Select
-                    value={newPartner.payoutMethod}
-                    onValueChange={(value: string) => setNewPartner({ ...newPartner, payoutMethod: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Zelle">Zelle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Payout Method</Label>
+                <Select
+                  value={newPartner.payoutMethod}
+                  onValueChange={(value: string) => setNewPartner({ ...newPartner, payoutMethod: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYOUT_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>{method}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="paypalEmail">Payout Email / Phone (Optional)</Label>
@@ -889,8 +917,9 @@ export default function PartnersPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Zelle">Zelle</SelectItem>
+                      {PAYOUT_METHODS.map((method) => (
+                        <SelectItem key={method} value={method}>{method}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -962,20 +991,6 @@ export default function PartnersPage() {
                 placeholder="partner@example.com"
                 required
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Partner Group</Label>
-              <Select
-                value={invitePartner.partnerGroup}
-                onValueChange={(value: string) => setInvitePartner({ ...invitePartner, partnerGroup: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Default">Default</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>

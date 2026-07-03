@@ -58,13 +58,13 @@ import {
   AlertCircle,
   Ban,
 } from 'lucide-react';
+import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
 
 interface Partner {
   id: string;
   name: string;
   email: string;
   referralCode: string;
-  partnerGroup?: string;
   assignedPrograms: AssignedProgram[];
   status: string;
   totalClicks: number;
@@ -101,7 +101,7 @@ interface Commission {
   customerName: string;
   amountCents: number;
   rate: number;
-  status: 'PENDING' | 'PAID' | 'COMPLETED' | 'REFUNDED';
+  status: 'PENDING' | 'APPROVED' | 'PAID' | 'COMPLETED' | 'REFUNDED';
   createdAt: string;
   paidAt?: string;
 }
@@ -184,6 +184,7 @@ export default function PartnerDetailPage() {
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState('PayPal');
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
   const [newStatus, setNewStatus] = useState<'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('PENDING');
@@ -215,7 +216,6 @@ export default function PartnerDetailPage() {
             name: affiliate.user?.name || 'Unknown Partner',
             email: affiliate.user?.email || '',
             referralCode: affiliate.referralCode,
-            partnerGroup: affiliate.partnerGroup?.name,
             assignedPrograms,
             status: affiliate.user?.status || affiliate.status || 'PENDING',
             totalClicks: affiliate.totalClicks || 0,
@@ -256,20 +256,22 @@ export default function PartnerDetailPage() {
 
   const fetchCommissions = async () => {
     try {
-      const res = await fetch(`/api/admin/transactions?affiliateId=${partnerId}`);
+      const res = await fetch(`/api/admin/payouts?affiliateId=${partnerId}`);
       if (res.ok) {
         const data = await res.json();
-        const comms = data.transactions?.map((txn: any) => ({
-          id: txn.id,
-          transactionId: txn.id,
-          customerName: txn.customerName,
-          amountCents: txn.commissionCents,
-          rate: txn.commissionRate,
-          status: txn.status === 'COMPLETED' ? 'PENDING' : txn.status,
-          createdAt: txn.createdAt,
-          paidAt: txn.paidAt,
+        const comms = data.eligibleCommissions?.map((commission: any) => ({
+          id: commission.id,
+          transactionId: commission.id,
+          customerName: commission.customerName,
+          amountCents: commission.amountCents,
+          rate: commission.rate,
+          status: commission.status,
+          createdAt: commission.approvedAt || commission.createdAt,
         })) || [];
         setCommissions(comms);
+        if (data.eligiblePartners?.[0]?.method) {
+          setPayoutMethod(getAllowedPayoutMethod(data.eligiblePartners[0].method));
+        }
       }
     } catch (error) {
       console.error('Error fetching commissions:', error);
@@ -298,7 +300,7 @@ export default function PartnerDetailPage() {
       const res = await fetch('/api/admin/payouts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ affiliateId: partnerId, commissionIds: selectedCommissions }),
+        body: JSON.stringify({ affiliateId: partnerId, commissionIds: selectedCommissions, method: payoutMethod }),
       });
       if (res.ok) {
         alert('Payout created successfully!');
@@ -362,7 +364,7 @@ export default function PartnerDetailPage() {
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
-  const pendingCommissions = commissions.filter((c) => c.status === 'PENDING');
+  const pendingCommissions = commissions.filter((c) => c.status === 'APPROVED' || c.status === 'PENDING');
   const pendingAmount = pendingCommissions.reduce((sum, c) => sum + c.amountCents, 0);
   const paidCommissions = commissions.filter((c) => c.status === 'PAID');
   const paidAmount = paidCommissions.reduce((sum, c) => sum + c.amountCents, 0);
@@ -434,11 +436,6 @@ export default function PartnerDetailPage() {
                   <Copy className="h-3 w-3" />
                   {partner.referralCode}
                 </Badge>
-                {partner.partnerGroup && (
-                  <Badge variant="secondary" className="text-xs">
-                    {partner.partnerGroup}
-                  </Badge>
-                )}
                 <Badge variant="outline" className="text-xs">
                   {primaryProgram
                     ? `${formatProgramCurrency(primaryProgram.referralPayoutCents || 0, primaryProgram.currency)} per referral`
@@ -535,7 +532,6 @@ export default function PartnerDetailPage() {
                   { label: 'Name', value: partner.name },
                   { label: 'Email', value: partner.email },
                   { label: 'Referral Code', value: partner.referralCode, mono: true },
-                  { label: 'Partner Group', value: partner.partnerGroup || 'Not assigned' },
                   { label: 'Property Program', value: formatProgramNames(partner.assignedPrograms) },
                   { label: 'Referral Payout', value: payoutTerms },
                   { label: 'Partner Since', value: formatDate(partner.createdAt) },
@@ -813,6 +809,20 @@ export default function PartnerDetailPage() {
                 </span>
               </div>
             ))}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Payment Method</Label>
+            <Select value={payoutMethod} onValueChange={setPayoutMethod}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYOUT_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>{method}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

@@ -3,8 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { isSoldReferralStatus } from '@/lib/referral-status';
 import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
-
-const allowedPayoutMethods = ['PayPal', 'Zelle'];
+import { PAYOUT_METHODS, isPayoutMethod } from '@/lib/payout-methods';
 
 export async function GET(request: NextRequest) {
   try {
@@ -211,9 +210,9 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { name, company, email, country, paymentMethod, paymentEmail } = body;
 
-    if (paymentMethod && !allowedPayoutMethods.includes(paymentMethod)) {
+    if (paymentMethod && !isPayoutMethod(paymentMethod)) {
       return NextResponse.json(
-        { error: 'Payment method must be PayPal or Zelle' },
+        { error: `Payment method must be ${PAYOUT_METHODS.join(', ')}` },
         { status: 400 }
       );
     }

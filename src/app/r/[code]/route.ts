@@ -101,7 +101,7 @@ export async function GET(
           affiliateId: affiliate.id,
           leadName: 'Click Visitor',
           leadEmail: `click-${attributionKey}@tracking.internal`,
-          status: 'PENDING',
+          status: 'NEW',
           metadata: {
             source: 'referral_link',
             attribution_key: attributionKey,

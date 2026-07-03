@@ -1,4 +1,4 @@
-export const REFERRAL_STATUSES = ['PENDING', 'SOLD', 'COMPLETED', 'REJECTED'] as const;
+export const REFERRAL_STATUSES = ['NEW', 'PENDING', 'SOLD', 'COMPLETED', 'REJECTED'] as const;
 
 export type ReferralStatusValue = (typeof REFERRAL_STATUSES)[number];
 
@@ -19,9 +19,21 @@ export function isPayoutEligibleReferralStatus(value: string) {
 
 export function referralStatusFromAction(action: string): ReferralStatusValue | null {
   const normalized = action.toLowerCase();
+  if (normalized === 'new') return 'NEW';
+  if (normalized === 'review' || normalized === 'pending' || normalized === 'pend') return 'PENDING';
   if (normalized === 'sell' || normalized === 'sold' || normalized === 'approve') return 'SOLD';
   if (normalized === 'complete' || normalized === 'completed') return 'COMPLETED';
   if (normalized === 'reject' || normalized === 'rejected') return 'REJECTED';
-  if (normalized === 'pending') return 'PENDING';
   return null;
+}
+
+export function canTransitionReferralStatus(current: string, next: ReferralStatusValue) {
+  if (next === 'REJECTED') {
+    return current === 'NEW' || current === 'PENDING' || current === 'SOLD';
+  }
+
+  if (current === 'NEW') return next === 'PENDING';
+  if (current === 'PENDING') return next === 'SOLD';
+  if (current === 'SOLD') return next === 'COMPLETED';
+  return false;
 }

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -27,15 +28,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Wallet,
   Clock,
   CheckCircle2,
   XCircle,
   Loader2,
-  ArrowUpRight,
-  Ban,
   Download,
+  Plus,
 } from 'lucide-react';
+import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
 
 interface Payout {
   id: string;
@@ -51,6 +60,16 @@ interface Payout {
   processedAt: string | null;
 }
 
+interface EligiblePayout {
+  affiliateId: string;
+  affiliateName: string;
+  affiliateEmail: string;
+  amountCents: number;
+  commissionCount: number;
+  commissionIds: string[];
+  method: string;
+}
+
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
   PENDING: { label: 'Pending', variant: 'secondary', icon: Clock },
   PROCESSING: { label: 'Processing', variant: 'outline', icon: Loader2 },
@@ -63,6 +82,11 @@ export default function PayoutsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [eligiblePartners, setEligiblePartners] = useState<EligiblePayout[]>([]);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState('');
+  const [payoutMethod, setPayoutMethod] = useState('PayPal');
+  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     fetchPayouts();
@@ -74,6 +98,7 @@ export default function PayoutsPage() {
       const data = await res.json();
       if (data.success) {
         setPayouts(data.payouts || []);
+        setEligiblePartners(data.eligiblePartners || []);
         setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
@@ -95,6 +120,50 @@ export default function PayoutsPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Failed to export payouts:', error);
+    }
+  };
+
+  const selectedEligible = eligiblePartners.find((partner) => partner.affiliateId === selectedAffiliateId) || null;
+
+  const openCreateDialog = () => {
+    const firstEligible = eligiblePartners[0];
+    setSelectedAffiliateId(firstEligible?.affiliateId || '');
+    setPayoutMethod(getAllowedPayoutMethod(firstEligible?.method));
+    setShowCreateDialog(true);
+  };
+
+  const handleSelectedPartnerChange = (affiliateId: string) => {
+    const partner = eligiblePartners.find((item) => item.affiliateId === affiliateId);
+    setSelectedAffiliateId(affiliateId);
+    setPayoutMethod(getAllowedPayoutMethod(partner?.method));
+  };
+
+  const handleCreatePayout = async () => {
+    if (!selectedEligible) return;
+
+    setCreateLoading(true);
+    try {
+      const res = await fetch('/api/admin/payouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          affiliateId: selectedEligible.affiliateId,
+          commissionIds: selectedEligible.commissionIds,
+          method: payoutMethod,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowCreateDialog(false);
+        await fetchPayouts();
+      } else {
+        alert(data.error || 'Failed to create payout');
+      }
+    } catch (error) {
+      console.error('Failed to create payout:', error);
+      alert('Failed to create payout');
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -181,6 +250,10 @@ export default function PayoutsPage() {
               <CardDescription>All partner payout records</CardDescription>
             </div>
             <div className="flex items-center gap-2">
+              <Button size="sm" onClick={openCreateDialog} disabled={eligiblePartners.length === 0}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Payout
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
@@ -216,7 +289,7 @@ export default function PayoutsPage() {
                   <TableHead>Commissions</TableHead>
                   <TableHead>Method</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Requested</TableHead>
+                  <TableHead>Payout Date</TableHead>
                   <TableHead>Processed</TableHead>
                 </TableRow>
               </TableHeader>
@@ -265,6 +338,74 @@ export default function PayoutsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create Payout</DialogTitle>
+            <DialogDescription>Generate a payout from approved, unpaid commissions</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Partner</Label>
+              <Select value={selectedAffiliateId} onValueChange={handleSelectedPartnerChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select partner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {eligiblePartners.map((partner) => (
+                    <SelectItem key={partner.affiliateId} value={partner.affiliateId}>
+                      {partner.affiliateName} - {currencySymbol}{(partner.amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-3 rounded-md border bg-muted/40 p-4 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Amount</p>
+                <p className="text-lg font-semibold">
+                  {selectedEligible
+                    ? `${currencySymbol}${(selectedEligible.amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                    : `${currencySymbol}0.00`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Commissions</p>
+                <p className="text-lg font-semibold">{selectedEligible?.commissionCount || 0}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Date</p>
+                <p className="text-lg font-semibold">{new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <Select value={payoutMethod} onValueChange={setPayoutMethod}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYOUT_METHODS.map((method) => (
+                    <SelectItem key={method} value={method}>{method}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreatePayout} disabled={createLoading || !selectedEligible}>
+              {createLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Payout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

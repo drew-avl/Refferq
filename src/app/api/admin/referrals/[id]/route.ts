@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createCompletedReferralCommission } from '@/lib/referral-payouts';
-import { isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
+import { canTransitionReferralStatus, isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
 
 
 export async function PUT(
@@ -30,7 +30,7 @@ export async function PUT(
     const { action, reviewNotes } = body;
     const targetStatus = action ? referralStatusFromAction(action) : null;
 
-    if (!targetStatus || targetStatus === 'PENDING') {
+    if (!targetStatus || targetStatus === 'NEW') {
       return NextResponse.json(
         { error: 'Invalid action' },
         { status: 400 }
@@ -51,6 +51,13 @@ export async function PUT(
       return NextResponse.json(
         { error: 'Referral not found' },
         { status: 404 }
+      );
+    }
+
+    if (!canTransitionReferralStatus(referral.status, targetStatus)) {
+      return NextResponse.json(
+        { error: `Cannot move referral from ${referral.status.toLowerCase()} to ${targetStatus.toLowerCase()}` },
+        { status: 400 }
       );
     }
 
@@ -140,7 +147,14 @@ export async function PATCH(
     const targetStatus = action ? referralStatusFromAction(action) : null;
 
     // If action is provided, handle status transitions.
-    if (targetStatus && targetStatus !== 'PENDING') {
+    if (targetStatus && targetStatus !== 'NEW') {
+      if (!canTransitionReferralStatus(referral.status, targetStatus)) {
+        return NextResponse.json(
+          { error: `Cannot move referral from ${referral.status.toLowerCase()} to ${targetStatus.toLowerCase()}` },
+          { status: 400 }
+        );
+      }
+
       const updatedReferral = await prisma.referral.update({
         where: { id: params.id },
         data: {

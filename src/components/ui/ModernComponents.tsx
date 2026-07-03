@@ -213,10 +213,11 @@ export const CustomerRow = ({
   date: string;
   amount?: number;
   currency?: string;
-  status: 'PENDING' | 'SOLD' | 'COMPLETED' | 'REJECTED';
+  status: 'NEW' | 'PENDING' | 'SOLD' | 'COMPLETED' | 'REJECTED';
   onClick?: () => void;
 }) => {
   const statusStyles = {
+    NEW: { bg: 'bg-slate-50', text: 'text-slate-700', dot: 'bg-slate-500' },
     SOLD: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
     COMPLETED: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
     PENDING: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },

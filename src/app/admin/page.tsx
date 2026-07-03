@@ -445,6 +445,7 @@ export default function AdminDashboardPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+    NEW: { variant: 'outline', label: 'New' },
     SOLD: { variant: 'outline', label: 'Sold' },
     COMPLETED: { variant: 'default', label: 'Completed' },
     PENDING: { variant: 'secondary', label: 'Pending' },

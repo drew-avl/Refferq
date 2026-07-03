@@ -136,7 +136,7 @@ export class DatabaseService {
         leadName: referralData.leadName,
         leadEmail: referralData.leadEmail,
         metadata: referralData.metadata || {},
-        status: 'PENDING',
+        status: 'NEW',
       },
     });
   }
@@ -163,7 +163,7 @@ export class DatabaseService {
 
   async getPendingReferrals() {
     return await prisma.referral.findMany({
-      where: { status: 'PENDING' },
+      where: { status: { in: ['NEW', 'PENDING'] } },
       include: {
         affiliate: {
           include: {
@@ -450,7 +450,7 @@ export class DatabaseService {
       prisma.user.count({ where: { role: 'AFFILIATE', status: 'ACTIVE' } }),
       prisma.user.count({ where: { role: 'AFFILIATE', status: 'INACTIVE' } }),
       prisma.referral.count(),
-      prisma.referral.count({ where: { status: 'PENDING' } }),
+      prisma.referral.count({ where: { status: { in: ['NEW', 'PENDING'] } } }),
       prisma.referral.count({ where: { status: 'COMPLETED' } }),
       prisma.conversion.count(),
       prisma.commission.count(),

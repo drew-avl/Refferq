@@ -217,6 +217,7 @@ export default function AffiliateDashboard() {
       COMPLETED: { variant: 'default', icon: CheckCircle2 },
       PAID: { variant: 'default', icon: CheckCircle2 },
       SOLD: { variant: 'outline', icon: ShoppingBag },
+      NEW: { variant: 'outline', icon: Clock },
       PENDING: { variant: 'secondary', icon: Clock },
       PROCESSING: { variant: 'secondary', icon: Loader2 },
       REJECTED: { variant: 'destructive', icon: Ban },
@@ -257,7 +258,7 @@ export default function AffiliateDashboard() {
       >
         <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white border-0 shadow-lg overflow-hidden relative group">
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -translate-x-full group-hover:translate-x-full" />
-          <CardContent className="flex items-center justify-between p-6 relative z-10">
+          <CardContent className="relative z-10 flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
             <div className="flex items-center gap-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
                 <span className="text-2xl font-bold">{currencySymbol}</span>
@@ -267,9 +268,9 @@ export default function AffiliateDashboard() {
                 <p className="text-xl font-bold mt-1 tracking-tight">Payouts unlock after service is installed and marked completed.</p>
               </div>
             </div>
-            <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="gap-2 hidden sm:flex bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95">
+            <Button variant="secondary" onClick={() => setShowSubmitModal(true)} className="flex w-full gap-2 bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-md transform transition hover:scale-105 active:scale-95 sm:w-auto">
               <Plus className="h-4 w-4" />
-              Submit Lead
+              Add Lead
             </Button>
           </CardContent>
         </Card>

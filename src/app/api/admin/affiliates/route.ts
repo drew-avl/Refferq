@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
       payoutMethod,
       paypalEmail,
       sendWelcomeEmail = true,
+      assignedProgramIds,
     } = data;
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -153,29 +154,69 @@ export async function POST(request: NextRequest) {
     // Hash password with bcrypt
     const hashedPassword = await (await import('bcryptjs')).hash(userPassword, 12);
 
-    // Create new user
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email: normalizedEmail,
-        role: 'AFFILIATE',
-        status: 'ACTIVE',
-        password: hashedPassword
-      }
-    });
+    const uniqueProgramIds = Array.from(new Set((assignedProgramIds || []).filter(Boolean)));
 
-    // Create affiliate profile
-    const affiliate = await prisma.affiliate.create({
-      data: {
-        userId: newUser.id,
-        referralCode: `AF${Date.now()}${(await import('crypto')).randomBytes(3).toString('hex').toUpperCase().slice(0, 4)}`,
-        balanceCents: 0,
-        payoutDetails: {
-          company: company?.trim() || '',
-          paymentMethod: payoutMethod || '',
-          paymentEmail: paypalEmail?.trim() || normalizedEmail,
-        }
+    if (uniqueProgramIds.length > 0) {
+      const programs = await prisma.program.findMany({
+        where: { id: { in: uniqueProgramIds } },
+        select: { id: true }
+      });
+
+      if (programs.length !== uniqueProgramIds.length) {
+        return NextResponse.json(
+          { error: 'One or more selected property programs do not exist' },
+          { status: 400 }
+        );
       }
+    }
+
+    const defaultProgram = uniqueProgramIds.length === 0
+      ? await prisma.program.findFirst({
+          where: { isActive: true },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }]
+        })
+      : null;
+    const programIdsToAssign = uniqueProgramIds.length > 0
+      ? uniqueProgramIds
+      : defaultProgram
+        ? [defaultProgram.id]
+        : [];
+
+    const { newUser, affiliate } = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          name,
+          email: normalizedEmail,
+          role: 'AFFILIATE',
+          status: 'ACTIVE',
+          password: hashedPassword
+        }
+      });
+
+      const createdAffiliate = await tx.affiliate.create({
+        data: {
+          userId: createdUser.id,
+          referralCode: `AF${Date.now()}${crypto.randomBytes(3).toString('hex').toUpperCase().slice(0, 4)}`,
+          balanceCents: 0,
+          payoutDetails: {
+            company: company?.trim() || '',
+            paymentMethod: payoutMethod || '',
+            paymentEmail: paypalEmail?.trim() || normalizedEmail,
+          }
+        }
+      });
+
+      if (programIdsToAssign.length > 0) {
+        await tx.affiliateProgram.createMany({
+          data: programIdsToAssign.map((programId) => ({
+            affiliateId: createdAffiliate.id,
+            programId
+          })),
+          skipDuplicates: true
+        });
+      }
+
+      return { newUser: createdUser, affiliate: createdAffiliate };
     });
 
     let welcomeEmailSent = false;
@@ -188,7 +229,7 @@ export async function POST(request: NextRequest) {
           email: newUser.email,
           role: 'affiliate',
           loginUrl,
-          password: userPassword,
+          accountStatus: 'active',
         });
         welcomeEmailSent = emailResult.success;
       } catch (emailError) {
@@ -208,11 +249,9 @@ export async function POST(request: NextRequest) {
         email: newUser.email,
         referralCode: affiliate.referralCode,
         balanceCents: affiliate.balanceCents,
-        createdAt: affiliate.createdAt
+        createdAt: affiliate.createdAt,
+        assignedProgramIds: programIdsToAssign
       },
-      // Note: Password is sent to admin once and should be communicated
-      // securely to the referral partner. It is not stored in logs.
-      temporaryPassword: userPassword,
       welcomeEmailSent
     });
   } catch (error) {

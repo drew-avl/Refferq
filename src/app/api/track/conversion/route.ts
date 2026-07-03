@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
           metadata: metadata || {},
         },
       });
-    } else if (referral && referral.status === 'PENDING') {
+    } else if (referral && (referral.status === 'NEW' || referral.status === 'PENDING')) {
       // Update referral status to SOLD. Installation completion is handled separately.
       referral = await prisma.referral.update({
         where: { id: referral.id },

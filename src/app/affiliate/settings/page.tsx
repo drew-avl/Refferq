@@ -35,11 +35,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-
-const payoutMethodOptions = ['PayPal', 'Zelle'] as const;
-
-const getAllowedPayoutMethod = (method?: string) =>
-  payoutMethodOptions.includes(method as (typeof payoutMethodOptions)[number]) ? method! : 'PayPal';
+import { PAYOUT_METHODS, getAllowedPayoutMethod } from '@/lib/payout-methods';
 
 export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -269,8 +265,9 @@ export default function SettingsPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
-                  <SelectItem value="Zelle">Zelle</SelectItem>
+                  {PAYOUT_METHODS.map((method) => (
+                    <SelectItem key={method} value={method}>{method}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

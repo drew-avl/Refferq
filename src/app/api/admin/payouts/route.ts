@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
+import { getAllowedPayoutMethod } from '@/lib/payout-methods';
 
-
-interface JWTPayload {
-  userId: string;
-  email: string;
-  role: string;
-}
 
 // Helper: Verify admin auth from DB (not just JWT payload)
 // Helper: Verify admin auth from DB (middleware already checked role, but we double check status)
@@ -24,7 +19,7 @@ async function verifyAdmin(request: NextRequest) {
       return { error: 'Forbidden', status: 403 };
     }
     return { user };
-  } catch (err) {
+  } catch {
     return { error: 'Authentication internal error', status: 500 };
   }
 }
@@ -50,6 +45,14 @@ function convertToCSV(data: any[]): string {
   return [headers, ...rows].join('\n');
 }
 
+function getPayoutDetailsMethod(payoutDetails: unknown) {
+  if (payoutDetails && typeof payoutDetails === 'object' && !Array.isArray(payoutDetails)) {
+    return getAllowedPayoutMethod((payoutDetails as Record<string, unknown>).paymentMethod as string | undefined);
+  }
+
+  return getAllowedPayoutMethod(undefined);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifyAdmin(request);
@@ -72,11 +75,19 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         affiliate: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        commissions: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            referralCode: true,
           },
         },
       },
@@ -89,16 +100,96 @@ export async function GET(request: NextRequest) {
     const formattedPayouts = payouts.map((payout: any) => ({
       id: payout.id,
       affiliateId: payout.affiliateId,
-      affiliateName: payout.affiliate.name,
-      affiliateEmail: payout.affiliate.email,
+      affiliateName: payout.affiliate.user.name,
+      affiliateEmail: payout.affiliate.user.email,
       amountCents: payout.amountCents,
-      commissionCount: payout.commissionCount || 0,
+      commissionCount: payout.commissionCount || payout.commissions?.length || 0,
       status: payout.status,
       method: payout.method,
       notes: payout.notes,
       createdAt: payout.createdAt,
       processedAt: payout.processedAt,
     }));
+
+    const eligibleCommissions = await prisma.commission.findMany({
+      where: {
+        status: 'APPROVED',
+        ...(affiliateId && { affiliateId }),
+      },
+      include: {
+        affiliate: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        conversion: {
+          include: {
+            referral: {
+              select: {
+                leadName: true,
+                leadEmail: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { approvedAt: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    const formattedEligibleCommissions = eligibleCommissions.map((commission) => ({
+      id: commission.id,
+      affiliateId: commission.affiliateId,
+      affiliateName: commission.affiliate.user.name,
+      affiliateEmail: commission.affiliate.user.email,
+      customerName: commission.conversion.referral?.leadName || 'Commission',
+      customerEmail: commission.conversion.referral?.leadEmail || '',
+      amountCents: commission.amountCents,
+      rate: commission.rate,
+      status: commission.status,
+      approvedAt: commission.approvedAt,
+      createdAt: commission.createdAt,
+    }));
+
+    const eligiblePartnerMap = new Map<string, {
+      affiliateId: string;
+      affiliateName: string;
+      affiliateEmail: string;
+      amountCents: number;
+      commissionCount: number;
+      commissionIds: string[];
+      method: string;
+    }>();
+
+    for (const commission of eligibleCommissions) {
+      const existing = eligiblePartnerMap.get(commission.affiliateId);
+      if (existing) {
+        existing.amountCents += commission.amountCents;
+        existing.commissionCount += 1;
+        existing.commissionIds.push(commission.id);
+      } else {
+        eligiblePartnerMap.set(commission.affiliateId, {
+          affiliateId: commission.affiliateId,
+          affiliateName: commission.affiliate.user.name,
+          affiliateEmail: commission.affiliate.user.email,
+          amountCents: commission.amountCents,
+          commissionCount: 1,
+          commissionIds: [commission.id],
+          method: getPayoutDetailsMethod(commission.affiliate.payoutDetails),
+        });
+      }
+    }
+
+    const eligiblePartners = Array.from(eligiblePartnerMap.values())
+      .sort((a, b) => b.amountCents - a.amountCents);
 
     if (searchParams.get('format') === 'csv') {
       const csv = convertToCSV(formattedPayouts);
@@ -117,6 +208,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       payouts: formattedPayouts,
+      eligibleCommissions: formattedEligibleCommissions,
+      eligiblePartners,
       currencySymbol, // Add currency symbol to response
     });
 
@@ -150,6 +243,15 @@ export async function POST(request: NextRequest) {
     // Verify affiliate exists
     const affiliate = await prisma.affiliate.findUnique({
       where: { id: affiliateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
     if (!affiliate) {
@@ -192,29 +294,63 @@ export async function POST(request: NextRequest) {
       (sum, c) => sum + c.amountCents,
       0
     );
+    const payoutMethod = method || getPayoutDetailsMethod(affiliate.payoutDetails);
 
     // Create payout record
-    const payout = await (prisma as any).payout.create({
-      data: {
-        affiliateId,
-        amountCents: totalAmountCents,
-        commissionCount: commissions.length,
-        status: 'PENDING',
-        method: method || 'PayPal',
-        notes: notes || null,
-        createdBy: auth.user.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      include: {
-        affiliate: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const payout = await prisma.$transaction(async (tx) => {
+      const createdPayout = await (tx as any).payout.create({
+        data: {
+          userId: affiliate.userId,
+          affiliateId,
+          amountCents: totalAmountCents,
+          commissionCount: commissions.length,
+          status: 'PENDING',
+          method: payoutMethod,
+          notes: notes || null,
+          createdBy: auth.user.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        include: {
+          affiliate: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
           },
         },
-      },
+      });
+
+      await tx.commission.updateMany({
+        where: {
+          id: { in: commissionIds },
+        },
+        data: {
+          status: 'PAID',
+          payoutId: createdPayout.id,
+          paidAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      const currentAffiliate = await tx.affiliate.findUnique({
+        where: { id: affiliateId },
+        select: { balanceCents: true },
+      });
+
+      await tx.affiliate.update({
+        where: { id: affiliateId },
+        data: {
+          balanceCents: Math.max(0, (currentAffiliate?.balanceCents || 0) - totalAmountCents),
+        },
+      });
+
+      return createdPayout;
     });
 
     // Log the action
@@ -226,35 +362,18 @@ export async function POST(request: NextRequest) {
       payload: { amountCents: totalAmountCents, affiliateId }
     });
 
-    // Update commissions to mark as PAID and link to payout
-    await prisma.commission.updateMany({
-      where: {
-        id: { in: commissionIds },
-      },
-      data: {
-        status: 'PAID',
-        payoutId: payout.id,
-        paidAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-
     // Send email notification to affiliate
     try {
-      const affiliateUser = await prisma.user.findFirst({
-        where: {
-          affiliate: { id: affiliateId }
-        }
-      });
+      const affiliateUser = payout.affiliate.user;
 
       if (affiliateUser?.email) {
         const { emailService } = await import('@/lib/email');
         await emailService.sendPayoutCreatedEmail(affiliateUser.email, {
-          affiliateName: payout.affiliate.name || affiliateUser.name || 'Partner',
+          affiliateName: affiliateUser.name || 'Partner',
           amountCents: totalAmountCents,
           commissionCount: commissions.length,
           payoutId: payout.id,
-          method: method || 'PayPal'
+          method: payoutMethod
         });
       }
     } catch (emailError) {
@@ -267,8 +386,8 @@ export async function POST(request: NextRequest) {
       payout: {
         id: payout.id,
         affiliateId: payout.affiliateId,
-        affiliateName: payout.affiliate.name,
-        affiliateEmail: payout.affiliate.email,
+        affiliateName: payout.affiliate.user.name,
+        affiliateEmail: payout.affiliate.user.email,
         amountCents: payout.amountCents,
         commissionCount: payout.commissionCount,
         status: payout.status,
@@ -327,9 +446,14 @@ export async function PUT(request: NextRequest) {
       data: updateData,
       include: {
         affiliate: {
-          select: {
-            name: true,
-            email: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -347,16 +471,12 @@ export async function PUT(request: NextRequest) {
     // Send email notification if status changed to COMPLETED
     if (status === 'COMPLETED') {
       try {
-        const affiliateUser = await prisma.user.findFirst({
-          where: {
-            affiliate: { id: payout.affiliateId }
-          }
-        });
+        const affiliateUser = payout.affiliate.user;
 
         if (affiliateUser?.email) {
           const { emailService } = await import('@/lib/email');
           await emailService.sendPayoutCompletedEmail(affiliateUser.email, {
-            affiliateName: payout.affiliate.name || affiliateUser.name || 'Partner',
+            affiliateName: affiliateUser.name || 'Partner',
             amountCents: payout.amountCents,
             commissionCount: payout.commissionCount,
             payoutId: payout.id,
@@ -375,8 +495,8 @@ export async function PUT(request: NextRequest) {
       payout: {
         id: payout.id,
         affiliateId: payout.affiliateId,
-        affiliateName: payout.affiliate.name,
-        affiliateEmail: payout.affiliate.email,
+        affiliateName: payout.affiliate.user.name,
+        affiliateEmail: payout.affiliate.user.email,
         amountCents: payout.amountCents,
         commissionCount: payout.commissionCount,
         status: payout.status,

@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
                         content: { 'application/json': { schema: { $ref: '#/components/schemas/AffiliateCreateRequest' } } },
                     },
                     responses: {
-                        '200': { description: 'Referral partner created, temporaryPassword included' },
+                        '200': { description: 'Referral partner created' },
                         '400': { description: 'Validation error or email exists' },
                     },
                 },
@@ -249,7 +249,7 @@ export async function GET(request: NextRequest) {
                     properties: {
                         affiliateId: { type: 'string' },
                         commissionIds: { type: 'array', items: { type: 'string' }, minItems: 1 },
-                        method: { type: 'string', enum: ['PayPal', 'Zelle'] },
+                        method: { type: 'string', enum: ['PayPal', 'Zelle', 'Cash'] },
                         notes: { type: 'string' },
                     },
                 },
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
                     properties: {
                         id: { type: 'string' },
                         status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'] },
-                        method: { type: 'string', enum: ['PayPal', 'Zelle'] },
+                        method: { type: 'string', enum: ['PayPal', 'Zelle', 'Cash'] },
                         notes: { type: 'string' },
                     },
                 },
@@ -270,7 +270,7 @@ export async function GET(request: NextRequest) {
                         email: { type: 'string', format: 'email' },
                         company: { type: 'string' },
                         country: { type: 'string' },
-                        paymentMethod: { type: 'string', enum: ['PayPal', 'Zelle'] },
+                        paymentMethod: { type: 'string', enum: ['PayPal', 'Zelle', 'Cash'] },
                         paymentEmail: { type: 'string', description: 'Payout email or phone' },
                     },
                 },
