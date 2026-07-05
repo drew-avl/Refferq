@@ -139,7 +139,7 @@ export default function ReportsPage() {
     `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const exportCSV = () => {
-    const headers = ['Month', 'Referrals', 'Conversions', `Earnings (${currencySymbol})`];
+    const headers = ['Month', 'Leads', 'Conversions', `Earnings (${currencySymbol})`];
     const rows = monthlyData.map((m) => [m.month, m.referrals, m.conversions, (m.earnings / 100).toFixed(2)]);
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -169,7 +169,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
-          <p className="text-muted-foreground">Analyze your referral performance</p>
+          <p className="text-muted-foreground">Analyze your lead performance</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={period} onValueChange={setPeriod}>
@@ -250,7 +250,7 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Monthly Earnings</CardTitle>
-          <CardDescription>Revenue generated from your referrals</CardDescription>
+          <CardDescription>Revenue generated from completed leads</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-2 h-48">
@@ -278,7 +278,7 @@ export default function ReportsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Month</TableHead>
-                <TableHead className="text-center">Referrals</TableHead>
+                <TableHead className="text-center">Leads</TableHead>
                 <TableHead className="text-center">Conversions</TableHead>
                 <TableHead className="text-right">Earnings</TableHead>
               </TableRow>

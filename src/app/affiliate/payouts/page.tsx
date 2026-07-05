@@ -252,7 +252,7 @@ export default function PayoutsPage() {
               <Wallet className="h-12 w-12 text-muted-foreground/40 mb-3" />
               <p className="font-medium">No payouts yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Start referring customers to earn commissions
+                Added leads that sell and complete will appear in your earnings
               </p>
             </div>
           ) : (

@@ -150,7 +150,6 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 - [x] `/admin/invoices` — Invoice management
 - [x] `/admin/team` — Team member management
 - [x] `/admin/programs` — Program management
-- [x] `/admin/coupons` — Coupon/discount codes
 - [x] `/admin/resources` — Marketing resource library
 - [x] `/admin/emails` — Email template editor
 - [x] `/admin/program-settings` — Referral tracking widget
@@ -163,11 +162,11 @@ To become the **most comprehensive, developer-friendly, and feature-rich open-so
 - [x] `/affiliate/settings` — Profile and payment settings
 
 ### New API Endpoints (10+)
-- [x] Invoices CRUD, Team CRUD, Programs CRUD, Coupons CRUD, Resources CRUD
+- [x] Invoices CRUD, Team CRUD, Programs CRUD, Resources CRUD
 - [x] Auto-payouts, Refund protection, Affiliate branding, Code regeneration
 
-### Database (5 new models)
-- [x] Coupon, Resource, Invoice, Program, TeamMember
+### Database
+- [x] Resource, Invoice, Program, TeamMember
 
 ### Production Test Suite
 - [x] Comprehensive test script (`scripts/test-all.ts`) — 156 assertions, 15 sections
@@ -476,10 +475,10 @@ Want a feature prioritized? Consider sponsoring development:
 ### February 2026 (v1.3.0)
 - ✅ 3 CRITICAL security fixes (login JWT, password hashing, referral tracking)
 - ✅ PrismaClient singleton migration (36 files)
-- ✅ 7 new admin pages (invoices, team, programs, coupons, resources, emails, program-settings)
+- ✅ 6 admin pages (invoices, team, programs, resources, emails, program-settings)
 - ✅ 5 affiliate sub-pages (referrals, payouts, resources, reports, settings)
 - ✅ 10+ new API routes
-- ✅ 5 new database models
+- ✅ 4 active database-backed admin resources
 - ✅ 156-assertion production test suite
 - ✅ 6 dead code files removed
 - ✅ Commission rates use partner group configuration

@@ -178,7 +178,7 @@ export default function AffiliateDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        showNotification('success', 'Lead submitted successfully! Waiting for admin review.');
+        showNotification('success', 'Lead added successfully and sent for review.');
         setShowSubmitModal(false);
         setSubmitForm({
           leadName: '',
@@ -334,12 +334,12 @@ export default function AffiliateDashboard() {
         ))}
       </div>
 
-      {/* Recent Referrals */}
+      {/* Recent Leads */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-base">Recent Referrals</CardTitle>
-              <CardDescription>Latest leads submitted from your properties</CardDescription>
+            <CardTitle className="text-base">Recent Leads</CardTitle>
+              <CardDescription>Latest leads sent to the team</CardDescription>
           </div>
           {referrals.length > 5 && (
             <Button variant="ghost" size="sm" asChild>
@@ -435,11 +435,11 @@ export default function AffiliateDashboard() {
         </Card>
       </div>
 
-      {/* Submit Lead Modal */}
+      {/* Add Lead Modal */}
       <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Submit Lead</DialogTitle>
+            <DialogTitle>Add Lead</DialogTitle>
             <DialogDescription>
               Add the renter details a rep needs to follow up quickly.
             </DialogDescription>
@@ -539,7 +539,7 @@ export default function AffiliateDashboard() {
               </Button>
               <Button type="submit" disabled={submitLoading}>
                 {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit Lead
+                Add Lead
               </Button>
             </DialogFooter>
           </form>

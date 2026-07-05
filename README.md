@@ -56,7 +56,7 @@
 
 - **Referral Management**
   - Review and approve lead submissions
-  - Track referral status (Pending, Approved, Rejected)
+  - Track lead status (New, Pending, Sold, Completed, Rejected)
   - Manual lead management
   - Bulk operations support
 
@@ -69,7 +69,7 @@
 - **Program Settings**
   - Customizable program details
   - Branding configuration (colors, logos)
-  - Cookie tracking settings
+  - Lead source and portal workflow settings
   - Country blocking
   - Terms of Service management
 
@@ -84,21 +84,21 @@
 
 - **Personal Dashboard**
   - Earnings overview (total, pending, paid)
-  - Click tracking
+  - Lead status overview
   - Lead conversion metrics
-  - Recent referral activity
+  - Recent lead activity
 
-- **Referral Management**
+- **Lead Management**
   - Submit leads manually
-  - Track referral status
+  - Track lead status
   - View commission breakdown
-  - Filter by status (All, Pending, Approved)
+  - Filter by status (All, New, Pending, Sold, Completed, Rejected)
 
-- **Marketing Resources**
+- **Partner Resources**
   - Manual lead submission
   - Partner lead tracking
-  - Copy-to-clipboard functionality
-  - Social media sharing buttons
+  - Approved handouts and talking points
+  - Property-specific materials
 
 - **Payout Tracking**
   - View payout history
@@ -362,11 +362,10 @@ Configure your referral program through the Admin Dashboard:
    - Payout term (NET-15, NET-30, NET-45)
    - Supported payout methods
 
-4. **Marketing & Tracking**
-   - Cookie duration
-   - URL parameters
+4. **Partner Workflow**
+   - Lead source setup
    - Manual lead submission
-   - Social media ad blocking
+   - Partner resources
 
 ---
 

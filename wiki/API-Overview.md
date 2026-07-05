@@ -174,7 +174,6 @@ Tokens expire after **24 hours**. You'll need to re-authenticate via OTP after e
 - `GET/POST/DELETE /api/admin/invoices` - Invoice management
 - `GET/POST/PUT/DELETE /api/admin/team` - Team member management
 - `GET/POST/PUT/DELETE /api/admin/programs` - Program management
-- `GET/POST/PUT/DELETE /api/admin/coupons` - Coupon management
 - `GET/POST/DELETE /api/admin/resources` - Resource management
 
 #### Admin - Integration & API
@@ -576,7 +575,7 @@ See [Webhook API](Webhook-API) for details.
 ## API Changelog
 
 ### v1.3.0 (February 2026)
-- 10+ new admin API routes (invoices, team, programs, coupons, resources, refunds, auto-payouts)
+- 10+ new admin API routes (invoices, team, programs, resources, refunds, auto-payouts)
 - 3 new affiliate routes (branding, generate-code, resources)
 - Referral tracking route `/r/[code]` rewritten with Prisma (was broken)
 - Login API now creates JWT token and sets cookie

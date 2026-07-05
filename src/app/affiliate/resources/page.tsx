@@ -146,7 +146,7 @@ export default function ResourcesPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Resources</h1>
         <p className="text-muted-foreground">
-          Download marketing materials, banners, and promotional assets
+          Download approved handouts, talking points, and property materials
         </p>
       </div>
 
@@ -250,7 +250,7 @@ export default function ResourcesPage() {
             <p className="font-medium">No resources found</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {resources.length === 0
-                ? 'Marketing resources will appear here once uploaded by the admin team'
+                ? 'Partner resources will appear here once uploaded by the admin team'
                 : 'Try adjusting your search or filter'}
             </p>
           </CardContent>

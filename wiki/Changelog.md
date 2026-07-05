@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔒 Production Hardening, Admin Expansion & Referral Portal
 
-This release delivers critical security fixes, eliminates PrismaClient connection leaks across 36 files, adds 7 new admin pages, 5 affiliate sub-pages, 10+ new API routes, and a comprehensive 156-assertion production test suite. The platform is now verified production-ready.
+This release delivers critical security fixes, eliminates PrismaClient connection leaks across 36 files, adds expanded admin pages, 5 affiliate sub-pages, 10+ new API routes, and a comprehensive 156-assertion production test suite. The platform is now verified production-ready.
 
 ### 🔒 Security Fixes (CRITICAL)
 
@@ -29,11 +29,10 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 
 ### ✨ Added
 
-#### New Admin Pages (7 pages)
+#### New Admin Pages
 - `/admin/invoices` — Invoice management with create, view, delete, and status tracking
 - `/admin/team` — Team member management with role assignment and invitations
 - `/admin/programs` — Referral program management with commission rate configuration
-- `/admin/coupons` — Coupon/discount code management
 - `/admin/resources` — Marketing resource library (banners, links, documents)
 - `/admin/emails` — Email template editor with variable preview
 - `/admin/program-settings` — Referral tracking widget with embed code generator
@@ -49,7 +48,6 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 - `GET/POST/DELETE /api/admin/invoices` — Invoice CRUD
 - `GET/POST/PUT/DELETE /api/admin/team` — Team member management
 - `GET/POST/PUT/DELETE /api/admin/programs` — Program management
-- `GET/POST/PUT/DELETE /api/admin/coupons` — Coupon management
 - `GET/POST/DELETE /api/admin/resources` — Resource management
 - `POST /api/admin/payouts/auto` — Automated payout processing
 - `POST /api/admin/refunds` — Refund protection with commission clawback
@@ -57,8 +55,7 @@ This release delivers critical security fixes, eliminates PrismaClient connectio
 - `POST /api/affiliate/generate-code` — Referral code regeneration
 - `GET /api/affiliate/resources` — Affiliate resource access
 
-#### Database Models (5 new)
-- `Coupon` — Discount codes with usage tracking and expiration
+#### Database Models
 - `Resource` — Marketing materials (IMAGE, DOCUMENT, LINK, VIDEO)
 - `Invoice` — Invoice records with line items and tax
 - `Program` — Referral program configurations

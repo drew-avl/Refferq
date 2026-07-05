@@ -43,7 +43,6 @@ import {
   ChevronsUpDown,
   KeyRound,
   Activity,
-  Ticket,
   FolderOpen,
   FileText,
   UsersRound,
@@ -60,7 +59,6 @@ const mainNavItems = [
 ];
 
 const marketingNavItems = [
-  { title: 'Coupons', url: '/admin/coupons', icon: Ticket },
   { title: 'Resources', url: '/admin/resources', icon: FolderOpen },
   { title: 'Lead Sources', url: '/admin/programs', icon: Layers },
 ];
@@ -124,7 +122,7 @@ function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Marketing</SidebarGroupLabel>
+          <SidebarGroupLabel>Partner Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {marketingNavItems.map((item) => (

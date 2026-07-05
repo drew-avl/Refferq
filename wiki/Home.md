@@ -165,10 +165,10 @@ ReferConnect is perfect for:
 ### Recent Updates (v1.3.0)
 - ✅ 3 CRITICAL security fixes: login JWT, password hashing, referral tracking
 - ✅ PrismaClient singleton migration across 36 files (no more connection leaks)
-- ✅ 7 new admin pages: invoices, team, programs, coupons, resources, emails, program-settings
+- ✅ 6 admin pages: invoices, team, programs, resources, emails, program-settings
 - ✅ 5 affiliate sub-pages: referrals, payouts, resources, reports, settings
 - ✅ 10+ new API routes with full CRUD
-- ✅ 5 new database models (28 total)
+- ✅ 4 active database-backed admin resources
 - ✅ 156-assertion production test suite — all passing
 - ✅ 6 dead code files removed
 - ✅ Commission rates now use partner group configuration

@@ -50,7 +50,7 @@ interface BrandSettings {
 
 const mainNavItems = [
   { title: 'Dashboard', url: '/affiliate', icon: LayoutDashboard },
-  { title: 'Referrals', url: '/affiliate/referrals', icon: Users },
+  { title: 'Lead Queue', url: '/affiliate/referrals', icon: Users },
   { title: 'Payouts', url: '/affiliate/payouts', icon: Wallet },
   { title: 'Resources', url: '/affiliate/resources', icon: BookOpen },
 ];

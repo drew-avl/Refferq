@@ -154,7 +154,7 @@ export default function ReferralsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        showNotification('success', 'Lead submitted successfully!');
+        showNotification('success', 'Lead added successfully.');
         setShowSubmitModal(false);
         setSubmitForm({
           leadName: '',
@@ -295,7 +295,7 @@ export default function ReferralsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `referrals-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 
@@ -333,7 +333,7 @@ export default function ReferralsPage() {
         </div>
         <Button onClick={() => setShowSubmitModal(true)} className="gap-1.5">
           <Plus className="h-4 w-4" />
-          Submit Lead
+          Add Lead
         </Button>
       </div>
 
@@ -416,10 +416,10 @@ export default function ReferralsPage() {
               <Users className="h-12 w-12 text-muted-foreground/40 mb-3" />
             <p className="font-medium">No leads found</p>
             <p className="mt-1 text-sm text-muted-foreground">
-                {referrals.length === 0 ? 'Submit your first resident lead when you are ready' : 'Try adjusting your filters'}
+                {referrals.length === 0 ? 'Add your first resident lead when you are ready' : 'Try adjusting your filters'}
               </p>
               {referrals.length === 0 && (
-                <Button className="mt-4" onClick={() => setShowSubmitModal(true)}>Submit your first lead</Button>
+                <Button className="mt-4" onClick={() => setShowSubmitModal(true)}>Add your first lead</Button>
               )}
             </div>
           ) : (
@@ -493,13 +493,13 @@ export default function ReferralsPage() {
         </CardContent>
       </Card>
 
-      {/* Submit Lead Modal */}
+      {/* Add Lead Modal */}
       <Dialog open={showSubmitModal} onOpenChange={setShowSubmitModal}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Submit Lead</DialogTitle>
+            <DialogTitle>Add Lead</DialogTitle>
             <DialogDescription>
-              Enter the details below to submit a lead.
+              Add the details the team needs for quick follow-up.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitLead} className="space-y-4">
@@ -593,7 +593,7 @@ export default function ReferralsPage() {
               <Button type="button" variant="outline" onClick={() => setShowSubmitModal(false)}>Cancel</Button>
               <Button type="submit" disabled={submitLoading}>
                 {submitLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit Lead
+                Add Lead
               </Button>
             </DialogFooter>
           </form>
@@ -606,7 +606,7 @@ export default function ReferralsPage() {
           <DialogHeader>
             <DialogTitle>Edit Lead</DialogTitle>
             <DialogDescription>
-              Update lead details before the referral is completed.
+              Update lead details before the team completes the review.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateLead} className="space-y-4">
