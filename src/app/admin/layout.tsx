@@ -44,7 +44,6 @@ import {
   KeyRound,
   Activity,
   FolderOpen,
-  FileText,
   UsersRound,
   Layers,
   HelpCircle,
@@ -63,7 +62,6 @@ const mainNavItems: NavItem[] = [
   { title: 'Partners', url: '/admin/partners', icon: Users },
   { title: 'Leads', url: '/admin/customers', icon: UserCheck },
   { title: 'Payouts', url: '/admin/payouts', icon: Wallet, adminOnly: true },
-  { title: 'Invoices', url: '/admin/invoices', icon: FileText, adminOnly: true },
   { title: 'Emails', url: '/admin/emails', icon: Mail, adminOnly: true },
 ];
 

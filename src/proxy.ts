@@ -10,6 +10,11 @@ export async function proxy(request: NextRequest) {
   const isAdminRoute = pathname.startsWith('/api/admin') || pathname.startsWith('/admin');
   const isAffiliateRoute = pathname.startsWith('/api/affiliate') || pathname.startsWith('/affiliate');
   const isAuthMeRoute = pathname === '/api/auth/me';
+  const isAdminOnlyRoute =
+    pathname === '/admin/emails' ||
+    pathname.startsWith('/admin/emails/') ||
+    pathname === '/api/admin/emails' ||
+    pathname.startsWith('/api/admin/emails/');
   const isProtectedRoute = isAdminRoute || isAffiliateRoute || isAuthMeRoute;
 
   if (!isProtectedRoute) {
@@ -57,6 +62,17 @@ export async function proxy(request: NextRequest) {
       }
 
       return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    if (isAdminOnlyRoute && userRole !== 'ADMIN') {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Forbidden: Admin access required' },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
 
     if (isAffiliateRoute && userRole !== 'AFFILIATE' && userRole !== 'ADMIN') {
