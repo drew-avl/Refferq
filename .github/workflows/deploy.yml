@@ -14,7 +14,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '22'
-      - run: npm install
-      - run: npx prisma generate
-      - run: npm run build
-      - run: npx prisma db push
+      - name: Install dependencies
+        run: npm install
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Validate Prisma schema
+        run: npx prisma validate
+      - name: Build application
+        run: npm run build
+      - name: Sync database schema
+        run: npx prisma db push --skip-generate
+      - name: Verify database schema matches Prisma
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code

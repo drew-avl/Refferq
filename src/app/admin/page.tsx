@@ -65,6 +65,17 @@ interface RecentCustomer {
   createdAt: string;
 }
 
+type StatCard = {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  description: string;
+  trend?: string;
+  trendUp?: boolean;
+  color: string;
+  bg: string;
+};
+
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -77,6 +88,8 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (user && user.role === 'ADMIN') {
       fetchDashboardData();
+    } else if (user && user.role === 'STAFF') {
+      fetchStaffDashboardData();
     }
   }, [user]);
 
@@ -132,11 +145,99 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const fetchStaffDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [partnersRes, referralsRes] = await Promise.all([
+        fetch('/api/admin/affiliates'),
+        fetch('/api/admin/referrals'),
+      ]);
+
+      const [partnersData, referralsData] = await Promise.all([
+        partnersRes.json(),
+        referralsRes.json(),
+      ]);
+
+      const partners = partnersData.success ? partnersData.affiliates || [] : [];
+      const referrals = referralsData.success ? referralsData.referrals || [] : [];
+
+      setCurrencySymbol(partnersData.currencySymbol || referralsData.currencySymbol || '$');
+      setStats({
+        totalRevenue: 0,
+        totalEstimatedRevenue: 0,
+        totalEstimatedCommission: 0,
+        totalClicks: 0,
+        totalLeads: referrals.length,
+        totalReferredCustomers: referrals.filter((ref: any) => ref.status === 'COMPLETED').length,
+        totalAffiliates: partners.length,
+        pendingReferrals: referrals.filter((ref: any) => ref.status === 'NEW' || ref.status === 'PENDING').length,
+      });
+      setTopAffiliates(
+        partners.slice(0, 5).map((partner: any) => ({
+          id: partner.id,
+          name: partner.user?.name || 'Unknown Partner',
+          email: partner.user?.email || '',
+          totalReferrals: partner._count?.referrals || 0,
+        }))
+      );
+      setRecentCustomers(
+        referrals.slice(0, 10).map((ref: any) => ({
+          id: ref.id,
+          leadName: ref.leadName,
+          leadEmail: ref.leadEmail,
+          affiliateName: ref.affiliate?.name || 'Unknown Partner',
+          amountPaid: 0,
+          status: ref.status,
+          createdAt: ref.createdAt,
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to fetch staff dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return <DashboardSkeleton />;
   }
 
-  const statCards = [
+  const isStaff = user?.role === 'STAFF';
+
+  const statCards: StatCard[] = isStaff ? [
+    {
+      title: 'Assigned Partners',
+      value: stats?.totalAffiliates || 0,
+      icon: Users,
+      description: 'Partners in your workspace',
+      color: 'text-blue-600',
+      bg: 'bg-blue-500/10',
+    },
+    {
+      title: 'Total Leads',
+      value: stats?.totalLeads || 0,
+      icon: Target,
+      description: 'Leads from assigned partners',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-500/10',
+    },
+    {
+      title: 'Needs Review',
+      value: stats?.pendingReferrals || 0,
+      icon: Clock,
+      description: 'New or pending leads',
+      color: 'text-amber-600',
+      bg: 'bg-amber-500/10',
+    },
+    {
+      title: 'Completed',
+      value: stats?.totalReferredCustomers || 0,
+      icon: UserCheck,
+      description: 'Completed referrals',
+      color: 'text-violet-600',
+      bg: 'bg-violet-500/10',
+    },
+  ] : [
     {
       title: 'Estimated Revenue',
       value: `${currencySymbol}${stats ? (stats.totalEstimatedRevenue / 100).toFixed(2) : '0.00'}`,
@@ -196,7 +297,7 @@ export default function AdminDashboardPage() {
       color: 'text-emerald-600',
       bg: 'bg-emerald-500/10',
     },
-    {
+    ...(!isStaff ? [{
       title: 'Payouts',
       description: 'Process payments',
       icon: CreditCard,
@@ -211,7 +312,7 @@ export default function AdminDashboardPage() {
       href: '/admin/reports',
       color: 'text-violet-600',
       bg: 'bg-violet-500/10',
-    },
+    }] : []),
   ];
 
   return (
@@ -221,7 +322,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Overview of referral lead performance
+            {isStaff ? 'Your assigned partners and referral lead activity' : 'Overview of referral lead performance'}
           </p>
         </div>
 

@@ -29,7 +29,7 @@ export class DatabaseService {
     email: string;
     password: string; // Already hashed by the caller/AuthService
     name: string;
-    role: 'ADMIN' | 'AFFILIATE';
+    role: 'ADMIN' | 'STAFF' | 'AFFILIATE';
   }) {
     const user = await prisma.user.create({
       data: {
@@ -37,7 +37,7 @@ export class DatabaseService {
         password: userData.password,
         name: userData.name,
         role: userData.role,
-        status: userData.role === 'ADMIN' ? 'ACTIVE' : 'INACTIVE',
+        status: userData.role === 'ADMIN' || userData.role === 'STAFF' ? 'ACTIVE' : 'INACTIVE',
       },
     });
 

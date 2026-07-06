@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
+import { getAdminActor } from '@/lib/admin-access';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ async function verifyAdmin(request: NextRequest) {
 
 // GET: List all programs
 export async function GET(request: NextRequest) {
-  const user = await verifyAdmin(request);
+  const user = await getAdminActor(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

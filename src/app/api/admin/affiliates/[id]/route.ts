@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { canAccessAffiliate, getAdminActor, isFullAdmin } from '@/lib/admin-access';
 
 
 // Update referral partner details
@@ -10,19 +11,11 @@ export async function PATCH(
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id');
+    const user = await getAdminActor(request);
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -45,6 +38,13 @@ export async function PATCH(
       );
     }
 
+    if (!isFullAdmin(user) && data.assignedStaffUserIds !== undefined) {
+      return NextResponse.json(
+        { error: 'Only full admins can change staff assignments' },
+        { status: 403 }
+      );
+    }
+
     const affiliate = await prisma.affiliate.findUnique({
       where: { id: params.id },
       include: {
@@ -60,6 +60,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Referral partner not found' },
         { status: 404 }
+      );
+    }
+
+    const allowed = await canAccessAffiliate(user, params.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only manage referral partners assigned to you' },
+        { status: 403 }
       );
     }
 
@@ -90,6 +98,28 @@ export async function PATCH(
       if (programs.length !== assignedProgramIds.length) {
         return NextResponse.json(
           { error: 'One or more selected programs do not exist' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const assignedStaffUserIds = isFullAdmin(user) && Array.isArray(data.assignedStaffUserIds)
+      ? Array.from(new Set(data.assignedStaffUserIds.filter(Boolean)))
+      : null;
+
+    if (assignedStaffUserIds) {
+      const staffUsers = await prisma.user.findMany({
+        where: {
+          id: { in: assignedStaffUserIds },
+          role: 'STAFF',
+          status: 'ACTIVE',
+        },
+        select: { id: true },
+      });
+
+      if (staffUsers.length !== assignedStaffUserIds.length) {
+        return NextResponse.json(
+          { error: 'One or more selected staff members do not exist or are inactive' },
           { status: 400 }
         );
       }
@@ -154,6 +184,23 @@ export async function PATCH(
         }
       }
 
+      if (assignedStaffUserIds) {
+        await tx.staffAffiliateAssignment.deleteMany({
+          where: { affiliateId: params.id }
+        });
+
+        if (assignedStaffUserIds.length > 0) {
+          await tx.staffAffiliateAssignment.createMany({
+            data: assignedStaffUserIds.map((staffUserId) => ({
+              staffUserId,
+              affiliateId: params.id,
+              assignedBy: user.id,
+            })),
+            skipDuplicates: true
+          });
+        }
+      }
+
       await tx.auditLog.create({
         data: {
           actorId: user.id,
@@ -173,7 +220,8 @@ export async function PATCH(
               status: data.status,
               company: data.company,
               payoutMethod: data.payoutMethod,
-              assignedProgramIds
+              assignedProgramIds,
+              assignedStaffUserIds
             }
           }
         }
@@ -221,6 +269,18 @@ export async function PATCH(
             select: {
               referrals: true
             }
+          },
+          staffAssignments: {
+            include: {
+              staffUser: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
+              }
+            },
+            orderBy: { createdAt: 'asc' }
           }
         }
       });
@@ -248,15 +308,11 @@ export async function DELETE(
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id')!;
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -271,6 +327,14 @@ export async function DELETE(
       return NextResponse.json(
         { error: 'Referral partner not found' },
         { status: 404 }
+      );
+    }
+
+    const allowed = await canAccessAffiliate(user, params.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only delete referral partners assigned to you' },
+        { status: 403 }
       );
     }
 

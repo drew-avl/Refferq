@@ -35,9 +35,11 @@ import {
   Users,
   Wallet,
   BookOpen,
+  HelpCircle,
   Settings,
   LogOut,
   ChevronsUpDown,
+  LockKeyhole,
 } from 'lucide-react';
 
 interface BrandSettings {
@@ -53,6 +55,7 @@ const mainNavItems = [
   { title: 'Lead Queue', url: '/affiliate/referrals', icon: Users },
   { title: 'Payouts', url: '/affiliate/payouts', icon: Wallet },
   { title: 'Resources', url: '/affiliate/resources', icon: BookOpen },
+  { title: 'FAQ', url: '/affiliate/faq', icon: HelpCircle },
 ];
 
 const accountNavItems = [
@@ -204,8 +207,8 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     fetch('/api/affiliate/branding')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success && data.settings) setBrand(data.settings);
       })
       .catch(() => {});
@@ -230,7 +233,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-            <span className="text-3xl">🔒</span>
+            <LockKeyhole className="h-7 w-7 text-destructive" />
           </div>
           <h1 className="text-xl font-bold">Access Denied</h1>
           <p className="text-sm text-muted-foreground">Referral partner account required to access this page</p>

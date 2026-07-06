@@ -8,41 +8,44 @@ datasource db {
 }
 
 model User {
-  id             String       @id @default(cuid())
-  email          String       @unique
-  name           String
-  password       String
-  role           Role         @default(AFFILIATE)
-  status         UserStatus   @default(PENDING)
-  lastLogin      DateTime?    @map("last_login")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  profilePicture String?      @map("profile_picture")
-  affiliate      Affiliate?
-  auditLogs      AuditLog[]
-  commissions    Commission[]
-  payouts        Payout[]
+  id                      String                     @id @default(cuid())
+  email                   String                     @unique
+  name                    String
+  password                String
+  role                    Role                       @default(AFFILIATE)
+  status                  UserStatus                 @default(PENDING)
+  lastLogin               DateTime?                  @map("last_login")
+  createdAt               DateTime                   @default(now()) @map("created_at")
+  updatedAt               DateTime                   @updatedAt @map("updated_at")
+  profilePicture          String?                    @map("profile_picture")
+  affiliate               Affiliate?
+  auditLogs               AuditLog[]
+  commissions             Commission[]
+  payouts                 Payout[]
+  staffAssignments        StaffAffiliateAssignment[] @relation("StaffAssignments")
+  staffAssignmentsCreated StaffAffiliateAssignment[] @relation("StaffAssignmentsCreated")
 
   @@map("users")
 }
 
 model Affiliate {
-  id             String        @id @default(cuid())
-  userId         String        @unique @map("user_id")
-  referralCode   String        @unique @map("referral_code")
-  payoutDetails  Json          @default("{}") @map("payout_details")
-  balanceCents   Int           @default(0) @map("balance_cents")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-  partnerGroupId String?       @map("partner_group_id")
-  partnerGroup   PartnerGroup? @relation(fields: [partnerGroupId], references: [id])
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  commissions    Commission[]
-  conversions    Conversion[]
-  referrals      Referral[]
+  id                 String                     @id @default(cuid())
+  userId             String                     @unique @map("user_id")
+  referralCode       String                     @unique @map("referral_code")
+  payoutDetails      Json                       @default("{}") @map("payout_details")
+  balanceCents       Int                        @default(0) @map("balance_cents")
+  createdAt          DateTime                   @default(now()) @map("created_at")
+  updatedAt          DateTime                   @updatedAt @map("updated_at")
+  partnerGroupId     String?                    @map("partner_group_id")
+  partnerGroup       PartnerGroup?              @relation(fields: [partnerGroupId], references: [id])
+  user               User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commissions        Commission[]
+  conversions        Conversion[]
+  referrals          Referral[]
   programAssignments AffiliateProgram[]
-  transactions   Transaction[]
-  payouts        Payout[]
+  transactions       Transaction[]
+  payouts            Payout[]
+  staffAssignments   StaffAffiliateAssignment[]
 
   @@map("affiliates")
 }
@@ -242,6 +245,34 @@ model PartnerGroup {
   @@map("partner_groups")
 }
 
+model StaffAffiliateAssignment {
+  id          String    @id @default(cuid())
+  staffUserId String    @map("staff_user_id")
+  affiliateId String    @map("affiliate_id")
+  assignedBy  String    @map("assigned_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  staffUser   User      @relation("StaffAssignments", fields: [staffUserId], references: [id], onDelete: Cascade)
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  assigner    User      @relation("StaffAssignmentsCreated", fields: [assignedBy], references: [id], onDelete: Cascade)
+
+  @@unique([staffUserId, affiliateId])
+  @@index([affiliateId])
+  @@map("staff_affiliate_assignments")
+}
+
+model PortalFaq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("portal_faqs")
+}
+
 model Transaction {
   id              String            @id @default(cuid())
   referralId      String            @map("referral_id")
@@ -317,35 +348,35 @@ model IntegrationSettings {
 }
 
 model Webhook {
-  id           String       @id @default(cuid())
-  name         String
-  url          String
-  secret       String
-  events       Json         @default("[]") // Array of event types
-  isActive     Boolean      @default(true) @map("is_active")
-  failureCount Int          @default(0) @map("failure_count")
-  lastTriggeredAt DateTime? @map("last_triggered_at")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  logs         WebhookLog[]
+  id              String       @id @default(cuid())
+  name            String
+  url             String
+  secret          String
+  events          Json         @default("[]") // Array of event types
+  isActive        Boolean      @default(true) @map("is_active")
+  failureCount    Int          @default(0) @map("failure_count")
+  lastTriggeredAt DateTime?    @map("last_triggered_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  logs            WebhookLog[]
 
   @@map("webhooks")
 }
 
 model WebhookLog {
-  id           String        @id @default(cuid())
-  webhookId    String        @map("webhook_id")
-  eventType    String        @map("event_type")
-  payload      Json          @default("{}")
-  status       WebhookStatus @default(PENDING)
-  statusCode   Int?          @map("status_code")
-  response     String?
-  error        String?
-  attempts     Int           @default(0)
-  nextRetryAt  DateTime?     @map("next_retry_at")
-  completedAt  DateTime?     @map("completed_at")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  webhook      Webhook       @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  id          String        @id @default(cuid())
+  webhookId   String        @map("webhook_id")
+  eventType   String        @map("event_type")
+  payload     Json          @default("{}")
+  status      WebhookStatus @default(PENDING)
+  statusCode  Int?          @map("status_code")
+  response    String?
+  error       String?
+  attempts    Int           @default(0)
+  nextRetryAt DateTime?     @map("next_retry_at")
+  completedAt DateTime?     @map("completed_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  webhook     Webhook       @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId])
   @@index([eventType])
@@ -362,6 +393,7 @@ enum WebhookStatus {
 
 enum Role {
   ADMIN
+  STAFF
   AFFILIATE
 }
 
@@ -451,19 +483,19 @@ enum EmailStatus {
 // ───────────────────────────────────────────────
 
 model ScheduledReport {
-  id            String                @id @default(cuid())
-  name          String
-  reportType    String                @map("report_type") // summary, affiliates, referrals, commissions, payouts, cohort
-  frequency     ReportFrequency       @default(WEEKLY)
-  recipients    Json                  @default("[]") // array of email addresses
-  filters       Json                  @default("{}") // date range, status filters, etc.
-  format        String                @default("csv") // csv, json
-  isActive      Boolean               @default(true) @map("is_active")
-  lastRunAt     DateTime?             @map("last_run_at")
-  nextRunAt     DateTime?             @map("next_run_at")
-  createdBy     String                @map("created_by")
-  createdAt     DateTime              @default(now()) @map("created_at")
-  updatedAt     DateTime              @updatedAt @map("updated_at")
+  id         String          @id @default(cuid())
+  name       String
+  reportType String          @map("report_type") // summary, affiliates, referrals, commissions, payouts, cohort
+  frequency  ReportFrequency @default(WEEKLY)
+  recipients Json            @default("[]") // array of email addresses
+  filters    Json            @default("{}") // date range, status filters, etc.
+  format     String          @default("csv") // csv, json
+  isActive   Boolean         @default(true) @map("is_active")
+  lastRunAt  DateTime?       @map("last_run_at")
+  nextRunAt  DateTime?       @map("next_run_at")
+  createdBy  String          @map("created_by")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
 
   @@map("scheduled_reports")
 }
@@ -485,20 +517,20 @@ model SavedReport {
 }
 
 model ApiKey {
-  id          String      @id @default(cuid())
-  name        String
-  key         String?     // Cleared after creation for security; only shown once
-  keyHash     String      @unique @map("key_hash") // SHA-256 hash of the key for lookups
-  prefix      String      // first 8 chars for display
-  userId      String      @map("user_id")
-  scopes      Json        @default("[\"read\"]") // read, write, admin
-  rateLimit   Int         @default(100) @map("rate_limit") // requests per minute
-  isActive    Boolean     @default(true) @map("is_active")
-  lastUsedAt  DateTime?   @map("last_used_at")
-  expiresAt   DateTime?   @map("expires_at")
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-  usageLogs   ApiUsageLog[]
+  id         String        @id @default(cuid())
+  name       String
+  key        String? // Cleared after creation for security; only shown once
+  keyHash    String        @unique @map("key_hash") // SHA-256 hash of the key for lookups
+  prefix     String // first 8 chars for display
+  userId     String        @map("user_id")
+  scopes     Json          @default("[\"read\"]") // read, write, admin
+  rateLimit  Int           @default(100) @map("rate_limit") // requests per minute
+  isActive   Boolean       @default(true) @map("is_active")
+  lastUsedAt DateTime?     @map("last_used_at")
+  expiresAt  DateTime?     @map("expires_at")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  usageLogs  ApiUsageLog[]
 
   @@index([keyHash])
   @@index([userId])
@@ -506,16 +538,16 @@ model ApiKey {
 }
 
 model ApiUsageLog {
-  id          String   @id @default(cuid())
-  apiKeyId    String   @map("api_key_id")
-  endpoint    String
-  method      String
-  statusCode  Int      @map("status_code")
-  responseMs  Int      @map("response_ms") // response time in milliseconds
-  ipAddress   String?  @map("ip_address")
-  userAgent   String?  @map("user_agent")
-  createdAt   DateTime @default(now()) @map("created_at")
-  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  apiKeyId   String   @map("api_key_id")
+  endpoint   String
+  method     String
+  statusCode Int      @map("status_code")
+  responseMs Int      @map("response_ms") // response time in milliseconds
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  apiKey     ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
 
   @@index([apiKeyId])
   @@index([createdAt])
@@ -524,12 +556,12 @@ model ApiUsageLog {
 }
 
 model RateLimitEntry {
-  id          String   @id @default(cuid())
-  identifier  String   // API key or IP address
-  endpoint    String
-  windowStart DateTime @map("window_start")
-  requestCount Int     @default(0) @map("request_count")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           String   @id @default(cuid())
+  identifier   String // API key or IP address
+  endpoint     String
+  windowStart  DateTime @map("window_start")
+  requestCount Int      @default(0) @map("request_count")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   @@unique([identifier, endpoint, windowStart])
   @@index([identifier])
@@ -548,22 +580,22 @@ enum ReportFrequency {
 // ───────────────────────────────────────────────
 
 model Coupon {
-  id              String       @id @default(cuid())
-  code            String       @unique
-  description     String?
-  discountType    String       @default("PERCENTAGE") @map("discount_type") // PERCENTAGE | FIXED
-  discountValue   Float        @map("discount_value") // e.g. 20 = 20% or 20 = $20
-  currency        String       @default("USD")
-  maxUses         Int?         @map("max_uses")
-  usedCount       Int          @default(0) @map("used_count")
-  affiliateId     String?      @map("affiliate_id") // null = program-wide
-  programId       String?      @map("program_id")
-  isActive        Boolean      @default(true) @map("is_active")
-  startsAt        DateTime?    @map("starts_at")
-  expiresAt       DateTime?    @map("expires_at")
-  createdBy       String       @map("created_by")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  code          String    @unique
+  description   String?
+  discountType  String    @default("PERCENTAGE") @map("discount_type") // PERCENTAGE | FIXED
+  discountValue Float     @map("discount_value") // e.g. 20 = 20% or 20 = $20
+  currency      String    @default("USD")
+  maxUses       Int?      @map("max_uses")
+  usedCount     Int       @default(0) @map("used_count")
+  affiliateId   String?   @map("affiliate_id") // null = program-wide
+  programId     String?   @map("program_id")
+  isActive      Boolean   @default(true) @map("is_active")
+  startsAt      DateTime? @map("starts_at")
+  expiresAt     DateTime? @map("expires_at")
+  createdBy     String    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   @@index([code])
   @@index([affiliateId])
@@ -578,7 +610,7 @@ model Resource {
   id          String   @id @default(cuid())
   title       String
   description String?
-  type        String   // BANNER, LOGO, EMAIL_TEMPLATE, SOCIAL_POST, DOCUMENT, VIDEO, OTHER
+  type        String // BANNER, LOGO, EMAIL_TEMPLATE, SOCIAL_POST, DOCUMENT, VIDEO, OTHER
   programId   String?  @map("program_id")
   fileUrl     String   @map("file_url")
   fileName    String   @map("file_name")
@@ -638,28 +670,28 @@ enum InvoiceStatus {
 // ───────────────────────────────────────────────
 
 model Program {
-  id                String   @id @default(cuid())
-  name              String
-  slug              String   @unique
-  description       String?
-  referralPayoutCents Int    @default(0) @map("referral_payout_cents")
-  commissionRate    Float    @default(20) @map("commission_rate")
-  commissionType    String   @default("PERCENTAGE") @map("commission_type")
-  cookieDuration    Int      @default(30) @map("cookie_duration") // days
-  currency          String   @default("USD")
-  isActive          Boolean  @default(true) @map("is_active")
-  isDefault         Boolean  @default(false) @map("is_default")
-  autoApprove       Boolean  @default(false) @map("auto_approve")
-  minPayoutCents    Int      @default(0) @map("min_payout_cents")
-  payoutFrequency   String   @default("MONTHLY") @map("payout_frequency")
-  termsUrl          String?  @map("terms_url")
-  logoUrl           String?  @map("logo_url")
-  brandColor        String   @default("#10b981") @map("brand_color")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-  referrals         Referral[]
+  id                   String             @id @default(cuid())
+  name                 String
+  slug                 String             @unique
+  description          String?
+  referralPayoutCents  Int                @default(0) @map("referral_payout_cents")
+  commissionRate       Float              @default(20) @map("commission_rate")
+  commissionType       String             @default("PERCENTAGE") @map("commission_type")
+  cookieDuration       Int                @default(30) @map("cookie_duration") // days
+  currency             String             @default("USD")
+  isActive             Boolean            @default(true) @map("is_active")
+  isDefault            Boolean            @default(false) @map("is_default")
+  autoApprove          Boolean            @default(false) @map("auto_approve")
+  minPayoutCents       Int                @default(0) @map("min_payout_cents")
+  payoutFrequency      String             @default("MONTHLY") @map("payout_frequency")
+  termsUrl             String?            @map("terms_url")
+  logoUrl              String?            @map("logo_url")
+  brandColor           String             @default("#10b981") @map("brand_color")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  referrals            Referral[]
   affiliateAssignments AffiliateProgram[]
-  resources         Resource[]
+  resources            Resource[]
 
   @@map("programs")
 }
@@ -681,18 +713,18 @@ model AffiliateProgram {
 // ───────────────────────────────────────────────
 
 model TeamMember {
-  id          String     @id @default(cuid())
+  id          String           @id @default(cuid())
   email       String
   name        String
-  role        TeamRole   @default(VIEWER)
-  permissions Json       @default("[]") // granular permissions
-  invitedBy   String     @map("invited_by")
-  userId      String?    @map("user_id") // linked user after acceptance
+  role        TeamRole         @default(VIEWER)
+  permissions Json             @default("[]") // granular permissions
+  invitedBy   String           @map("invited_by")
+  userId      String?          @map("user_id") // linked user after acceptance
   status      TeamMemberStatus @default(PENDING)
-  invitedAt   DateTime   @default(now()) @map("invited_at")
-  acceptedAt  DateTime?  @map("accepted_at")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  invitedAt   DateTime         @default(now()) @map("invited_at")
+  acceptedAt  DateTime?        @map("accepted_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
 
   @@unique([email])
   @@map("team_members")
@@ -701,6 +733,7 @@ model TeamMember {
 enum TeamRole {
   OWNER
   ADMIN
+  STAFF
   MANAGER
   VIEWER
 }

@@ -36,7 +36,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
 
   const redirectForUser = (user: { role?: string }) => {
-    router.push(user.role === 'ADMIN' ? '/admin' : '/affiliate');
+    router.push(user.role === 'ADMIN' || user.role === 'STAFF' ? '/admin' : '/affiliate');
   };
 
   const handlePasswordSignIn = async (e: React.FormEvent) => {

@@ -27,6 +27,7 @@ export const affiliateCreateSchema = z.object({
     paypalEmail: z.string().max(200, 'Payout account is too long').optional().or(z.literal('')),
     sendWelcomeEmail: z.boolean().optional(),
     assignedProgramIds: z.array(z.string()).optional(),
+    assignedStaffUserIds: z.array(z.string()).optional(),
 });
 
 export const affiliateUpdateSchema = z.object({
@@ -37,6 +38,7 @@ export const affiliateUpdateSchema = z.object({
     payoutMethod: payoutMethodSchema.optional(),
     paypalEmail: z.string().max(200, 'Payout account is too long').optional().or(z.literal('')),
     assignedProgramIds: z.array(z.string()).optional(),
+    assignedStaffUserIds: z.array(z.string()).optional(),
 });
 
 // Payout Validation

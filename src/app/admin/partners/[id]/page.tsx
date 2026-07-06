@@ -188,15 +188,17 @@ export default function PartnerDetailPage() {
   const [newStatus, setNewStatus] = useState<'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('PENDING');
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'ADMIN')) {
+    if (!authLoading && (!user || (user.role !== 'ADMIN' && user.role !== 'STAFF'))) {
       router.push('/login');
       return;
     }
     if (user && partnerId) {
       fetchPartnerData();
       fetchCustomers();
-      fetchCommissions();
-      fetchPayouts();
+      if (user.role === 'ADMIN') {
+        fetchCommissions();
+        fetchPayouts();
+      }
     }
   }, [authLoading, user, partnerId]);
 
@@ -409,6 +411,7 @@ export default function PartnerDetailPage() {
 
   const primaryProgram = getPrimaryProgram(partner.assignedPrograms);
   const payoutTerms = formatPayoutTerms(partner.assignedPrograms);
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <div className="space-y-6">
@@ -438,14 +441,16 @@ export default function PartnerDetailPage() {
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => setShowPayoutModal(true)}
-          disabled={pendingCommissions.length === 0}
-          className="gap-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          Create Payout
-        </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => setShowPayoutModal(true)}
+            disabled={pendingCommissions.length === 0}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Create Payout
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -509,8 +514,8 @@ export default function PartnerDetailPage() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="customers">Leads ({customers.length})</TabsTrigger>
-          <TabsTrigger value="commissions">Commissions ({commissions.length})</TabsTrigger>
-          <TabsTrigger value="payouts">Payouts ({payouts.length})</TabsTrigger>
+          {isAdmin && <TabsTrigger value="commissions">Commissions ({commissions.length})</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="payouts">Payouts ({payouts.length})</TabsTrigger>}
         </TabsList>
 
         {/* Overview */}
@@ -633,9 +638,11 @@ export default function PartnerDetailPage() {
           </Card>
         </TabsContent>
 
-        {/* Commissions */}
-        <TabsContent value="commissions">
-          <Card>
+        {isAdmin && (
+          <>
+            {/* Commissions */}
+            <TabsContent value="commissions">
+              <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-base">Commission History</CardTitle>
@@ -681,12 +688,12 @@ export default function PartnerDetailPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
+              </Card>
+            </TabsContent>
 
-        {/* Payouts */}
-        <TabsContent value="payouts">
-          <Card>
+            {/* Payouts */}
+            <TabsContent value="payouts">
+              <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-base">Payout History</CardTitle>
@@ -745,15 +752,19 @@ export default function PartnerDetailPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
       </Tabs>
 
-      {/* Create Payout Dialog */}
-      <Dialog open={showPayoutModal} onOpenChange={(open) => {
-        setShowPayoutModal(open);
-        if (!open) setSelectedCommissions([]);
-      }}>
+      {isAdmin && (
+        <>
+          {/* Create Payout Dialog */}
+          <Dialog open={showPayoutModal} onOpenChange={(open) => {
+            setShowPayoutModal(open);
+            if (!open) setSelectedCommissions([]);
+          }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Create Payout</DialogTitle>
@@ -827,13 +838,13 @@ export default function PartnerDetailPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+          </Dialog>
 
-      {/* Update Status Dialog */}
-      <Dialog open={showStatusModal} onOpenChange={(open) => {
-        setShowStatusModal(open);
-        if (!open) setEditingPayout(null);
-      }}>
+          {/* Update Status Dialog */}
+          <Dialog open={showStatusModal} onOpenChange={(open) => {
+            setShowStatusModal(open);
+            if (!open) setEditingPayout(null);
+          }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update Payout Status</DialogTitle>
@@ -883,7 +894,9 @@ export default function PartnerDetailPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }

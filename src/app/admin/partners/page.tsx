@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Card,
   CardContent,
@@ -51,7 +52,6 @@ import { Switch } from '@/components/ui/switch';
 import {
   Search,
   Plus,
-  Mail,
   MoreHorizontal,
   ChevronUp,
   ChevronDown,
@@ -99,6 +99,15 @@ interface Partner {
   payoutEmail?: string;
   assignedPrograms: AssignedProgram[];
   assignedProgramIds: string[];
+  assignedStaff: StaffMember[];
+  assignedStaffUserIds: string[];
+}
+
+interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  status?: string;
 }
 
 const getDefaultProgramIds = (programs: Program[]) => {
@@ -108,13 +117,14 @@ const getDefaultProgramIds = (programs: Program[]) => {
 
 export default function PartnersPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [filteredPartners, setFilteredPartners] = useState<Partner[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [activeTab, setActiveTab] = useState('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [savingPartner, setSavingPartner] = useState(false);
@@ -133,11 +143,7 @@ export default function PartnersPage() {
     paypalEmail: '',
     sendWelcomeEmail: true,
     assignedProgramIds: [] as string[],
-  });
-
-  const [invitePartner, setInvitePartner] = useState({
-    email: '',
-    inviteType: 'single',
+    assignedStaffUserIds: [] as string[],
   });
 
   const [editPartner, setEditPartner] = useState({
@@ -148,12 +154,14 @@ export default function PartnersPage() {
     payoutMethod: 'PayPal',
     payoutEmail: '',
     assignedProgramIds: [] as string[],
+    assignedStaffUserIds: [] as string[],
   });
 
   useEffect(() => {
     fetchPartners();
     fetchPrograms();
-  }, []);
+    if (user?.role === 'ADMIN') fetchStaffMembers();
+  }, [user?.role]);
 
   useEffect(() => {
     if (programs.length === 0 || newPartner.assignedProgramIds.length > 0) return;
@@ -199,6 +207,8 @@ export default function PartnersPage() {
             payoutEmail: payoutDetails.paymentEmail || aff.user.email,
             assignedPrograms,
             assignedProgramIds: assignedPrograms.map((program: AssignedProgram) => program.id),
+            assignedStaff: aff.assignedStaff || [],
+            assignedStaffUserIds: aff.assignedStaffUserIds || [],
           };
         });
         setPartners(formattedPartners);
@@ -220,6 +230,27 @@ export default function PartnersPage() {
       }
     } catch (error) {
       console.error('Failed to fetch programs:', error);
+    }
+  };
+
+  const fetchStaffMembers = async () => {
+    try {
+      const response = await fetch('/api/admin/team');
+      const data = await response.json();
+      if (data.success) {
+        setStaffMembers(
+          (data.members || [])
+            .filter((member: any) => member.role === 'STAFF' && member.status === 'ACTIVE' && member.userId)
+            .map((member: any) => ({
+              id: member.userId,
+              name: member.name,
+              email: member.email,
+              status: member.status,
+            }))
+        );
+      }
+    } catch (error) {
+      console.error('Failed to fetch staff members:', error);
     }
   };
 
@@ -282,6 +313,7 @@ export default function PartnersPage() {
           paypalEmail: newPartner.paypalEmail || newPartner.email,
           sendWelcomeEmail: newPartner.sendWelcomeEmail,
           assignedProgramIds: newPartner.assignedProgramIds,
+          assignedStaffUserIds: user?.role === 'ADMIN' ? newPartner.assignedStaffUserIds : undefined,
         }),
       });
 
@@ -295,7 +327,7 @@ export default function PartnersPage() {
         setNewPartner({
           firstName: '', lastName: '', email: '', company: '',
           payoutMethod: 'PayPal',
-          paypalEmail: '', sendWelcomeEmail: true, assignedProgramIds: getDefaultProgramIds(programs),
+          paypalEmail: '', sendWelcomeEmail: true, assignedProgramIds: getDefaultProgramIds(programs), assignedStaffUserIds: [],
         });
         fetchPartners();
       } else {
@@ -317,6 +349,7 @@ export default function PartnersPage() {
       payoutMethod: getAllowedPayoutMethod(partner.payoutMethod),
       payoutEmail: partner.payoutEmail || partner.email,
       assignedProgramIds: partner.assignedProgramIds || [],
+      assignedStaffUserIds: partner.assignedStaffUserIds || [],
     });
     setShowEditModal(true);
   };
@@ -339,6 +372,24 @@ export default function PartnersPage() {
     }));
   };
 
+  const toggleNewStaff = (staffUserId: string) => {
+    setNewPartner((current) => ({
+      ...current,
+      assignedStaffUserIds: current.assignedStaffUserIds.includes(staffUserId)
+        ? current.assignedStaffUserIds.filter((id) => id !== staffUserId)
+        : [...current.assignedStaffUserIds, staffUserId],
+    }));
+  };
+
+  const toggleEditStaff = (staffUserId: string) => {
+    setEditPartner((current) => ({
+      ...current,
+      assignedStaffUserIds: current.assignedStaffUserIds.includes(staffUserId)
+        ? current.assignedStaffUserIds.filter((id) => id !== staffUserId)
+        : [...current.assignedStaffUserIds, staffUserId],
+    }));
+  };
+
   const handleUpdatePartner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPartner) return;
@@ -356,6 +407,7 @@ export default function PartnersPage() {
           payoutMethod: editPartner.payoutMethod,
           paypalEmail: editPartner.payoutEmail,
           assignedProgramIds: editPartner.assignedProgramIds,
+          assignedStaffUserIds: user?.role === 'ADMIN' ? editPartner.assignedStaffUserIds : undefined,
         }),
       });
 
@@ -513,10 +565,6 @@ export default function PartnersPage() {
           <p className="text-muted-foreground">Manage your referral partners</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setShowInviteModal(true)}>
-            <Mail className="mr-2 h-4 w-4" />
-            Invite
-          </Button>
           <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Create Partner
@@ -668,6 +716,11 @@ export default function PartnersPage() {
                                 {partner.assignedPrograms.map((program) => program.name).join(', ')}
                               </p>
                             )}
+                            {user?.role === 'ADMIN' && partner.assignedStaff.length > 0 && (
+                              <p className="text-xs text-muted-foreground">
+                                Staff: {partner.assignedStaff.map((staff) => staff.name).join(', ')}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </TableCell>
@@ -791,6 +844,31 @@ export default function PartnersPage() {
                   )}
                 </div>
               </div>
+              {user?.role === 'ADMIN' && (
+                <div className="space-y-2">
+                  <Label>Assigned Staff</Label>
+                  <div className="max-h-44 overflow-y-auto rounded-md border p-3">
+                    {staffMembers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No active staff users available</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {staffMembers.map((staff) => (
+                          <label key={staff.id} className="flex cursor-pointer items-start gap-3">
+                            <Checkbox
+                              checked={newPartner.assignedStaffUserIds.includes(staff.id)}
+                              onCheckedChange={() => toggleNewStaff(staff.id)}
+                            />
+                            <span className="grid gap-1 text-sm leading-none">
+                              <span className="font-medium">{staff.name}</span>
+                              <span className="text-xs text-muted-foreground">{staff.email}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>Payout Method</Label>
                 <Select
@@ -953,6 +1031,31 @@ export default function PartnersPage() {
                   )}
                 </div>
               </div>
+              {user?.role === 'ADMIN' && (
+                <div className="space-y-2">
+                  <Label>Assigned Staff</Label>
+                  <div className="max-h-52 overflow-y-auto rounded-md border p-3">
+                    {staffMembers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No active staff users available</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {staffMembers.map((staff) => (
+                          <label key={staff.id} className="flex cursor-pointer items-start gap-3">
+                            <Checkbox
+                              checked={editPartner.assignedStaffUserIds.includes(staff.id)}
+                              onCheckedChange={() => toggleEditStaff(staff.id)}
+                            />
+                            <span className="grid gap-1 text-sm leading-none">
+                              <span className="font-medium">{staff.name}</span>
+                              <span className="text-xs text-muted-foreground">{staff.email}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
@@ -966,42 +1069,6 @@ export default function PartnersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Invite Partner Dialog */}
-      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Invite Partner</DialogTitle>
-            <DialogDescription>Send an email invitation to a new referral partner</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="inviteEmail">Email Address</Label>
-              <Input
-                id="inviteEmail"
-                type="email"
-                value={invitePartner.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInvitePartner({ ...invitePartner, email: e.target.value })}
-                placeholder="partner@example.com"
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowInviteModal(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                alert('Invite feature will send an email invitation to the partner.');
-                setShowInviteModal(false);
-              }}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Send Invite
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

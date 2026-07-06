@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { canAccessAllAffiliates, getAdminActor } from '@/lib/admin-access';
 
 
 // Batch update affiliates
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id')!;
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -33,6 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'action is required (changeStatus, changeGroup, delete)' },
         { status: 400 }
+      );
+    }
+
+    const allowed = await canAccessAllAffiliates(user, affiliateIds);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only update referral partners assigned to you' },
+        { status: 403 }
       );
     }
 

@@ -47,40 +47,91 @@ import {
   FileText,
   UsersRound,
   Layers,
+  HelpCircle,
+  LockKeyhole,
 } from 'lucide-react';
 
-const mainNavItems = [
+type NavItem = {
+  title: string;
+  url: string;
+  icon: React.ElementType;
+  adminOnly?: boolean;
+};
+
+const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Partners', url: '/admin/partners', icon: Users },
   { title: 'Leads', url: '/admin/customers', icon: UserCheck },
-  { title: 'Payouts', url: '/admin/payouts', icon: Wallet },
-  { title: 'Invoices', url: '/admin/invoices', icon: FileText },
-  { title: 'Emails', url: '/admin/emails', icon: Mail },
+  { title: 'Payouts', url: '/admin/payouts', icon: Wallet, adminOnly: true },
+  { title: 'Invoices', url: '/admin/invoices', icon: FileText, adminOnly: true },
+  { title: 'Emails', url: '/admin/emails', icon: Mail, adminOnly: true },
 ];
 
-const marketingNavItems = [
-  { title: 'Resources', url: '/admin/resources', icon: FolderOpen },
-  { title: 'Lead Sources', url: '/admin/programs', icon: Layers },
+const marketingNavItems: NavItem[] = [
+  { title: 'Resources', url: '/admin/resources', icon: FolderOpen, adminOnly: true },
+  { title: 'Lead Sources', url: '/admin/programs', icon: Layers, adminOnly: true },
 ];
 
-const configNavItems = [
-  { title: 'Portal Settings', url: '/admin/program-settings', icon: Sliders },
-  { title: 'Team Members', url: '/admin/team', icon: UsersRound },
-  { title: 'Settings', url: '/admin/settings', icon: Settings },
-  { title: 'Reports', url: '/admin/reports', icon: BarChart3 },
-  { title: 'API Keys', url: '/admin/api-keys', icon: KeyRound },
-  { title: 'API Analytics', url: '/admin/api-analytics', icon: Activity },
+const configNavItems: NavItem[] = [
+  { title: 'Portal FAQ', url: '/admin/faqs', icon: HelpCircle, adminOnly: true },
+  { title: 'Portal Settings', url: '/admin/program-settings', icon: Sliders, adminOnly: true },
+  { title: 'Team Members', url: '/admin/team', icon: UsersRound, adminOnly: true },
+  { title: 'Settings', url: '/admin/settings', icon: Settings, adminOnly: true },
+  { title: 'Reports', url: '/admin/reports', icon: BarChart3, adminOnly: true },
+  { title: 'API Keys', url: '/admin/api-keys', icon: KeyRound, adminOnly: true },
+  { title: 'API Analytics', url: '/admin/api-analytics', icon: Activity, adminOnly: true },
 ];
+
+function NavGroup({
+  label,
+  items,
+  isActive,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  isActive: (url: string) => boolean;
+  onNavigate: (url: string) => void;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                isActive={isActive(item.url)}
+                onClick={() => onNavigate(item.url)}
+                tooltip={item.title}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
 
 function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const isActive = (url: string) => {
     if (url === '/admin') return pathname === '/admin';
     return pathname.startsWith(url);
   };
+
+  const visibleMainNavItems = mainNavItems.filter((item) => !item.adminOnly || isAdmin);
+  const visibleMarketingNavItems = marketingNavItems.filter((item) => !item.adminOnly || isAdmin);
+  const visibleConfigNavItems = configNavItems.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <Sidebar variant="inset">
@@ -89,11 +140,13 @@ function AdminSidebar() {
           <SidebarMenuItem>
             <div className="flex items-center gap-3 px-2 py-1.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <span className="text-lg">🎯</span>
+                <span className="text-lg font-bold">R</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold">ReferConnect</span>
-                <span className="text-xs text-muted-foreground">Admin Dashboard</span>
+                <span className="text-xs text-muted-foreground">
+                  {isAdmin ? 'Admin Dashboard' : 'Staff Workspace'}
+                </span>
               </div>
             </div>
           </SidebarMenuItem>
@@ -101,65 +154,9 @@ function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={isActive(item.url)}
-                    onClick={() => router.push(item.url)}
-                    tooltip={item.title}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Partner Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {marketingNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={isActive(item.url)}
-                    onClick={() => router.push(item.url)}
-                    tooltip={item.title}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Configure</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {configNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={isActive(item.url)}
-                    onClick={() => router.push(item.url)}
-                    tooltip={item.title}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavGroup label="Main Menu" items={visibleMainNavItems} isActive={isActive} onNavigate={(url) => router.push(url)} />
+        <NavGroup label="Partner Tools" items={visibleMarketingNavItems} isActive={isActive} onNavigate={(url) => router.push(url)} />
+        <NavGroup label="Configure" items={visibleConfigNavItems} isActive={isActive} onNavigate={(url) => router.push(url)} />
       </SidebarContent>
 
       <SidebarFooter>
@@ -190,11 +187,15 @@ function AdminSidebar() {
                 align="end"
                 sideOffset={4}
               >
-                <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                {isAdmin && (
+                  <>
+                    <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={() => logout()} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
@@ -221,21 +222,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="absolute inset-0 rounded-full border-4 border-muted" />
             <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary" />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading your dashboard...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading your workspace...</p>
         </div>
       </div>
     );
   }
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-            <span className="text-3xl">🔒</span>
+            <LockKeyhole className="h-7 w-7 text-destructive" />
           </div>
           <h1 className="text-xl font-bold">Access Denied</h1>
-          <p className="text-sm text-muted-foreground">You need admin privileges to access this page</p>
+          <p className="text-sm text-muted-foreground">You need admin or staff access to view this page</p>
           <Button asChild>
             <a href="/login">Go to Login</a>
           </Button>

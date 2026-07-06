@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { createCompletedReferralCommission } from '@/lib/referral-payouts';
 import { canTransitionReferralStatus, isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
 import { recordReferralStatusChange } from '@/lib/referral-audit';
+import { canAccessReferral, getAdminActor } from '@/lib/admin-access';
 
 
 export async function PUT(
@@ -11,18 +12,11 @@ export async function PUT(
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -52,6 +46,14 @@ export async function PUT(
       return NextResponse.json(
         { error: 'Referral not found' },
         { status: 404 }
+      );
+    }
+
+    const allowed = await canAccessReferral(user, params.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only update leads for partners assigned to you' },
+        { status: 403 }
       );
     }
 
@@ -114,18 +116,11 @@ export async function PATCH(
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -156,6 +151,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Referral not found' },
         { status: 404 }
+      );
+    }
+
+    const allowed = await canAccessReferral(user, params.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only update leads for partners assigned to you' },
+        { status: 403 }
       );
     }
 
@@ -288,18 +291,11 @@ export async function DELETE(
 ) {
   try {
     const params = await context.params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin or staff access required' },
         { status: 403 }
       );
     }
@@ -313,6 +309,14 @@ export async function DELETE(
       return NextResponse.json(
         { error: 'Referral not found' },
         { status: 404 }
+      );
+    }
+
+    const allowed = await canAccessReferral(user, params.id);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'You can only delete leads for partners assigned to you' },
+        { status: 403 }
       );
     }
 

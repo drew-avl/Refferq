@@ -9,36 +9,23 @@ import {
   REFERRAL_STATUS_CHANGED_ACTION,
   recordReferralStatusChange,
 } from '@/lib/referral-audit';
+import { getAdminActor, scopedReferralWhere } from '@/lib/admin-access';
 
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 401 }
-      );
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Access denied. Admin role required.' },
+        { error: 'Access denied. Admin or staff access required.' },
         { status: 403 }
       );
     }
 
     const [referrals, partnerGroups, currencySettings] = await Promise.all([
       prisma.referral.findMany({
+        where: scopedReferralWhere(user),
         include: {
           program: {
             select: {
@@ -153,26 +140,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    const user = await getAdminActor(request);
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 401 }
-      );
-    }
-
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Access denied. Admin role required.' },
+        { error: 'Access denied. Admin or staff access required.' },
         { status: 403 }
       );
     }
@@ -200,14 +172,17 @@ export async function POST(request: NextRequest) {
     let payoutEligibleCount = 0;
 
     for (const referralId of referralIds) {
-      const referral = await prisma.referral.findUnique({
-        where: { id: referralId },
+      const referral = await prisma.referral.findFirst({
+        where: {
+          id: referralId,
+          ...scopedReferralWhere(user),
+        },
         select: { status: true }
       });
 
       if (!referral) {
         return NextResponse.json(
-          { error: `Referral ${referralId} was not found` },
+          { error: `Referral ${referralId} was not found or is not assigned to you` },
           { status: 404 }
         );
       }

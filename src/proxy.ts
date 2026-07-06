@@ -48,10 +48,10 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    if (isAdminRoute && userRole !== 'ADMIN') {
+    if (isAdminRoute && userRole !== 'ADMIN' && userRole !== 'STAFF') {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
-          { error: 'Forbidden: Admin access required' },
+          { error: 'Forbidden: Admin or staff access required' },
           { status: 403 }
         );
       }

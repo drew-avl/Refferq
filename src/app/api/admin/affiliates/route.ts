@@ -1,30 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getPublicAppUrl } from '@/lib/platform-defaults';
+import { getAdminActor, scopedAffiliateWhere, isFullAdmin, isStaff } from '@/lib/admin-access';
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await getAdminActor(request);
 
-    // Get user from database
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Access denied. Admin role required.' },
+        { error: 'Access denied. Admin or staff access required.' },
         { status: 403 }
       );
     }
 
     // Fetch all affiliates with their user info and counts
     const affiliates = await prisma.affiliate.findMany({
+      where: scopedAffiliateWhere(user),
       include: {
         user: {
           select: {
@@ -65,6 +57,18 @@ export async function GET(request: NextRequest) {
             }
           },
           orderBy: { createdAt: 'asc' }
+        },
+        staffAssignments: {
+          include: {
+            staffUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: {
@@ -87,12 +91,19 @@ export async function GET(request: NextRequest) {
       _count: affiliate._count,
       partnerGroup: affiliate.partnerGroup,
       programAssignments: affiliate.programAssignments,
+      assignedStaff: affiliate.staffAssignments.map((assignment) => ({
+        id: assignment.staffUser.id,
+        name: assignment.staffUser.name,
+        email: assignment.staffUser.email,
+      })),
+      assignedStaffUserIds: affiliate.staffAssignments.map((assignment) => assignment.staffUserId),
     }));
 
     return NextResponse.json({
       success: true,
       affiliates: affiliatesForResponse,
       currencySymbol, // Add currency symbol to response
+      accessScope: isFullAdmin(user) ? 'all' : 'assigned',
     });
   } catch (error) {
     console.error('Get referral partners API error:', error);
@@ -105,21 +116,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await getAdminActor(request);
 
-    // Get user from database
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Access denied. Admin role required.' },
+        { error: 'Access denied. Admin or staff access required.' },
         { status: 403 }
       );
     }
@@ -145,6 +146,7 @@ export async function POST(request: NextRequest) {
       paypalEmail,
       sendWelcomeEmail = true,
       assignedProgramIds,
+      assignedStaffUserIds,
     } = data;
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -194,6 +196,27 @@ export async function POST(request: NextRequest) {
       : defaultProgram
         ? [defaultProgram.id]
         : [];
+    const staffUserIdsToAssign = isStaff(user)
+      ? [user.id]
+      : Array.from(new Set((assignedStaffUserIds || []).filter(Boolean)));
+
+    if (staffUserIdsToAssign.length > 0) {
+      const staffUsers = await prisma.user.findMany({
+        where: {
+          id: { in: staffUserIdsToAssign },
+          role: 'STAFF',
+          status: 'ACTIVE',
+        },
+        select: { id: true },
+      });
+
+      if (staffUsers.length !== staffUserIdsToAssign.length) {
+        return NextResponse.json(
+          { error: 'One or more selected staff members do not exist or are inactive' },
+          { status: 400 }
+        );
+      }
+    }
 
     const { newUser, affiliate } = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
@@ -226,6 +249,17 @@ export async function POST(request: NextRequest) {
             programId
           })),
           skipDuplicates: true
+        });
+      }
+
+      if (staffUserIdsToAssign.length > 0) {
+        await tx.staffAffiliateAssignment.createMany({
+          data: staffUserIdsToAssign.map((staffUserId) => ({
+            staffUserId,
+            affiliateId: createdAffiliate.id,
+            assignedBy: user.id,
+          })),
+          skipDuplicates: true,
         });
       }
 
@@ -262,7 +296,8 @@ export async function POST(request: NextRequest) {
         email: newUser.email,
         balanceCents: affiliate.balanceCents,
         createdAt: affiliate.createdAt,
-        assignedProgramIds: programIdsToAssign
+        assignedProgramIds: programIdsToAssign,
+        assignedStaffUserIds: staffUserIdsToAssign,
       },
       welcomeEmailSent
     });
