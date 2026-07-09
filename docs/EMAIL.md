@@ -55,7 +55,8 @@ RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # For production: Use your verified domain
 RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
 
-# Admin Notification Emails (comma-separated)
+# Admin Notification Emails (comma-separated override list)
+# These recipients are always notified in addition to active admin/staff recipients.
 ADMIN_EMAILS="admin@yourdomain.com,support@yourdomain.com"
 
 # Application URL (required for email links)
@@ -97,7 +98,7 @@ ReferConnect includes the following email templates:
 
 ### 2. Referral Notification Email
 **Trigger:** When an affiliate submits a new referral  
-**Recipient:** Admin team (from `ADMIN_EMAILS`)  
+**Recipient:** Active admins plus staff assigned to that referral partner, plus any addresses in `ADMIN_EMAILS`.  
 **Content:**
 - Affiliate name
 - Lead details (name, email, company)
@@ -297,7 +298,7 @@ RESEND_FROM_EMAIL=""           # Sender email address
 NEXT_PUBLIC_APP_URL=""         # Your app URL (for email links)
 
 # Optional
-ADMIN_EMAILS=""                # Comma-separated admin emails
+ADMIN_EMAILS=""                # Comma-separated extra notification recipients (merged with active admins/staff)
 ```
 
 ## Example .env.local

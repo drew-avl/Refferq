@@ -120,6 +120,60 @@ class EmailService {
     }
   }
 
+  private normalizeRecipientEmail(email: string | null | undefined): string | null {
+    if (!email) return null;
+    const normalized = email.trim().toLowerCase();
+    return normalized ? normalized : null;
+  }
+
+  private getAdminEmailsFromEnv(): string[] {
+    return (process.env.ADMIN_EMAILS || '')
+      .split(',')
+      .map((email) => this.normalizeRecipientEmail(email))
+      .filter((email): email is string => Boolean(email));
+  }
+
+  private async getReferralNotificationRecipients(affiliateId?: string): Promise<string[]> {
+    const configuredRecipients = this.getAdminEmailsFromEnv();
+
+    try {
+      const { prisma } = await import('./prisma');
+      const adminRecipients = await prisma.user.findMany({
+        where: {
+          status: 'ACTIVE',
+          role: 'ADMIN',
+        },
+        select: { email: true },
+      });
+
+      const staffRecipients = affiliateId
+        ? await prisma.user.findMany({
+            where: {
+              status: 'ACTIVE',
+              role: 'STAFF',
+              staffAssignments: {
+                some: {
+                  affiliateId,
+                },
+              },
+            },
+            select: { email: true },
+          })
+        : [];
+
+      const teamRecipients = [...adminRecipients, ...staffRecipients]
+        .map((user) => user.email)
+        .map((email) => this.normalizeRecipientEmail(email))
+        .filter((email): email is string => Boolean(email));
+
+      const recipients = Array.from(new Set([...configuredRecipients, ...teamRecipients]));
+      return recipients.length > 0 ? recipients : ['admin@yourdomain.com'];
+    } catch (error) {
+      console.error('Failed to load dynamic referral notification recipients:', error);
+      return configuredRecipients.length > 0 ? configuredRecipients : ['admin@yourdomain.com'];
+    }
+  }
+
   private replaceVariables(content: string, variables: Record<string, any>): string {
     return content.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       return variables[key] !== undefined ? String(variables[key]) : match;
@@ -520,8 +574,11 @@ class EmailService {
     });
   }
 
-  async sendReferralNotification(data: ReferralNotificationData): Promise<{ success: boolean; message: string }> {
-    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || ['admin@yourdomain.com'];
+  async sendReferralNotification(
+    data: ReferralNotificationData,
+    options: { affiliateId?: string } = {}
+  ): Promise<{ success: boolean; message: string }> {
+    const adminEmails = await this.getReferralNotificationRecipients(options.affiliateId);
     const symbol = await this.getCurrencySymbol();
 
     const results = await Promise.all(

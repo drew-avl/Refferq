@@ -142,13 +142,18 @@ export async function POST(request: NextRequest) {
 
     try {
       const { emailService } = await import('@/lib/email');
-      await emailService.sendReferralNotification({
-        affiliateName: user.name,
-        leadName: referral.leadName,
-        leadEmail: referral.leadEmail,
-        company: company || '',
-        estimatedValue: Math.round((estimatedValue || 0) * 100),
-      });
+      await emailService.sendReferralNotification(
+        {
+          affiliateName: user.name,
+          leadName: referral.leadName,
+          leadEmail: referral.leadEmail,
+          company: company || '',
+          estimatedValue: Math.round((estimatedValue || 0) * 100),
+        },
+        {
+          affiliateId: user.affiliate.id,
+        }
+      );
     } catch (emailError) {
       console.error('Failed to send referral notification:', emailError);
     }

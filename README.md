@@ -240,7 +240,7 @@ ReferConnect uses [Resend](https://resend.com) for sending transactional emails.
    ```env
    RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
    RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
-   ADMIN_EMAILS="admin@yourdomain.com"
+   ADMIN_EMAILS="admin@yourdomain.com"   # Optional extra recipients in addition to active admins/staff
    ```
 
 4. **Test Email Setup** (Optional)
