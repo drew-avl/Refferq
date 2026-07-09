@@ -237,27 +237,29 @@ export default function AffiliateDashboard() {
     );
   };
 
-  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(status);
+  const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
+  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
   const visibleReferrals = referrals
     .filter((referral) => {
       if (leadTab === 'closed') {
         return isClosedReferral(referral.status);
       }
       if (leadTab === 'rejected') {
-        return referral.status === 'REJECTED';
+        return isRejectedReferral(referral.status);
       }
-      return !isClosedReferral(referral.status) && referral.status !== 'REJECTED';
+      return !isClosedReferral(referral.status) && !isRejectedReferral(referral.status);
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const activeReferrals = referrals
-    .filter((referral) => !isClosedReferral(referral.status) && referral.status !== 'REJECTED')
+    .filter((referral) => !isClosedReferral(referral.status) && !isRejectedReferral(referral.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const closedReferrals = referrals
     .filter((referral) => isClosedReferral(referral.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const rejectedReferrals = referrals
-    .filter((referral) => referral.status === 'REJECTED')
+    .filter((referral) => isRejectedReferral(referral.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const leadTabMeta = {

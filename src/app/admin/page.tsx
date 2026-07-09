@@ -203,15 +203,17 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(status);
+  const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
+  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
   const activeReferrals = recentCustomers
-    .filter((customer) => !isClosedReferral(customer.status) && customer.status !== 'REJECTED')
+    .filter((customer) => !isClosedReferral(customer.status) && !isRejectedReferral(customer.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const closedReferrals = recentCustomers
     .filter((customer) => isClosedReferral(customer.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const rejectedReferrals = recentCustomers
-    .filter((customer) => customer.status === 'REJECTED')
+    .filter((customer) => isRejectedReferral(customer.status))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const leadTabMeta = {
