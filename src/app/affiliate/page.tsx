@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -54,6 +55,9 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+type LeadTab = 'active' | 'closed' | 'rejected';
 
 interface AffiliateStats {
   totalEarnings: number;
@@ -98,6 +102,7 @@ export default function AffiliateDashboard() {
   const [currencySymbol, setCurrencySymbol] = useState('$');
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [leadTab, setLeadTab] = useState<LeadTab>('active');
 
   // Referral form state
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -232,6 +237,47 @@ export default function AffiliateDashboard() {
     );
   };
 
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(status);
+  const visibleReferrals = referrals
+    .filter((referral) => {
+      if (leadTab === 'closed') {
+        return isClosedReferral(referral.status);
+      }
+      if (leadTab === 'rejected') {
+        return referral.status === 'REJECTED';
+      }
+      return !isClosedReferral(referral.status) && referral.status !== 'REJECTED';
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const activeReferrals = referrals
+    .filter((referral) => !isClosedReferral(referral.status) && referral.status !== 'REJECTED')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const closedReferrals = referrals
+    .filter((referral) => isClosedReferral(referral.status))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const rejectedReferrals = referrals
+    .filter((referral) => referral.status === 'REJECTED')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const leadTabMeta = {
+    active: {
+      label: 'Active Leads',
+      description: 'Latest leads awaiting action',
+      emptyMessage: 'No active leads yet',
+    },
+    closed: {
+      label: 'Closed Leads',
+      description: 'Leads that moved to sold or completed',
+      emptyMessage: 'No closed leads yet',
+    },
+    rejected: {
+      label: 'Rejected Leads',
+      description: 'Leads marked as rejected',
+      emptyMessage: 'No rejected leads',
+    },
+  };
+
   if (authLoading || loading) {
     return <DashboardSkeleton />;
   }
@@ -336,12 +382,25 @@ export default function AffiliateDashboard() {
 
       {/* Recent Leads */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="space-y-3">
           <div>
-            <CardTitle className="text-base">Recent Leads</CardTitle>
-              <CardDescription>Latest leads sent to the team</CardDescription>
+            <CardTitle className="text-base">{leadTabMeta[leadTab].label}</CardTitle>
+            <CardDescription>{leadTabMeta[leadTab].description}</CardDescription>
           </div>
-          {referrals.length > 5 && (
+          <Tabs value={leadTab} onValueChange={(value) => setLeadTab(value as LeadTab)} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="active" className="text-xs sm:text-sm">
+                Active ({activeReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="closed" className="text-xs sm:text-sm">
+                Closed ({closedReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="text-xs sm:text-sm">
+                Rejected ({rejectedReferrals.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {visibleReferrals.length > 5 && (
             <Button variant="ghost" size="sm" asChild>
               <a href="/affiliate/referrals" className="gap-1">
                 View All <ArrowRight className="h-3.5 w-3.5" />
@@ -350,64 +409,188 @@ export default function AffiliateDashboard() {
           )}
         </CardHeader>
         <CardContent className="p-0">
-          {referrals.length === 0 ? (
-            <EmptyState icon={Users} message="No leads yet" />
-          ) : (
-            <>
-              <div className="hidden sm:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Move-In</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {referrals.slice(0, 5).map((ref) => (
-                      <TableRow key={ref.id}>
-                        <TableCell className="font-medium">{ref.leadName}</TableCell>
-                        <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
-                        <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(ref.status)}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="divide-y sm:hidden">
-                {referrals.slice(0, 5).map((ref) => (
-                  <div key={ref.id} className="space-y-3 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium">{ref.leadName}</p>
-                        <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
-                        <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
-                      </div>
-                      {getStatusBadge(ref.status)}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-                      <div>
-                        <p className="font-medium text-foreground">Move-in</p>
-                        <p>{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</p>
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">Submitted</p>
-                        <p>{formatDate(ref.createdAt)}</p>
-                      </div>
-                    </div>
+          <Tabs value={leadTab} onValueChange={(value) => setLeadTab(value as LeadTab)}>
+            <TabsContent value="active" className="mt-0">
+              {activeReferrals.length === 0 ? (
+                <EmptyState icon={Users} message={leadTabMeta.active.emptyMessage} />
+              ) : (
+                <>
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Move-In</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {activeReferrals.slice(0, 5).map((ref) => (
+                          <TableRow key={ref.id}>
+                            <TableCell className="font-medium">{ref.leadName}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(ref.status)}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
+                  <div className="divide-y sm:hidden">
+                    {activeReferrals.slice(0, 5).map((ref) => (
+                      <div key={ref.id} className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium">{ref.leadName}</p>
+                            <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
+                            <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
+                          </div>
+                          {getStatusBadge(ref.status)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                          <div>
+                            <p className="font-medium text-foreground">Move-in</p>
+                            <p>{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">Submitted</p>
+                            <p>{formatDate(ref.createdAt)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+            <TabsContent value="closed" className="mt-0">
+              {closedReferrals.length === 0 ? (
+                <EmptyState icon={Users} message={leadTabMeta.closed.emptyMessage} />
+              ) : (
+                <>
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Move-In</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {closedReferrals.slice(0, 5).map((ref) => (
+                          <TableRow key={ref.id}>
+                            <TableCell className="font-medium">{ref.leadName}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(ref.status)}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="divide-y sm:hidden">
+                    {closedReferrals.slice(0, 5).map((ref) => (
+                      <div key={ref.id} className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium">{ref.leadName}</p>
+                            <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
+                            <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
+                          </div>
+                          {getStatusBadge(ref.status)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                          <div>
+                            <p className="font-medium text-foreground">Move-in</p>
+                            <p>{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">Submitted</p>
+                            <p>{formatDate(ref.createdAt)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+            <TabsContent value="rejected" className="mt-0">
+              {rejectedReferrals.length === 0 ? (
+                <EmptyState icon={Users} message={leadTabMeta.rejected.emptyMessage} />
+              ) : (
+                <>
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Move-In</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rejectedReferrals.slice(0, 5).map((ref) => (
+                          <TableRow key={ref.id}>
+                            <TableCell className="font-medium">{ref.leadName}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadEmail}</TableCell>
+                            <TableCell className="text-muted-foreground">{ref.leadPhone || '-'}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {ref.moveInDate ? formatDate(ref.moveInDate) : '-'}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(ref.status)}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="divide-y sm:hidden">
+                    {rejectedReferrals.slice(0, 5).map((ref) => (
+                      <div key={ref.id} className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-medium">{ref.leadName}</p>
+                            <p className="truncate text-sm text-muted-foreground">{ref.leadEmail}</p>
+                            <p className="text-sm text-muted-foreground">{ref.leadPhone || 'No phone'}</p>
+                          </div>
+                          {getStatusBadge(ref.status)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                          <div>
+                            <p className="font-medium text-foreground">Move-in</p>
+                            <p>{ref.moveInDate ? formatDate(ref.moveInDate) : '-'}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">Submitted</p>
+                            <p>{formatDate(ref.createdAt)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   TrendingUp,
   Users,
@@ -36,6 +37,9 @@ import {
   Activity,
   Eye,
 } from 'lucide-react';
+
+const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+type LeadTab = 'active' | 'closed' | 'rejected';
 
 interface DashboardStats {
   totalRevenue: number;
@@ -84,6 +88,7 @@ export default function AdminDashboardPage() {
   const [recentCustomers, setRecentCustomers] = useState<RecentCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [leadTab, setLeadTab] = useState<LeadTab>('active');
 
   useEffect(() => {
     if (user && user.role === 'ADMIN') {
@@ -127,7 +132,7 @@ export default function AdminDashboardPage() {
       }
 
       if (referralsData.success) {
-        const recent = referralsData.referrals.slice(0, 10).map((ref: any) => ({
+        const recent = referralsData.referrals.map((ref: any) => ({
           id: ref.id,
           leadName: ref.leadName,
           leadEmail: ref.leadEmail,
@@ -181,7 +186,7 @@ export default function AdminDashboardPage() {
         }))
       );
       setRecentCustomers(
-        referrals.slice(0, 10).map((ref: any) => ({
+        referrals.map((ref: any) => ({
           id: ref.id,
           leadName: ref.leadName,
           leadEmail: ref.leadEmail,
@@ -196,6 +201,35 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(status);
+  const activeReferrals = recentCustomers
+    .filter((customer) => !isClosedReferral(customer.status) && customer.status !== 'REJECTED')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const closedReferrals = recentCustomers
+    .filter((customer) => isClosedReferral(customer.status))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const rejectedReferrals = recentCustomers
+    .filter((customer) => customer.status === 'REJECTED')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const leadTabMeta = {
+    active: {
+      label: 'Active Leads',
+      description: 'Recent leads awaiting action',
+      emptyMessage: 'No active leads to show',
+    },
+    closed: {
+      label: 'Closed Leads',
+      description: 'Recent leads that are sold or completed',
+      emptyMessage: 'No closed leads to show',
+    },
+    rejected: {
+      label: 'Rejected Leads',
+      description: 'Recent leads marked as rejected',
+      emptyMessage: 'No rejected leads to show',
+    },
   };
 
   if (loading) {
@@ -496,46 +530,125 @@ export default function AdminDashboardPage() {
 
           {/* Recent Leads */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardHeader className="space-y-3 pb-3">
               <div>
-                <CardTitle className="text-base font-semibold">Recent Leads</CardTitle>
-                <CardDescription>Latest referral leads</CardDescription>
+                <CardTitle className="text-base font-semibold">{leadTabMeta[leadTab].label}</CardTitle>
+                <CardDescription>{leadTabMeta[leadTab].description}</CardDescription>
               </div>
-              <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/customers')}>
-                View all
-                <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Tabs value={leadTab} onValueChange={(value) => setLeadTab(value as LeadTab)} className="w-full md:max-w-md">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="active" className="text-xs sm:text-sm">
+                      Active ({activeReferrals.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="closed" className="text-xs sm:text-sm">
+                      Closed ({closedReferrals.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="rejected" className="text-xs sm:text-sm">
+                      Rejected ({rejectedReferrals.length})
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => router.push('/admin/customers')}>
+                  View all
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </div>
             </CardHeader>
             <Separator />
             <CardContent className="pt-4">
-              {recentCustomers.length > 0 ? (
-                <div className="space-y-1">
-                  {recentCustomers.slice(0, 5).map((customer) => (
-                    <div
-                      key={customer.id}
-                      className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
-                    >
-                      <p className="text-[11px] text-muted-foreground w-12 shrink-0 text-center">
-                        {new Date(customer.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{customer.leadEmail}</p>
-                        <p className="text-xs text-muted-foreground">via {customer.affiliateName}</p>
-                      </div>
-                      <StatusBadge status={customer.status} />
+              <Tabs value={leadTab} onValueChange={(value) => setLeadTab(value as LeadTab)}>
+                <TabsContent value="active" className="mt-0">
+                  {activeReferrals.length > 0 ? (
+                    <div className="space-y-1">
+                      {activeReferrals.slice(0, 5).map((customer) => (
+                        <div
+                          key={customer.id}
+                          className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+                        >
+                          <p className="text-[11px] text-muted-foreground w-12 shrink-0 text-center">
+                            {new Date(customer.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{customer.leadEmail}</p>
+                            <p className="text-xs text-muted-foreground">via {customer.affiliateName}</p>
+                          </div>
+                          <StatusBadge status={customer.status} />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={UserCheck}
-                  title="No customers yet"
-                  description="Referral leads will appear here"
-                />
-              )}
+                  ) : (
+                    <EmptyState
+                      icon={UserCheck}
+                      title="No leads yet"
+                      description={leadTabMeta.active.emptyMessage}
+                    />
+                  )}
+                </TabsContent>
+                <TabsContent value="closed" className="mt-0">
+                  {closedReferrals.length > 0 ? (
+                    <div className="space-y-1">
+                      {closedReferrals.slice(0, 5).map((customer) => (
+                        <div
+                          key={customer.id}
+                          className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+                        >
+                          <p className="text-[11px] text-muted-foreground w-12 shrink-0 text-center">
+                            {new Date(customer.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{customer.leadEmail}</p>
+                            <p className="text-xs text-muted-foreground">via {customer.affiliateName}</p>
+                          </div>
+                          <StatusBadge status={customer.status} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={UserCheck}
+                      title="No leads yet"
+                      description={leadTabMeta.closed.emptyMessage}
+                    />
+                  )}
+                </TabsContent>
+                <TabsContent value="rejected" className="mt-0">
+                  {rejectedReferrals.length > 0 ? (
+                    <div className="space-y-1">
+                      {rejectedReferrals.slice(0, 5).map((customer) => (
+                        <div
+                          key={customer.id}
+                          className="flex items-center gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted/50"
+                        >
+                          <p className="text-[11px] text-muted-foreground w-12 shrink-0 text-center">
+                            {new Date(customer.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{customer.leadEmail}</p>
+                            <p className="text-xs text-muted-foreground">via {customer.affiliateName}</p>
+                          </div>
+                          <StatusBadge status={customer.status} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={UserCheck}
+                      title="No leads yet"
+                      description={leadTabMeta.rejected.emptyMessage}
+                    />
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
