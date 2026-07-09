@@ -57,6 +57,13 @@ import {
 import { motion } from 'framer-motion';
 
 const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+const STATUS_PRIORITY: Record<string, number> = {
+  NEW: 0,
+  PENDING: 1,
+  SOLD: 2,
+  COMPLETED: 3,
+  REJECTED: 4,
+};
 type LeadTab = 'active' | 'closed' | 'rejected';
 
 interface AffiliateStats {
@@ -240,27 +247,23 @@ export default function AffiliateDashboard() {
   const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
   const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
   const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
-  const visibleReferrals = referrals
-    .filter((referral) => {
-      if (leadTab === 'closed') {
-        return isClosedReferral(referral.status);
-      }
-      if (leadTab === 'rejected') {
-        return isRejectedReferral(referral.status);
-      }
-      return !isClosedReferral(referral.status) && !isRejectedReferral(referral.status);
-    })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const activeReferrals = referrals
-    .filter((referral) => !isClosedReferral(referral.status) && !isRejectedReferral(referral.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const closedReferrals = referrals
-    .filter((referral) => isClosedReferral(referral.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const rejectedReferrals = referrals
-    .filter((referral) => isRejectedReferral(referral.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const getStatusPriority = (status: string) => STATUS_PRIORITY[normalizeReferralStatus(status)] ?? 5;
+  const sortByStatusAndDate = (a: Referral, b: Referral) => {
+    const statusDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
+    if (statusDiff !== 0) return statusDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  };
+  const sortedReferrals = [...referrals].sort(sortByStatusAndDate);
+  const activeReferrals = sortedReferrals.filter(
+    (referral) => !isClosedReferral(referral.status) && !isRejectedReferral(referral.status)
+  );
+  const closedReferrals = sortedReferrals.filter((referral) => isClosedReferral(referral.status));
+  const rejectedReferrals = sortedReferrals.filter((referral) => isRejectedReferral(referral.status));
+  const visibleReferrals = leadTab === 'closed'
+    ? closedReferrals
+    : leadTab === 'rejected'
+      ? rejectedReferrals
+      : activeReferrals;
 
   const leadTabMeta = {
     active: {

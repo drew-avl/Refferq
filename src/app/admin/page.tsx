@@ -39,6 +39,13 @@ import {
 } from 'lucide-react';
 
 const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+const STATUS_PRIORITY: Record<string, number> = {
+  NEW: 0,
+  PENDING: 1,
+  SOLD: 2,
+  COMPLETED: 3,
+  REJECTED: 4,
+};
 type LeadTab = 'active' | 'closed' | 'rejected';
 
 interface DashboardStats {
@@ -206,15 +213,21 @@ export default function AdminDashboardPage() {
   const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
   const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
   const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
+  const getStatusPriority = (status: string) => STATUS_PRIORITY[normalizeReferralStatus(status)] ?? 5;
+  const sortByStatusAndDate = (a: { status: string; createdAt: string }, b: { status: string; createdAt: string }) => {
+    const statusDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
+    if (statusDiff !== 0) return statusDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  };
   const activeReferrals = recentCustomers
     .filter((customer) => !isClosedReferral(customer.status) && !isRejectedReferral(customer.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(sortByStatusAndDate);
   const closedReferrals = recentCustomers
     .filter((customer) => isClosedReferral(customer.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(sortByStatusAndDate);
   const rejectedReferrals = recentCustomers
     .filter((customer) => isRejectedReferral(customer.status))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort(sortByStatusAndDate);
 
   const leadTabMeta = {
     active: {
