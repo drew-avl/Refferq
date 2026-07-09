@@ -10,6 +10,7 @@ import {
   recordReferralStatusChange,
 } from '@/lib/referral-audit';
 import { getAdminActor, scopedReferralWhere } from '@/lib/admin-access';
+import { notifyReferralChanged } from '@/lib/referral-integrations';
 
 
 export async function GET(request: NextRequest) {
@@ -221,6 +222,15 @@ export async function POST(request: NextRequest) {
       if (updatedReferral.status === 'COMPLETED') {
         const result = await createCompletedReferralCommission(updatedReferral.id, user.id);
         if (result.created) payoutEligibleCount += 1;
+      }
+
+      try {
+        await notifyReferralChanged(
+          updatedReferral.id,
+          updatedReferral.status === 'REJECTED' ? 'referral.rejected' : 'referral.updated'
+        );
+      } catch (integrationError) {
+        console.error('Failed to notify referral integrations:', integrationError);
       }
     }
 

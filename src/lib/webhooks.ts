@@ -27,29 +27,35 @@ function isUrlSafe(urlString: string): boolean {
 // Webhook event types
 export type WebhookEventType = 
   | 'affiliate.created'
+  | 'affiliate.updated'
   | 'affiliate.approved'
   | 'affiliate.rejected'
   | 'referral.submitted'
+  | 'referral.updated'
   | 'referral.approved'
   | 'referral.rejected'
   | 'commission.created'
   | 'commission.approved'
   | 'commission.paid'
   | 'payout.requested'
+  | 'payout.updated'
   | 'payout.completed'
   | 'payout.failed';
 
 export const AVAILABLE_EVENTS: WebhookEventType[] = [
   'affiliate.created',
+  'affiliate.updated',
   'affiliate.approved',
   'affiliate.rejected',
   'referral.submitted',
+  'referral.updated',
   'referral.approved',
   'referral.rejected',
   'commission.created',
   'commission.approved',
   'commission.paid',
   'payout.requested',
+  'payout.updated',
   'payout.completed',
   'payout.failed'
 ];

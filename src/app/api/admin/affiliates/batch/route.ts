@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { canAccessAllAffiliates, getAdminActor } from '@/lib/admin-access';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 
 // Batch update affiliates
@@ -91,6 +92,15 @@ export async function POST(request: NextRequest) {
           }
         });
 
+        const partnerEventType = status === 'ACTIVE'
+          ? 'affiliate.approved'
+          : status === 'SUSPENDED'
+            ? 'affiliate.rejected'
+            : 'affiliate.updated';
+        await Promise.allSettled(
+          affiliates.map((affiliate) => notifyReferralPartnerChanged(affiliate.id, partnerEventType))
+        );
+
         return NextResponse.json({
           success: true,
           message: `Updated ${updatedCount} affiliate(s) status to ${status}`,
@@ -136,6 +146,10 @@ export async function POST(request: NextRequest) {
             }
           }
         });
+
+        await Promise.allSettled(
+          affiliateIds.map((affiliateId: string) => notifyReferralPartnerChanged(affiliateId, 'affiliate.updated'))
+        );
 
         return NextResponse.json({
           success: true,

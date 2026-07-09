@@ -34,6 +34,16 @@ PLATFORM_SUPPORT_EMAIL="support@yourdomain.com"
 STRIPE_SECRET_KEY=""
 STRIPE_PUBLISHABLE_KEY=""
 STRIPE_WEBHOOK_SECRET=""
+TWENTY_SYNC_ENABLED="true"
+TWENTY_REFERRAL_SYNC_ENABLED="true"
+TWENTY_PARTNER_SYNC_ENABLED="true"
+TWENTY_PAYOUT_SYNC_ENABLED="true"
+TWENTY_WEBHOOK_URL=""
+TWENTY_REFERRAL_WEBHOOK_URL=""
+TWENTY_PARTNER_WEBHOOK_URL=""
+TWENTY_PAYOUT_WEBHOOK_URL=""
+TWENTY_WEBHOOK_SECRET=""
+TWENTY_WEBHOOK_TIMEOUT_MS="12000"
 ```
 
 ## Local Production Check
@@ -147,4 +157,5 @@ WHERE email = 'admin@yourdomain.com';
 - Admin account can sign in and access `/admin`.
 - Affiliate registration, referral submission, and email sending have been tested.
 - Webhook endpoints use `WEBHOOK_SECRET` if external systems post conversions or refunds.
+- TwentyCRM sync is configured with `TWENTY_WEBHOOK_URL` or per-view webhook URLs if referrals, partners, and payouts should be pushed into Twenty.
 - Scheduled commission maturation uses `CRON_SECRET` if exposed to a scheduler.

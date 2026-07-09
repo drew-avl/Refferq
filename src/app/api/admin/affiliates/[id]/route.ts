@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { canAccessAffiliate, getAdminActor, isFullAdmin } from '@/lib/admin-access';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 
 // Update referral partner details
@@ -285,6 +286,18 @@ export async function PATCH(
         }
       });
     });
+
+    const partnerEventType = data.status === 'ACTIVE' && affiliate.user.status !== 'ACTIVE'
+      ? 'affiliate.approved'
+      : data.status === 'SUSPENDED'
+        ? 'affiliate.rejected'
+        : 'affiliate.updated';
+
+    try {
+      await notifyReferralPartnerChanged(params.id, partnerEventType);
+    } catch (integrationError) {
+      console.error('Failed to notify referral partner integrations:', integrationError);
+    }
 
     return NextResponse.json({
       success: true,

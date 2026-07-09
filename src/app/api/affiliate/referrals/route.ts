@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
+import { notifyReferralSubmitted } from '@/lib/referral-integrations';
 
 function normalizeReferralBody(body: any) {
   return {
@@ -150,6 +151,12 @@ export async function POST(request: NextRequest) {
       });
     } catch (emailError) {
       console.error('Failed to send referral notification:', emailError);
+    }
+
+    try {
+      await notifyReferralSubmitted(referral.id);
+    } catch (integrationError) {
+      console.error('Failed to notify referral integrations:', integrationError);
     }
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getPublicAppUrl } from '@/lib/platform-defaults';
 import { getAdminActor, scopedAffiliateWhere, isFullAdmin, isStaff } from '@/lib/admin-access';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -282,6 +283,12 @@ export async function POST(request: NextRequest) {
       } catch (emailError) {
         console.error('Failed to send referral partner welcome email:', emailError);
       }
+    }
+
+    try {
+      await notifyReferralPartnerChanged(affiliate.id, 'affiliate.created');
+    } catch (integrationError) {
+      console.error('Failed to notify referral partner integrations:', integrationError);
     }
 
     return NextResponse.json({

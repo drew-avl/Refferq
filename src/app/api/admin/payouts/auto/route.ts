@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
+import { notifyPayoutChanged } from '@/lib/referral-integrations';
 
 
 async function verifyAdmin(request: NextRequest) {
@@ -138,6 +139,12 @@ export async function POST(request: NextRequest) {
             },
           },
         });
+
+        try {
+          await notifyPayoutChanged(payout.id, 'payout.requested');
+        } catch (integrationError) {
+          console.error('Failed to notify auto-payout integrations:', integrationError);
+        }
 
         results.push({
           affiliateId: affiliate.id,

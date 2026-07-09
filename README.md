@@ -195,6 +195,17 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 # Optional: Stripe (for payments)
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
+
+# Optional: sync Referral List, Referral Partners, and Payouts to TwentyCRM workflow webhooks
+TWENTY_SYNC_ENABLED="true"
+TWENTY_REFERRAL_SYNC_ENABLED="true"
+TWENTY_PARTNER_SYNC_ENABLED="true"
+TWENTY_PAYOUT_SYNC_ENABLED="true"
+TWENTY_WEBHOOK_URL=""
+TWENTY_REFERRAL_WEBHOOK_URL=""
+TWENTY_PARTNER_WEBHOOK_URL=""
+TWENTY_PAYOUT_WEBHOOK_URL=""
+TWENTY_WEBHOOK_SECRET=""
 ```
 
 ### Step 4: Database Setup

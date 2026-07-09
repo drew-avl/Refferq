@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
 import { getAllowedPayoutMethod } from '@/lib/payout-methods';
+import { notifyPayoutChanged } from '@/lib/referral-integrations';
 
 
 // Helper: Verify admin auth from DB (not just JWT payload)
@@ -381,6 +382,12 @@ export async function POST(request: NextRequest) {
       // Don't fail the payout if email fails
     }
 
+    try {
+      await notifyPayoutChanged(payout.id, 'payout.requested');
+    } catch (integrationError) {
+      console.error('Failed to notify payout integrations:', integrationError);
+    }
+
     return NextResponse.json({
       success: true,
       payout: {
@@ -488,6 +495,18 @@ export async function PUT(request: NextRequest) {
         console.error('Failed to send payout completed email:', emailError);
         // Don't fail the update if email fails
       }
+    }
+
+    const payoutEventType = status === 'COMPLETED'
+      ? 'payout.completed'
+      : status === 'FAILED'
+        ? 'payout.failed'
+        : 'payout.updated';
+
+    try {
+      await notifyPayoutChanged(payout.id, payoutEventType);
+    } catch (integrationError) {
+      console.error('Failed to notify payout integrations:', integrationError);
     }
 
     return NextResponse.json({

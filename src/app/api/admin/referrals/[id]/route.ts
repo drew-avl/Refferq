@@ -4,6 +4,7 @@ import { createCompletedReferralCommission } from '@/lib/referral-payouts';
 import { canTransitionReferralStatus, isReferralStatus, referralStatusFromAction } from '@/lib/referral-status';
 import { recordReferralStatusChange } from '@/lib/referral-audit';
 import { canAccessReferral, getAdminActor } from '@/lib/admin-access';
+import { notifyReferralChanged } from '@/lib/referral-integrations';
 
 
 export async function PUT(
@@ -91,6 +92,15 @@ export async function PUT(
     const payoutResult = updatedReferral.status === 'COMPLETED'
       ? await createCompletedReferralCommission(updatedReferral.id, user.id)
       : null;
+
+    try {
+      await notifyReferralChanged(
+        updatedReferral.id,
+        updatedReferral.status === 'REJECTED' ? 'referral.rejected' : 'referral.updated'
+      );
+    } catch (integrationError) {
+      console.error('Failed to notify referral integrations:', integrationError);
+    }
 
     return NextResponse.json({
       success: true,
@@ -201,6 +211,15 @@ export async function PATCH(
         ? await createCompletedReferralCommission(updatedReferral.id, user.id)
         : null;
 
+      try {
+        await notifyReferralChanged(
+          updatedReferral.id,
+          updatedReferral.status === 'REJECTED' ? 'referral.rejected' : 'referral.updated'
+        );
+      } catch (integrationError) {
+        console.error('Failed to notify referral integrations:', integrationError);
+      }
+
       return NextResponse.json({
         success: true,
         message: payoutResult?.created
@@ -267,6 +286,12 @@ export async function PATCH(
 
     if (updatedReferral.status === 'COMPLETED') {
       await createCompletedReferralCommission(updatedReferral.id, user.id);
+    }
+
+    try {
+      await notifyReferralChanged(updatedReferral.id, 'referral.updated');
+    } catch (integrationError) {
+      console.error('Failed to notify referral integrations:', integrationError);
     }
 
     return NextResponse.json({
