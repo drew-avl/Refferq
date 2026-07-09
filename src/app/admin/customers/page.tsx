@@ -21,13 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Search,
@@ -77,6 +71,9 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   REJECTED: { label: 'Rejected', variant: 'destructive' },
 };
 
+const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+type LeadTab = 'all' | 'active' | 'closed' | 'rejected';
+
 const formatProgramPayout = (cents: number, currency = 'USD') => {
   try {
     return new Intl.NumberFormat(undefined, {
@@ -98,7 +95,7 @@ export default function CustomersPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [leadTab, setLeadTab] = useState<LeadTab>('active');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -138,16 +135,32 @@ export default function CustomersPage() {
     }
   };
 
-  const filtered = referrals.filter((r) => {
-    const matchesSearch =
-      r.leadName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.leadEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.leadPhone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.company?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
+  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
+  const searchTerm = searchQuery.trim().toLowerCase();
+  const matchesSearch = (r: Referral) =>
+    !searchTerm ||
+    r.leadName.toLowerCase().includes(searchTerm) ||
+    r.leadEmail.toLowerCase().includes(searchTerm) ||
+    (r.leadPhone || '').toLowerCase().includes(searchTerm) ||
+    r.address.toLowerCase().includes(searchTerm) ||
+    r.company.toLowerCase().includes(searchTerm);
+  const sortedReferrals = [...referrals].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allReferrals = sortedReferrals.filter(matchesSearch);
+  const activeReferrals = sortedReferrals
+    .filter((r) => !isClosedReferral(r.status) && !isRejectedReferral(r.status))
+    .filter(matchesSearch);
+  const closedReferrals = sortedReferrals.filter((r) => isClosedReferral(r.status)).filter(matchesSearch);
+  const rejectedReferrals = sortedReferrals.filter((r) => isRejectedReferral(r.status)).filter(matchesSearch);
+  const filtered =
+    leadTab === 'all'
+      ? allReferrals
+      : leadTab === 'closed'
+        ? closedReferrals
+        : leadTab === 'rejected'
+          ? rejectedReferrals
+          : activeReferrals;
 
   const stats = {
     total: referrals.length,
@@ -240,13 +253,13 @@ export default function CustomersPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-3">
             <div>
               <CardTitle>Lead Review Queue</CardTitle>
               <CardDescription>Review referral leads from leasing teams, businesses, and field partners</CardDescription>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative w-full sm:w-auto">
+            <div className="flex flex-col gap-3">
+              <div className="relative w-full">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search name, contact, address, or source..."
@@ -255,19 +268,26 @@ export default function CustomersPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="NEW">New</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="SOLD">Sold</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="REJECTED">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
+              <Tabs
+                value={leadTab}
+                onValueChange={(value) => setLeadTab(value as LeadTab)}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all" className="text-xs sm:text-sm">
+                    All Leads ({allReferrals.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="active" className="text-xs sm:text-sm">
+                    Active ({activeReferrals.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="closed" className="text-xs sm:text-sm">
+                    Closed ({closedReferrals.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="rejected" className="text-xs sm:text-sm">
+                    Rejected ({rejectedReferrals.length})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </div>
         </CardHeader>

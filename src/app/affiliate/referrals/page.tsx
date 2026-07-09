@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Users,
@@ -45,7 +46,6 @@ import {
   AlertCircle,
   Ban,
   Search,
-  Filter,
   Download,
   Pencil,
 } from 'lucide-react';
@@ -73,6 +73,9 @@ interface Program {
   isDefault: boolean;
 }
 
+const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
+type LeadTab = 'all' | 'active' | 'closed' | 'rejected';
+
 export default function ReferralsPage() {
   const { user, loading: authLoading } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -85,7 +88,7 @@ export default function ReferralsPage() {
   const [editingReferral, setEditingReferral] = useState<Referral | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [leadTab, setLeadTab] = useState<LeadTab>('active');
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
@@ -202,16 +205,31 @@ export default function ReferralsPage() {
     );
   };
 
-  const filteredReferrals = referrals.filter((r) => {
-    const matchesSearch =
-      !searchQuery ||
-      r.leadName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.leadEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.leadPhone || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.address || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
+  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
+  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
+  const searchTerm = searchQuery.trim().toLowerCase();
+  const matchesSearch = (r: Referral) =>
+    !searchTerm ||
+    r.leadName.toLowerCase().includes(searchTerm) ||
+    r.leadEmail.toLowerCase().includes(searchTerm) ||
+    (r.leadPhone || '').toLowerCase().includes(searchTerm) ||
+    (r.address || '').toLowerCase().includes(searchTerm);
+  const sortedReferrals = [...referrals].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allReferrals = sortedReferrals.filter(matchesSearch);
+  const activeReferrals = sortedReferrals
+    .filter((r) => !isClosedReferral(r.status) && !isRejectedReferral(r.status))
+    .filter(matchesSearch);
+  const closedReferrals = sortedReferrals.filter((r) => isClosedReferral(r.status)).filter(matchesSearch);
+  const rejectedReferrals = sortedReferrals.filter((r) => isRejectedReferral(r.status)).filter(matchesSearch);
+  const filteredReferrals =
+    leadTab === 'all'
+      ? allReferrals
+      : leadTab === 'closed'
+        ? closedReferrals
+        : leadTab === 'rejected'
+          ? rejectedReferrals
+          : activeReferrals;
 
   const stats = {
     total: referrals.length,
@@ -378,8 +396,8 @@ export default function ReferralsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+      <div className="space-y-3">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search name, email, phone, or address..."
@@ -388,24 +406,32 @@ export default function ReferralsPage() {
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]">
-            <Filter className="mr-2 h-4 w-4" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Status</SelectItem>
-            <SelectItem value="NEW">New</SelectItem>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="SOLD">Sold</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="REJECTED">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button variant="outline" onClick={exportCSV} className="gap-1.5">
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
+        <div className="flex items-center justify-between gap-3 sm:items-start">
+          <Tabs
+            value={leadTab}
+            onValueChange={(value) => setLeadTab(value as LeadTab)}
+            className="w-full md:max-w-3xl"
+          >
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">
+                All Leads ({allReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="active" className="text-xs sm:text-sm">
+                Active ({activeReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="closed" className="text-xs sm:text-sm">
+                Closed ({closedReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="text-xs sm:text-sm">
+                Rejected ({rejectedReferrals.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button variant="outline" onClick={exportCSV} className="gap-1.5 shrink-0">
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
