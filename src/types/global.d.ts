@@ -14,6 +14,8 @@ declare namespace NodeJs {
         TWENTY_PAYOUT_WEBHOOK_URL?: string;
         TWENTY_WEBHOOK_SECRET?: string;
         TWENTY_WEBHOOK_TIMEOUT_MS?: string;
+        TWENTY_API_BASE_URL?: string;
+        TWENTY_API_KEY?: string;
     }
 }
 

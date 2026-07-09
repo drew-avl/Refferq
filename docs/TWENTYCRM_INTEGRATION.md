@@ -20,6 +20,39 @@ Create one custom object and default list view for each dataset:
 
 At minimum, add the fields listed in the payload sections below. Twenty custom objects automatically receive system fields such as `id`, `name`, `createdAt`, and `updatedAt`; add only the ReferConnect-specific fields you need for filtering and reporting.
 
+## Prepare Twenty Schema
+
+You can bootstrap the schema directly through Twenty metadata APIs before you configure webhooks:
+
+```env
+TWENTY_API_BASE_URL="https://api.twenty.com"
+TWENTY_API_KEY="tk_..."
+```
+
+Run from the Refferq repo:
+
+```bash
+npm run twenty:prepare
+```
+
+To add relationship fields used for partner-to-person matching, use:
+
+```bash
+npm run twenty:prepare -- --with-relations
+```
+
+Note: if relation-field creation fails in your tenant, keep `--with-relations` off and implement "match/create Person in workflow" with plain text keys (`partnerEmail` + `referralPartnerId`) first, then re-run relation sync later.
+
+Helpful options:
+
+```bash
+npm run twenty:prepare -- --dry-run       # show what would be created
+npm run twenty:prepare -- --skip-fields   # create only custom objects
+npm run twenty:prepare -- --with-relations # create relation fields too
+```
+
+The script reads `.env.local` (or `.env`) and is idempotent: if the object or field already exists, it will not re-create it.
+
 ## Configure Twenty
 
 For each view, create a workflow with an external webhook trigger:
@@ -30,6 +63,12 @@ For each view, create a workflow with an external webhook trigger:
 4. Add an upsert/create action against the matching custom object.
 5. Key upserts by `referralId`, `referralPartnerId`, or `payoutId` to avoid duplicates.
 6. Copy the workflow webhook URL.
+
+If you created relationship fields, we recommend this workflow branch pattern:
+- search `Person` by `email` (use `partnerEmail` from the incoming payload).
+- if found, set the relation on `referConnectReferralPartner.person`.
+- if not found, create a `Person` first, then set that relation.
+- then upsert the `referConnectReferralPartner` record using `referralPartnerId`.
 
 You can use one shared workflow URL and branch on `view`, or use separate workflow URLs per view.
 

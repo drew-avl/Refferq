@@ -197,6 +197,8 @@ STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
 
 # Optional: sync Referral List, Referral Partners, and Payouts to TwentyCRM workflow webhooks
+TWENTY_API_BASE_URL="https://api.twenty.com"
+TWENTY_API_KEY="tk_..."
 TWENTY_SYNC_ENABLED="true"
 TWENTY_REFERRAL_SYNC_ENABLED="true"
 TWENTY_PARTNER_SYNC_ENABLED="true"

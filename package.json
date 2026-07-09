@@ -33,7 +33,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx scripts/seed.ts",
-    "test:email": "node scripts/test-email.js"
+    "test:email": "node scripts/test-email.js",
+    "twenty:prepare": "tsx scripts/twenty-prepare.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
