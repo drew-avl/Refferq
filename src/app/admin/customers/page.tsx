@@ -73,6 +73,13 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
 type LeadTab = 'all' | 'active' | 'closed' | 'rejected';
+const STATUS_PRIORITY: Record<string, number> = {
+  NEW: 0,
+  PENDING: 1,
+  SOLD: 2,
+  COMPLETED: 3,
+  REJECTED: 4,
+};
 
 const formatProgramPayout = (cents: number, currency = 'USD') => {
   try {
@@ -138,6 +145,7 @@ export default function CustomersPage() {
   const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
   const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
   const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
+  const getStatusPriority = (status: string) => STATUS_PRIORITY[normalizeReferralStatus(status)] ?? 5;
   const searchTerm = searchQuery.trim().toLowerCase();
   const matchesSearch = (r: Referral) =>
     !searchTerm ||
@@ -146,7 +154,13 @@ export default function CustomersPage() {
     (r.leadPhone || '').toLowerCase().includes(searchTerm) ||
     r.address.toLowerCase().includes(searchTerm) ||
     r.company.toLowerCase().includes(searchTerm);
-  const sortedReferrals = [...referrals].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedReferrals = [...referrals].sort((a, b) => {
+    const statusDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
+    if (statusDiff !== 0) {
+      return statusDiff;
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const allReferrals = sortedReferrals.filter(matchesSearch);
   const activeReferrals = sortedReferrals
     .filter((r) => !isClosedReferral(r.status) && !isRejectedReferral(r.status))
