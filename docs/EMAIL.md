@@ -60,9 +60,9 @@ VOIPMS_SMS_DID="15551234567"
 VOIPMS_API_ENDPOINT="https://voip.ms/api/v1/rest.php"
 ```
 
-The sender DID must be SMS-capable in VoIP.ms. The app calls the VoIP.ms REST `sendSMS` method with the configured DID, destination number, and message.
+The sender DID must be SMS-capable in VoIP.ms. The app calls the VoIP.ms REST `sendSMS` method as a GET request with the configured DID, destination number, and message.
 
-If VoIP.ms returns HTTP 500, check the provider response detail in the app logs. Common configuration causes are disabled VoIP.ms API access, an API IP restriction that does not include the server's outbound IP, invalid API credentials, or a `VOIPMS_SMS_DID` that is not SMS-capable.
+If VoIP.ms returns HTTP 500, check the provider response detail in the app logs. A SOAP `Bad Request` fault usually means the API was called with the wrong HTTP shape. Other common configuration causes are disabled VoIP.ms API access, an API IP restriction that does not include the server's outbound IP, invalid API credentials, or a `VOIPMS_SMS_DID` that is not SMS-capable.
 
 ### 3CX
 

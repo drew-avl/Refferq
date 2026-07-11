@@ -136,7 +136,8 @@ class SmsService {
       return { success: false, provider: 'voipms', message: 'VoIP.ms SMS credentials are not configured' };
     }
 
-    const body = new URLSearchParams({
+    const url = new URL(process.env.VOIPMS_API_ENDPOINT || VOIPMS_ENDPOINT);
+    const params = new URLSearchParams({
       api_username: username,
       api_password: password,
       method: 'sendSMS',
@@ -145,12 +146,11 @@ class SmsService {
       message,
       format: 'json',
     });
-
-    const response = await fetch(process.env.VOIPMS_API_ENDPOINT || VOIPMS_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
+    params.forEach((value, key) => {
+      url.searchParams.set(key, value);
     });
+
+    const response = await fetch(url.toString(), { method: 'GET' });
 
     const rawBody = await response.text().catch(() => '');
     const payload = parseVoipMsResponse(rawBody);
