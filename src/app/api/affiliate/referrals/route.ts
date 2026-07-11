@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { notifyReferralSubmitted } from '@/lib/referral-integrations';
+import {
+  formatNewReferralSms,
+  formatReferralTimestamp,
+  getAdminLeadUrl,
+} from '@/lib/referral-alerts';
 
 function normalizeReferralBody(body: any) {
   return {
@@ -117,6 +122,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const selectedProgram = selectedProgramId
+      ? assignedPrograms.find((program) => program.id === selectedProgramId)
+      : null;
+
     // Create the referral
     const referral = await prisma.referral.create({
       data: {
@@ -144,10 +153,19 @@ export async function POST(request: NextRequest) {
       const { emailService } = await import('@/lib/email');
       await emailService.sendReferralNotification(
         {
+          referralId: referral.id,
           affiliateName: user.name,
           leadName: referral.leadName,
           leadEmail: referral.leadEmail,
+          leadPhone: referral.leadPhone || '',
           company: company || '',
+          address: address || '',
+          address2: address2 || '',
+          moveInDate: moveInDate || '',
+          notes: notes?.trim() || '',
+          programName: selectedProgram?.name || '',
+          submittedAt: formatReferralTimestamp(referral.createdAt),
+          adminUrl: getAdminLeadUrl(referral.id),
           estimatedValue: Math.round((estimatedValue || 0) * 100),
         },
         {
@@ -161,7 +179,17 @@ export async function POST(request: NextRequest) {
     try {
       const { smsService } = await import('@/lib/sms');
       const smsResult = await smsService.sendAdminAlert(
-        `New lead from ${user.name}: ${referral.leadName}, ${referral.leadPhone || referral.leadEmail}.`
+        formatNewReferralSms({
+          referralId: referral.id,
+          affiliateName: user.name,
+          leadName: referral.leadName,
+          leadEmail: referral.leadEmail,
+          leadPhone: referral.leadPhone,
+          company: company || '',
+          address: address || '',
+          address2: address2 || '',
+          programName: selectedProgram?.name || '',
+        })
       );
       if (!smsResult.success) {
         console.error('Failed to send referral SMS notification:', smsResult.results);

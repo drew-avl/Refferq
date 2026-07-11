@@ -19,6 +19,11 @@ declare namespace NodeJs {
         SMS_RELAY_URL?: string;
         SMS_RELAY_TOKEN?: string;
         SMS_RELAY_TIMEOUT_MS?: string;
+        REFERRAL_REMINDER_TIME_ZONE?: string;
+        REFERRAL_REMINDER_BUSINESS_START_HOUR?: string;
+        REFERRAL_REMINDER_BUSINESS_END_HOUR?: string;
+        REFERRAL_REMINDER_DELAY_MINUTES?: string;
+        REFERRAL_REMINDER_BATCH_SIZE?: string;
         VOIPMS_API_USERNAME?: string;
         VOIPMS_API_PASSWORD?: string;
         VOIPMS_SMS_DID?: string;

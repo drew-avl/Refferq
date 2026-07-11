@@ -51,6 +51,21 @@ ADMIN_SMS_NUMBERS="+15551234567,+15557654321"
 
 New lead alerts go to `ADMIN_SMS_NUMBERS`. Partner payout and completed-order alerts go to the partner's Text Alert Phone in partner settings, stored as `payoutDetails.notificationPhone`.
 
+### Referral Follow-up Reminders
+
+ReferConnect can remind the team when a new lead has not been actioned. A lead is considered unactioned while it remains in `NEW` status with no `reviewedAt` value. The Vercel cron in `vercel.json` calls `/api/cron/referral-reminders` every 15 minutes; the route only counts elapsed time inside the configured Monday-Friday business window and stamps referral metadata after a reminder is sent so the same lead is not repeatedly notified.
+
+```env
+CRON_SECRET="long-random-cron-secret"
+REFERRAL_REMINDER_TIME_ZONE="America/New_York"
+REFERRAL_REMINDER_BUSINESS_START_HOUR="8"
+REFERRAL_REMINDER_BUSINESS_END_HOUR="17"
+REFERRAL_REMINDER_DELAY_MINUTES="60"
+REFERRAL_REMINDER_BATCH_SIZE="25"
+```
+
+On Vercel, set `CRON_SECRET` in project environment variables. The route accepts either `Authorization: Bearer <CRON_SECRET>` or `x-cron-secret: <CRON_SECRET>`.
+
 ### Fixed-IP Relay for Vercel
 
 Use a standalone `referconnect-sms-relay` service when the app runs on Vercel and VoIP.ms requires API source IP allowlisting. Vercel sends SMS requests to the relay over HTTPS, and the relay calls VoIP.ms from your VPS static IP.

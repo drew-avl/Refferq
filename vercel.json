@@ -6,6 +6,12 @@
   "installCommand": "npm ci",
   "devCommand": "npm run dev",
   "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/cron/referral-reminders",
+      "schedule": "*/15 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

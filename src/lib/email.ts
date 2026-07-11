@@ -246,11 +246,21 @@ export interface WelcomeEmailData {
 }
 
 export interface ReferralNotificationData {
+  referralId?: string;
   affiliateName: string;
   leadName: string;
   leadEmail: string;
+  leadPhone?: string;
   company?: string;
   estimatedValue?: number;
+  address?: string;
+  address2?: string;
+  moveInDate?: string;
+  notes?: string;
+  programName?: string;
+  submittedAt?: string;
+  adminUrl?: string;
+  ageLabel?: string;
 }
 
 export interface ApprovalEmailData {
@@ -499,44 +509,105 @@ class EmailService {
   }
 
   private generateReferralNotificationHTML(data: ReferralNotificationData, symbol?: string): string {
+    const adminUrl = data.adminUrl || `${getPublicAppUrl()}/admin/customers${data.referralId ? `/${data.referralId}` : ''}`;
+    const address = [data.address, data.address2].filter(Boolean).join(', ');
+    const submittedAt = data.submittedAt || new Date().toLocaleString();
+
     return `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <title>New Referral Submission</title>
+      <title>New Lead Submitted</title>
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
-        .details { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #f5576c; }
-        .button { display: inline-block; background: #f5576c; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 640px; margin: 0 auto; padding: 20px; background: #f3f4f6; }
+        .header { background: #0f766e; color: white; padding: 28px 32px; text-align: left; border-radius: 8px 8px 0 0; }
+        .content { background: #ffffff; padding: 32px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none; }
+        .details { background: white; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #e5e7eb; }
+        .button { display: inline-block; background: #0f766e; color: white; padding: 13px 22px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+        .summary { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 16px; border-radius: 6px; }
       </style>
     </head>
     <body>
       <div class="header">
-        <h1>New Referral Submission 📋</h1>
+        <h1>New lead submitted</h1>
       </div>
       <div class="content">
-        <h2>Hello Admin!</h2>
-        <p>A new referral has been submitted and requires your review.</p>
+        <h2>New lead submitted</h2>
+        <p class="summary">A referral partner submitted a new lead. Please review it, contact the lead, and move it to Pending once work has started.</p>
         
         <div class="details">
-          <h3>Referral Details:</h3>
+          <h3>Lead details</h3>
           <p><strong>Referral Partner:</strong> ${this.escapeHtml(data.affiliateName)}</p>
           <p><strong>Lead Name:</strong> ${this.escapeHtml(data.leadName)}</p>
           <p><strong>Lead Email:</strong> ${this.escapeHtml(data.leadEmail)}</p>
+          ${data.leadPhone ? `<p><strong>Lead Phone:</strong> ${this.escapeHtml(data.leadPhone)}</p>` : ''}
           ${data.company ? `<p><strong>Company:</strong> ${this.escapeHtml(data.company)}</p>` : ''}
+          ${address ? `<p><strong>Address:</strong> ${this.escapeHtml(address)}</p>` : ''}
+          ${data.moveInDate ? `<p><strong>Move-in Date:</strong> ${this.escapeHtml(data.moveInDate)}</p>` : ''}
+          ${data.programName ? `<p><strong>Lead Source:</strong> ${this.escapeHtml(data.programName)}</p>` : ''}
           ${data.estimatedValue ? `<p><strong>Estimated Value:</strong> ${this.formatAmount(data.estimatedValue, symbol || '$')}</p>` : ''}
+          <p><strong>Submitted:</strong> ${this.escapeHtml(submittedAt)}</p>
+          ${data.notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(data.notes)}</p>` : ''}
         </div>
         
         <div style="text-align: center;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin" class="button">Review Referral</a>
+          <a href="${this.escapeHtml(adminUrl)}" class="button">Review lead</a>
         </div>
         
-        <p>Please review this referral in the admin dashboard and approve or reject it accordingly.</p>
+        <p>Please review this lead in the admin dashboard and take the next action.</p>
         
-        <p>Best regards,<br>The ReferConnect System</p>
+        <p>ReferConnect</p>
+      </div>
+    </body>
+    </html>
+    `;
+  }
+
+  private generateReferralReminderHTML(data: ReferralNotificationData, symbol?: string): string {
+    const adminUrl = data.adminUrl || `${getPublicAppUrl()}/admin/customers${data.referralId ? `/${data.referralId}` : ''}`;
+    const address = [data.address, data.address2].filter(Boolean).join(', ');
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Lead Follow-up Needed</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 640px; margin: 0 auto; padding: 20px; background: #f3f4f6; }
+        .header { background: #92400e; color: white; padding: 28px 32px; border-radius: 8px 8px 0 0; }
+        .content { background: #ffffff; padding: 32px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none; }
+        .summary { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; padding: 14px 16px; border-radius: 6px; margin: 0 0 22px; }
+        .details { background: white; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #e5e7eb; }
+        .button { display: inline-block; background: #92400e; color: white; padding: 13px 22px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Lead follow-up needed</h1>
+      </div>
+      <div class="content">
+        <p class="summary">${this.escapeHtml(data.leadName)} has been in New status for ${this.escapeHtml(data.ageLabel || 'over one hour')} during business hours. Please review and take the next action.</p>
+
+        <div class="details">
+          <p><strong>Referral Partner:</strong> ${this.escapeHtml(data.affiliateName)}</p>
+          <p><strong>Lead Name:</strong> ${this.escapeHtml(data.leadName)}</p>
+          <p><strong>Lead Email:</strong> ${this.escapeHtml(data.leadEmail)}</p>
+          ${data.leadPhone ? `<p><strong>Lead Phone:</strong> ${this.escapeHtml(data.leadPhone)}</p>` : ''}
+          ${data.company ? `<p><strong>Company:</strong> ${this.escapeHtml(data.company)}</p>` : ''}
+          ${address ? `<p><strong>Address:</strong> ${this.escapeHtml(address)}</p>` : ''}
+          ${data.programName ? `<p><strong>Lead Source:</strong> ${this.escapeHtml(data.programName)}</p>` : ''}
+          ${data.estimatedValue ? `<p><strong>Estimated Value:</strong> ${this.formatAmount(data.estimatedValue, symbol || '$')}</p>` : ''}
+          ${data.submittedAt ? `<p><strong>Submitted:</strong> ${this.escapeHtml(data.submittedAt)}</p>` : ''}
+          ${data.notes ? `<p><strong>Notes:</strong> ${this.escapeHtml(data.notes)}</p>` : ''}
+        </div>
+
+        <div style="text-align: center;">
+          <a href="${this.escapeHtml(adminUrl)}" class="button">Open lead</a>
+        </div>
+
+        <p>ReferConnect</p>
       </div>
     </body>
     </html>
@@ -792,7 +863,7 @@ class EmailService {
         this.sendTemplatedEmail({
           to: email.trim(),
           templateType: 'NEW_REFERRAL',
-          fallbackSubject: `New Referral Submission from ${data.affiliateName}`,
+          fallbackSubject: `New lead: ${data.leadName} from ${data.affiliateName}`,
           variables: { ...data, symbol },
           generateFallbackHtml: () => this.generateReferralNotificationHTML(data, symbol),
         })
@@ -803,6 +874,30 @@ class EmailService {
     return {
       success,
       message: success ? 'Referral notifications sent' : 'Some notifications failed'
+    };
+  }
+
+  async sendReferralFollowUpNotification(
+    data: ReferralNotificationData,
+    options: { affiliateId?: string } = {}
+  ): Promise<{ success: boolean; message: string }> {
+    const adminEmails = await this.getReferralNotificationRecipients(options.affiliateId);
+    const symbol = await this.getCurrencySymbol();
+
+    const results = await Promise.all(
+      adminEmails.map(email =>
+        this.sendCustomEmail(
+          email.trim(),
+          `Action needed: ${data.leadName} needs follow-up`,
+          this.generateReferralReminderHTML(data, symbol)
+        )
+      )
+    );
+
+    const success = results.every(r => r.success);
+    return {
+      success,
+      message: success ? 'Referral follow-up notifications sent' : 'Some follow-up notifications failed'
     };
   }
 

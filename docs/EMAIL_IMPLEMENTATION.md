@@ -36,6 +36,11 @@ ADMIN_SMS_NUMBERS="+15551234567"
 SMS_RELAY_URL="https://sms-relay.example.com/send-sms"
 SMS_RELAY_TOKEN=""
 SMS_RELAY_TIMEOUT_MS="10000"
+REFERRAL_REMINDER_TIME_ZONE="America/New_York"
+REFERRAL_REMINDER_BUSINESS_START_HOUR="8"
+REFERRAL_REMINDER_BUSINESS_END_HOUR="17"
+REFERRAL_REMINDER_DELAY_MINUTES="60"
+REFERRAL_REMINDER_BATCH_SIZE="25"
 VOIPMS_API_USERNAME=""
 VOIPMS_API_PASSWORD=""
 VOIPMS_SMS_DID=""
@@ -48,6 +53,7 @@ THREECX_SMS_FROM=""
 `SMS_PROVIDER` accepts `relay`, `voipms`, `3cx`, `both`, or comma-separated providers such as `relay,3cx`. When `relay` is selected, the Vercel app posts to `SMS_RELAY_URL` with `SMS_RELAY_TOKEN`; the VPS relay keeps the VoIP.ms credentials and static IP.
 Use the standalone `referconnect-sms-relay` VPS service for Vercel deployments where VoIP.ms API IP restrictions must remain enabled.
 For VoIP.ms, API access must be enabled, any API IP restriction must allow the app server's outbound IP, and `VOIPMS_SMS_DID` must be an SMS-capable DID.
+Referral follow-up reminders are handled by `/api/cron/referral-reminders`. The endpoint finds `NEW` leads, counts elapsed time only inside the configured weekday business window, sends email and text reminders after `REFERRAL_REMINDER_DELAY_MINUTES`, and records `unactionedReminderSentAt` in referral metadata to prevent repeat reminders.
 
 ## Verification
 
