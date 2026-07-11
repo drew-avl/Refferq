@@ -1,32 +1,51 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import type Mail from 'nodemailer/lib/mailer';
 import { getPublicAppUrl } from './platform-defaults';
 import { PayoutMethod } from './payout-methods';
 
-// Initialize Resend with API key only when needed (server-side)
-let resendInstance: Resend | null = null;
+// Initialize SMTP with credentials only when needed (server-side)
+let smtpTransporter: nodemailer.Transporter | null = null;
 
-function getResendClient(): Resend {
-  if (!resendInstance) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error('RESEND_API_KEY environment variable is not set');
+function getSmtpTransporter(): nodemailer.Transporter {
+  if (!smtpTransporter) {
+    const host = process.env.SMTP_HOST || 'smtp.office365.com';
+    const port = Number.parseInt(process.env.SMTP_PORT || '587', 10);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
+
+    if (!host) {
+      throw new Error('SMTP_HOST environment variable is not set');
     }
-    resendInstance = new Resend(apiKey);
+
+    if (!user || !pass) {
+      throw new Error('SMTP_USER and SMTP_PASSWORD environment variables are required');
+    }
+
+    smtpTransporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: process.env.SMTP_SECURE === 'true' || port === 465,
+      requireTLS: process.env.SMTP_REQUIRE_TLS !== 'false' && port !== 465,
+      auth: { user, pass },
+      tls: {
+        minVersion: 'TLSv1.2',
+      },
+    });
   }
-  return resendInstance;
+
+  return smtpTransporter;
 }
 
-export const resend = {
-  get emails() {
-    return getResendClient().emails;
-  }
-};
+export async function sendSmtpEmail(message: Mail.Options) {
+  return getSmtpTransporter().sendMail(message);
+}
 
 export interface EmailTemplate {
   to: string;
   subject: string;
   html: string;
   from?: string;
+  attachments?: Mail.Attachment[];
 }
 
 // Move private helper out of class if needed, or keep it. I'll keep it.
@@ -86,7 +105,11 @@ export interface CommissionNotificationData {
 }
 
 class EmailService {
-  private defaultFrom = process.env.RESEND_FROM_EMAIL || 'ReferConnect <noreply@referconnect.com>';
+  private defaultFrom =
+    process.env.SMTP_FROM_EMAIL ||
+    process.env.SMTP_FROM ||
+    process.env.SMTP_USER ||
+    'ReferConnect <noreply@referconnect.com>';
 
   /** Escape HTML special characters to prevent XSS in email templates */
   private escapeHtml(str: string): string {
@@ -184,13 +207,15 @@ class EmailService {
     to: string;
     subject: string;
     html: string;
+    attachments?: Mail.Attachment[];
   }): Promise<{ success: boolean; message: string }> {
     try {
-      await getResendClient().emails.send({
+      await sendSmtpEmail({
         from: this.defaultFrom,
         to: params.to,
         subject: params.subject,
         html: params.html,
+        attachments: params.attachments,
       });
 
       return { success: true, message: 'Email sent successfully' };
@@ -935,13 +960,19 @@ class EmailService {
     });
   }
 
-  async sendCustomEmail(to: string, subject: string, html: string): Promise<{ success: boolean; message: string }> {
+  async sendCustomEmail(
+    to: string,
+    subject: string,
+    html: string,
+    attachments?: Mail.Attachment[]
+  ): Promise<{ success: boolean; message: string }> {
     try {
-      const result = await getResendClient().emails.send({
+      const result = await sendSmtpEmail({
         from: this.defaultFrom,
         to,
         subject,
         html,
+        attachments,
       });
 
       console.log('Custom email sent:', result);

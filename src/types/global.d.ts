@@ -2,7 +2,25 @@ declare namespace NodeJs {
     interface ProcessEnv {
         JWT_SECRET: string;
         DATABASE_URL: string;
-        RESEND_API_KEY: string;
+        SMTP_HOST?: string;
+        SMTP_PORT?: string;
+        SMTP_USER?: string;
+        SMTP_PASSWORD?: string;
+        SMTP_FROM_EMAIL?: string;
+        SMTP_FROM?: string;
+        SMTP_SECURE?: string;
+        SMTP_REQUIRE_TLS?: string;
+        ADMIN_EMAILS?: string;
+        SMS_ENABLED?: string;
+        SMS_PROVIDER?: string;
+        ADMIN_SMS_NUMBERS?: string;
+        VOIPMS_API_USERNAME?: string;
+        VOIPMS_API_PASSWORD?: string;
+        VOIPMS_SMS_DID?: string;
+        VOIPMS_API_ENDPOINT?: string;
+        THREECX_SMS_WEBHOOK_URL?: string;
+        THREECX_SMS_WEBHOOK_TOKEN?: string;
+        THREECX_SMS_FROM?: string;
         NEXT_PUBLIC_APP_URL: string;
         TWENTY_SYNC_ENABLED?: string;
         TWENTY_REFERRAL_SYNC_ENABLED?: string;

@@ -159,6 +159,18 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      const { smsService } = await import('@/lib/sms');
+      const smsResult = await smsService.sendAdminAlert(
+        `New lead from ${user.name}: ${referral.leadName}, ${referral.leadPhone || referral.leadEmail}.`
+      );
+      if (!smsResult.success) {
+        console.error('Failed to send referral SMS notification:', smsResult.results);
+      }
+    } catch (smsError) {
+      console.error('Failed to send referral SMS notification:', smsError);
+    }
+
+    try {
       await notifyReferralSubmitted(referral.id);
     } catch (integrationError) {
       console.error('Failed to notify referral integrations:', integrationError);

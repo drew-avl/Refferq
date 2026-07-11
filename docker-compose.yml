@@ -10,9 +10,20 @@ services:
     environment:
       - DATABASE_URL=postgresql://referconnect:referconnect@db:5432/referconnect
       - JWT_SECRET=${JWT_SECRET:-change-me-to-a-random-string-min-32-chars}
-      - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-ReferConnect <onboarding@resend.dev>}
+      - SMTP_HOST=${SMTP_HOST:-smtp.office365.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-}
       - ADMIN_EMAILS=${ADMIN_EMAILS:-}
+      - SMS_ENABLED=${SMS_ENABLED:-false}
+      - SMS_PROVIDER=${SMS_PROVIDER:-voipms}
+      - ADMIN_SMS_NUMBERS=${ADMIN_SMS_NUMBERS:-}
+      - VOIPMS_API_USERNAME=${VOIPMS_API_USERNAME:-}
+      - VOIPMS_API_PASSWORD=${VOIPMS_API_PASSWORD:-}
+      - VOIPMS_SMS_DID=${VOIPMS_SMS_DID:-}
+      - THREECX_SMS_WEBHOOK_URL=${THREECX_SMS_WEBHOOK_URL:-}
+      - THREECX_SMS_WEBHOOK_TOKEN=${THREECX_SMS_WEBHOOK_TOKEN:-}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     depends_on:
       db:

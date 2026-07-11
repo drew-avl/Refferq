@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { resend } from '@/lib/email';
+import { emailService } from '@/lib/email';
 import { getCurrencySettings } from '@/lib/currency';
 
 async function verifyAdmin(request: NextRequest) {
@@ -91,26 +91,38 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send to all recipients
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'ReferConnect <noreply@referconnect.com>';
+    const attachments = [
+      {
+        filename: `${reportType}-report-${new Date().toISOString().slice(0, 10)}.csv`,
+        content: csvContent,
+        contentType: 'text/csv',
+      },
+    ];
+    const fromEmail =
+      process.env.SMTP_FROM_EMAIL ||
+      process.env.SMTP_FROM ||
+      process.env.SMTP_USER ||
+      'ReferConnect <noreply@referconnect.com>';
+    const reportEmailSender = {
+      emails: {
+        send: (message: any) =>
+          emailService.sendCustomEmail(message.to, message.subject, message.html, message.attachments),
+      },
+    };
     const results = await Promise.allSettled(
       recipients.map((email: string) =>
-        resend.emails.send({
+        reportEmailSender.emails.send({
           from: fromEmail,
           to: email.trim(),
           subject: `[ReferConnect] ${reportData.type || 'Report'} — ${reportDate}`,
           html,
-          attachments: [
-            {
-              filename: `${reportType}-report-${new Date().toISOString().slice(0, 10)}.csv`,
-              content: csvContent,
-            },
-          ],
+          attachments,
         })
       )
     );
 
-    const sent = results.filter((r) => r.status === 'fulfilled').length;
-    const failed = results.filter((r) => r.status === 'rejected').length;
+    const sent = results.filter((r) => r.status === 'fulfilled' && r.value.success).length;
+    const failed = results.length - sent;
 
     return NextResponse.json({
       success: true,

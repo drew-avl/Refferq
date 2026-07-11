@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       testBody = testBody.replace(regex, value);
     });
 
-    // Actually send the test email via Resend
+    // Actually send the test email via the configured SMTP transport
     try {
       await emailService.sendCustomEmail(
         recipientEmail,

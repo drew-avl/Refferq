@@ -62,7 +62,8 @@ export async function GET(request: NextRequest) {
     success: true,
     message: 'Email test endpoint is working',
     config: {
-      apiKeyConfigured: !!process.env.RESEND_API_KEY,
+      smtpConfigured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD),
+      smtpHost: process.env.SMTP_HOST || 'smtp.office365.com',
       environment: process.env.NODE_ENV,
     },
   });

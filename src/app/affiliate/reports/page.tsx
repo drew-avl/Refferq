@@ -27,17 +27,17 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  BarChart3,
   TrendingUp,
   Target,
   Users,
   Download,
   Calendar,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface ReportStats {
-  totalEarnings: number;
   totalSold: number;
+  totalCompleted: number;
   totalLeads: number;
   totalConversions: number;
   conversionRate: number;
@@ -47,17 +47,16 @@ interface MonthlyData {
   month: string;
   referrals: number;
   conversions: number;
-  earnings: number;
+  completed: number;
 }
 
 export default function ReportsPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('6months');
-  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [stats, setStats] = useState<ReportStats>({
-    totalEarnings: 0,
     totalSold: 0,
+    totalCompleted: 0,
     totalLeads: 0,
     totalConversions: 0,
     conversionRate: 0,
@@ -74,18 +73,12 @@ export default function ReportsPage() {
       const res = await fetch('/api/affiliate/profile');
       const data = await res.json();
       if (data.success) {
-        setCurrencySymbol(data.currencySymbol || '$');
         const referrals = data.referrals || [];
-        const commissions = data.commissions || [];
         const conversions = data.conversions || [];
 
-        const totalEarnings = commissions
-          .filter((c: any) => c.status === 'PAID')
-          .reduce((sum: number, c: any) => sum + c.amountCents, 0);
-
         setStats({
-          totalEarnings,
           totalSold: data.stats?.totalSold || 0,
+          totalCompleted: referrals.filter((r: any) => r.status === 'COMPLETED').length,
           totalLeads: referrals.length,
           totalConversions: conversions.length,
           conversionRate: data.stats?.conversionRate || 0,
@@ -102,7 +95,7 @@ export default function ReportsPage() {
             month: d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
             referrals: 0,
             conversions: 0,
-            earnings: 0,
+            completed: 0,
           };
         }
 
@@ -110,6 +103,7 @@ export default function ReportsPage() {
           const d = new Date(r.createdAt);
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
           if (months[key]) months[key].referrals++;
+          if (r.status === 'COMPLETED' && months[key]) months[key].completed++;
         });
 
         conversions.forEach((c: any) => {
@@ -117,14 +111,6 @@ export default function ReportsPage() {
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
           if (months[key]) months[key].conversions++;
         });
-
-        commissions
-          .filter((c: any) => c.status === 'PAID')
-          .forEach((c: any) => {
-            const d = new Date(c.createdAt);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            if (months[key]) months[key].earnings += c.amountCents;
-          });
 
         setMonthlyData(Object.values(months));
       }
@@ -135,12 +121,9 @@ export default function ReportsPage() {
     }
   };
 
-  const formatCurrency = (cents: number) =>
-    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
   const exportCSV = () => {
-    const headers = ['Month', 'Leads', 'Conversions', `Earnings (${currencySymbol})`];
-    const rows = monthlyData.map((m) => [m.month, m.referrals, m.conversions, (m.earnings / 100).toFixed(2)]);
+    const headers = ['Month', 'Leads', 'Completed', 'Conversions'];
+    const rows = monthlyData.map((m) => [m.month, m.referrals, m.completed, m.conversions]);
     const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -150,7 +133,7 @@ export default function ReportsPage() {
     a.click();
   };
 
-  const maxEarnings = Math.max(...monthlyData.map((m) => m.earnings), 1);
+  const maxCompleted = Math.max(...monthlyData.map((m) => m.completed), 1);
 
   if (authLoading || loading) {
     return (
@@ -196,11 +179,11 @@ export default function ReportsPage() {
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <span className="text-sm font-bold text-emerald-600">{currencySymbol}</span>
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalEarnings)}</p>
-                <p className="text-xs text-muted-foreground">Total Earnings</p>
+                <p className="text-2xl font-bold text-emerald-600">{stats.totalCompleted}</p>
+                <p className="text-xs text-muted-foreground">Completed</p>
               </div>
             </div>
           </CardContent>
@@ -246,20 +229,20 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-      {/* Earnings Chart (CSS bar chart) */}
+      {/* Completed Leads Chart (CSS bar chart) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Monthly Earnings</CardTitle>
-          <CardDescription>Revenue generated from completed leads</CardDescription>
+          <CardTitle className="text-base">Monthly Completed Leads</CardTitle>
+          <CardDescription>Completed or installed referrals by month</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-2 h-48">
             {monthlyData.map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs font-medium">{formatCurrency(m.earnings)}</span>
+                <span className="text-xs font-medium">{m.completed}</span>
                 <div
                   className="w-full bg-emerald-500 rounded-t-sm min-h-[4px] transition-all"
-                  style={{ height: `${Math.max((m.earnings / maxEarnings) * 100, 2)}%` }}
+                  style={{ height: `${Math.max((m.completed / maxCompleted) * 100, 2)}%` }}
                 />
                 <span className="text-[10px] text-muted-foreground">{m.month.split(' ')[0]}</span>
               </div>
@@ -279,8 +262,8 @@ export default function ReportsPage() {
               <TableRow>
                 <TableHead>Month</TableHead>
                 <TableHead className="text-center">Leads</TableHead>
+                <TableHead className="text-center">Completed</TableHead>
                 <TableHead className="text-center">Conversions</TableHead>
-                <TableHead className="text-right">Earnings</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -288,15 +271,15 @@ export default function ReportsPage() {
                 <TableRow key={i}>
                   <TableCell className="font-medium">{m.month}</TableCell>
                   <TableCell className="text-center">{m.referrals}</TableCell>
+                  <TableCell className="text-center">{m.completed}</TableCell>
                   <TableCell className="text-center">{m.conversions}</TableCell>
-                  <TableCell className="text-right font-semibold">{formatCurrency(m.earnings)}</TableCell>
                 </TableRow>
               ))}
               <TableRow className="bg-muted/50 font-bold">
                 <TableCell>Total</TableCell>
                 <TableCell className="text-center">{monthlyData.reduce((s, m) => s + m.referrals, 0)}</TableCell>
+                <TableCell className="text-center">{monthlyData.reduce((s, m) => s + m.completed, 0)}</TableCell>
                 <TableCell className="text-center">{monthlyData.reduce((s, m) => s + m.conversions, 0)}</TableCell>
-                <TableCell className="text-right">{formatCurrency(monthlyData.reduce((s, m) => s + m.earnings, 0))}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

@@ -55,9 +55,12 @@ DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 # JWT Secret (generate a random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-# Email (Resend)
-RESEND_API_KEY="re_xxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
+# Email (Microsoft 365 SMTP)
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT="587"
+SMTP_USER="notifications@yourdomain.com"
+SMTP_PASSWORD="your-mailbox-password-or-app-password"
+SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -74,10 +77,10 @@ openssl rand -base64 32
 [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
 ```
 
-**Get Resend API Key:**
-1. Sign up at [resend.com](https://resend.com) (free)
-2. Generate API key
-3. Use `onboarding@resend.dev` for development
+**Configure SMTP:**
+1. Use a licensed Microsoft 365 mailbox
+2. Confirm SMTP AUTH is enabled for that mailbox
+3. Run `npm run test:email -- you@example.com`
 
 ---
 
@@ -244,8 +247,8 @@ npm run db:generate
 **Issue:** Welcome emails not arriving
 
 **Solution:**
-1. Check RESEND_API_KEY in .env.local
-2. Verify API key at https://resend.com/api-keys
+1. Check `SMTP_USER` and `SMTP_PASSWORD` in .env.local
+2. Confirm SMTP AUTH is enabled for the Microsoft 365 mailbox
 3. Check spam folder
 4. Run test: `npm run test:email your@email.com`
 
@@ -260,7 +263,7 @@ npm run dev
 - Hot reload enabled
 - Detailed error messages
 - Source maps available
-- Use `onboarding@resend.dev` for emails
+- Use your Microsoft 365 notification mailbox for emails
 
 ### Production Build
 ```bash

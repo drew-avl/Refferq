@@ -108,7 +108,7 @@ class NotificationService {
     await this.createNotification({
       type: 'referral_approved',
       title: 'Referral Approved!',
-      message: `Your referral for ${referralData.leadName} has been approved. Commission: $${(referralData.commissionAmount / 100).toFixed(2)}`,
+      message: `Your referral for ${referralData.leadName} has been approved.`,
       userId: affiliateId,
       metadata: referralData,
     });

@@ -238,6 +238,19 @@ export async function POST(request: NextRequest) {
       // Don't fail the transaction if email fails
     }
 
+    try {
+      const { smsService } = await import('@/lib/sms');
+      const smsResult = await smsService.sendAffiliateAlert(
+        affiliate.payoutDetails,
+        `Your referred lead ${referral.leadName} is completed/installed. A commission has been added to your account.`
+      );
+      if (!smsResult.success && smsResult.message !== 'SMS disabled') {
+        console.error('Failed to send transaction SMS:', smsResult.message);
+      }
+    } catch (smsError) {
+      console.error('Failed to send transaction SMS:', smsError);
+    }
+
     return NextResponse.json({
       success: true,
       transaction,

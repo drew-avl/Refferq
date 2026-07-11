@@ -208,7 +208,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, company, email, country, paymentMethod, paymentEmail } = body;
+    const { name, company, email, country, paymentMethod, paymentEmail, notificationPhone } = body;
 
     if (paymentMethod && !isPayoutMethod(paymentMethod)) {
       return NextResponse.json(
@@ -245,12 +245,18 @@ export async function PUT(request: NextRequest) {
 
     // Update referral partner payout details if provided
     if (user.affiliate) {
-      const payoutDetails: any = {};
+      const payoutDetails: any =
+        user.affiliate.payoutDetails &&
+        typeof user.affiliate.payoutDetails === 'object' &&
+        !Array.isArray(user.affiliate.payoutDetails)
+          ? { ...(user.affiliate.payoutDetails as Record<string, unknown>) }
+          : {};
 
-      if (company) payoutDetails.company = company.trim();
-      if (country) payoutDetails.country = country;
-      if (paymentMethod) payoutDetails.paymentMethod = paymentMethod;
-      if (paymentEmail) payoutDetails.paymentEmail = paymentEmail.trim();
+      if (company !== undefined) payoutDetails.company = company.trim();
+      if (country !== undefined) payoutDetails.country = country;
+      if (paymentMethod !== undefined) payoutDetails.paymentMethod = paymentMethod;
+      if (paymentEmail !== undefined) payoutDetails.paymentEmail = paymentEmail.trim();
+      if (notificationPhone !== undefined) payoutDetails.notificationPhone = notificationPhone.trim();
 
       await prisma.affiliate.update({
         where: { id: user.affiliate.id },

@@ -47,6 +47,7 @@ export default function SettingsPage() {
     country: 'India',
     paymentMethod: 'PayPal',
     paymentEmail: '',
+    notificationPhone: '',
   });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function SettingsPage() {
           country: pd.country || 'India',
           paymentMethod: getAllowedPayoutMethod(pd.paymentMethod),
           paymentEmail: pd.paymentEmail || data.user?.email || '',
+          notificationPhone: pd.notificationPhone || pd.smsPhone || '',
         });
       }
     } catch (error) {
@@ -224,6 +226,15 @@ export default function SettingsPage() {
                 value={settingsForm.paymentEmail}
                 onChange={(e) => setSettingsForm({ ...settingsForm, paymentEmail: e.target.value })}
                 placeholder="payment@example.com"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Text Alert Phone</Label>
+              <Input
+                type="tel"
+                value={settingsForm.notificationPhone}
+                onChange={(e) => setSettingsForm({ ...settingsForm, notificationPhone: e.target.value })}
+                placeholder="(555) 123-4567"
               />
             </div>
           </div>

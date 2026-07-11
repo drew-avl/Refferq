@@ -135,7 +135,7 @@
 - **Recharts** - Data visualization charts
 
 ### Email
-- **Resend** - Modern email API for transactional emails
+- **SMTP / Microsoft 365** - Transactional emails through Microsoft 365 SMTP client submission
 - **Email Templates** - Customizable HTML templates
 
 ### Development
@@ -181,13 +181,25 @@ DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 # JWT Secret (generate a secure random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-# Email Configuration (Resend)
-# Sign up at https://resend.com for free API key
-RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
+# Email Configuration (Microsoft 365 SMTP)
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT="587"
+SMTP_USER="notifications@yourdomain.com"
+SMTP_PASSWORD="your-mailbox-password-or-app-password"
+SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
 
 # Admin Notification Emails (comma-separated)
 ADMIN_EMAILS="admin@yourdomain.com"
+
+# Text Alerts (optional)
+SMS_ENABLED="false"
+SMS_PROVIDER="voipms"
+ADMIN_SMS_NUMBERS="+15551234567"
+VOIPMS_API_USERNAME=""
+VOIPMS_API_PASSWORD=""
+VOIPMS_SMS_DID=""
+THREECX_SMS_WEBHOOK_URL=""
+THREECX_SMS_WEBHOOK_TOKEN=""
 
 # Application URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -225,32 +237,29 @@ npx prisma db seed
 
 ### Step 5: Email Configuration
 
-ReferConnect uses [Resend](https://resend.com) for sending transactional emails. Follow these steps:
+ReferConnect sends transactional emails through SMTP. For Microsoft 365, use SMTP client submission with `smtp.office365.com` on port `587` and STARTTLS.
 
-1. **Sign up for Resend**
-   - Go to [https://resend.com](https://resend.com)
-   - Create a free account (3,000 emails/month)
+1. **Prepare the Microsoft 365 mailbox**
+   - Use a licensed mailbox such as `notifications@yourdomain.com`
+   - Confirm SMTP AUTH is enabled for that mailbox
+   - Use a mailbox password or app password where your tenant policy requires one
 
-2. **Get your API Key**
-   - Navigate to API Keys in Resend dashboard
-   - Create a new API key
-   - Copy the key (starts with `re_...`)
-
-3. **Update .env.local**
+2. **Update .env.local**
    ```env
-   RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-   RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
+   SMTP_HOST="smtp.office365.com"
+   SMTP_PORT="587"
+   SMTP_USER="notifications@yourdomain.com"
+   SMTP_PASSWORD="your-mailbox-password-or-app-password"
+   SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
    ADMIN_EMAILS="admin@yourdomain.com"   # Optional extra recipients in addition to active admins/staff
    ```
 
-4. **Test Email Setup** (Optional)
+3. **Test Email Setup** (Optional)
    ```bash
-   curl -X POST http://localhost:3000/api/admin/emails/test \
-     -H "Content-Type: application/json" \
-     -d '{"type": "welcome", "to": "test@example.com"}'
+   npm run test:email -- test@example.com
    ```
 
-> **Note:** For production, verify your domain in Resend dashboard to use your own email addresses. See [docs/EMAIL.md](./docs/EMAIL.md) for detailed configuration guide.
+See [docs/EMAIL.md](./docs/EMAIL.md) for detailed SMTP and SMS configuration.
 
 ### Step 6: Run Development Server
 

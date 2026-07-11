@@ -73,8 +73,7 @@ interface Program {
   isDefault: boolean;
 }
 
-const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
-type LeadTab = 'all' | 'active' | 'closed' | 'rejected';
+type LeadTab = 'new' | 'pending' | 'sold' | 'completed' | 'rejected' | 'all';
 const STATUS_PRIORITY: Record<string, number> = {
   NEW: 0,
   PENDING: 1,
@@ -95,7 +94,7 @@ export default function ReferralsPage() {
   const [editingReferral, setEditingReferral] = useState<Referral | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [leadTab, setLeadTab] = useState<LeadTab>('active');
+  const [leadTab, setLeadTab] = useState<LeadTab>('new');
   const [submitForm, setSubmitForm] = useState({
     leadName: '',
     leadEmail: '',
@@ -213,8 +212,6 @@ export default function ReferralsPage() {
   };
 
   const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
-  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
-  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
   const getStatusPriority = (status: string) => STATUS_PRIORITY[normalizeReferralStatus(status)] ?? 5;
   const searchTerm = searchQuery.trim().toLowerCase();
   const matchesSearch = (r: Referral) =>
@@ -231,19 +228,19 @@ export default function ReferralsPage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
   const allReferrals = sortedReferrals.filter(matchesSearch);
-  const activeReferrals = sortedReferrals
-    .filter((r) => !isClosedReferral(r.status) && !isRejectedReferral(r.status))
-    .filter(matchesSearch);
-  const closedReferrals = sortedReferrals.filter((r) => isClosedReferral(r.status)).filter(matchesSearch);
-  const rejectedReferrals = sortedReferrals.filter((r) => isRejectedReferral(r.status)).filter(matchesSearch);
-  const filteredReferrals =
-    leadTab === 'all'
-      ? allReferrals
-      : leadTab === 'closed'
-        ? closedReferrals
-        : leadTab === 'rejected'
-          ? rejectedReferrals
-          : activeReferrals;
+  const newReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'NEW');
+  const pendingReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'PENDING');
+  const soldReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'SOLD');
+  const completedReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'COMPLETED');
+  const rejectedReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'REJECTED');
+  const filteredReferrals = {
+    new: newReferrals,
+    pending: pendingReferrals,
+    sold: soldReferrals,
+    completed: completedReferrals,
+    rejected: rejectedReferrals,
+    all: allReferrals,
+  }[leadTab];
 
   const stats = {
     total: referrals.length,
@@ -379,6 +376,12 @@ export default function ReferralsPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">New</p>
+            <p className="text-2xl font-bold text-slate-600">{stats.new}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Pending</p>
             <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
           </CardContent>
@@ -387,12 +390,6 @@ export default function ReferralsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Sold</p>
             <p className="text-2xl font-bold text-blue-600">{stats.sold}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">New</p>
-            <p className="text-2xl font-bold text-slate-600">{stats.new}</p>
           </CardContent>
         </Card>
         <Card>
@@ -426,18 +423,24 @@ export default function ReferralsPage() {
             onValueChange={(value) => setLeadTab(value as LeadTab)}
             className="w-full md:max-w-3xl"
           >
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all" className="text-xs sm:text-sm">
-                All Leads ({allReferrals.length})
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+              <TabsTrigger value="new" className="text-xs sm:text-sm">
+                New ({newReferrals.length})
               </TabsTrigger>
-              <TabsTrigger value="active" className="text-xs sm:text-sm">
-                Active ({activeReferrals.length})
+              <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                Pending ({pendingReferrals.length})
               </TabsTrigger>
-              <TabsTrigger value="closed" className="text-xs sm:text-sm">
-                Closed ({closedReferrals.length})
+              <TabsTrigger value="sold" className="text-xs sm:text-sm">
+                Sold ({soldReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="text-xs sm:text-sm">
+                Completed ({completedReferrals.length})
               </TabsTrigger>
               <TabsTrigger value="rejected" className="text-xs sm:text-sm">
                 Rejected ({rejectedReferrals.length})
+              </TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm">
+                All Leads ({allReferrals.length})
               </TabsTrigger>
             </TabsList>
           </Tabs>

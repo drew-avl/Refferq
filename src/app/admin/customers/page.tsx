@@ -71,8 +71,7 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   REJECTED: { label: 'Rejected', variant: 'destructive' },
 };
 
-const CLOSED_REFERRAL_STATUSES = ['SOLD', 'COMPLETED'];
-type LeadTab = 'all' | 'active' | 'closed' | 'rejected';
+type LeadTab = 'new' | 'pending' | 'sold' | 'completed' | 'rejected' | 'all';
 const STATUS_PRIORITY: Record<string, number> = {
   NEW: 0,
   PENDING: 1,
@@ -102,7 +101,7 @@ export default function CustomersPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [leadTab, setLeadTab] = useState<LeadTab>('active');
+  const [leadTab, setLeadTab] = useState<LeadTab>('new');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -143,8 +142,6 @@ export default function CustomersPage() {
   };
 
   const normalizeReferralStatus = (status: string) => (status || '').trim().toUpperCase();
-  const isClosedReferral = (status: string) => CLOSED_REFERRAL_STATUSES.includes(normalizeReferralStatus(status));
-  const isRejectedReferral = (status: string) => normalizeReferralStatus(status) === 'REJECTED';
   const getStatusPriority = (status: string) => STATUS_PRIORITY[normalizeReferralStatus(status)] ?? 5;
   const searchTerm = searchQuery.trim().toLowerCase();
   const matchesSearch = (r: Referral) =>
@@ -162,19 +159,19 @@ export default function CustomersPage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
   const allReferrals = sortedReferrals.filter(matchesSearch);
-  const activeReferrals = sortedReferrals
-    .filter((r) => !isClosedReferral(r.status) && !isRejectedReferral(r.status))
-    .filter(matchesSearch);
-  const closedReferrals = sortedReferrals.filter((r) => isClosedReferral(r.status)).filter(matchesSearch);
-  const rejectedReferrals = sortedReferrals.filter((r) => isRejectedReferral(r.status)).filter(matchesSearch);
-  const filtered =
-    leadTab === 'all'
-      ? allReferrals
-      : leadTab === 'closed'
-        ? closedReferrals
-        : leadTab === 'rejected'
-          ? rejectedReferrals
-          : activeReferrals;
+  const newReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'NEW');
+  const pendingReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'PENDING');
+  const soldReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'SOLD');
+  const completedReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'COMPLETED');
+  const rejectedReferrals = allReferrals.filter((r) => normalizeReferralStatus(r.status) === 'REJECTED');
+  const filtered = {
+    new: newReferrals,
+    pending: pendingReferrals,
+    sold: soldReferrals,
+    completed: completedReferrals,
+    rejected: rejectedReferrals,
+    all: allReferrals,
+  }[leadTab];
 
   const stats = {
     total: referrals.length,
@@ -219,6 +216,15 @@ export default function CustomersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">New</CardTitle>
+            <Clock className="h-4 w-4 text-slate-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.new}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Pending</CardTitle>
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
@@ -233,15 +239,6 @@ export default function CustomersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.sold}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">New</CardTitle>
-            <Clock className="h-4 w-4 text-slate-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.new}</div>
           </CardContent>
         </Card>
         <Card>
@@ -287,18 +284,24 @@ export default function CustomersPage() {
                 onValueChange={(value) => setLeadTab(value as LeadTab)}
                 className="w-full"
               >
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="all" className="text-xs sm:text-sm">
-                    All Leads ({allReferrals.length})
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+                  <TabsTrigger value="new" className="text-xs sm:text-sm">
+                    New ({newReferrals.length})
                   </TabsTrigger>
-                  <TabsTrigger value="active" className="text-xs sm:text-sm">
-                    Active ({activeReferrals.length})
+                  <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                    Pending ({pendingReferrals.length})
                   </TabsTrigger>
-                  <TabsTrigger value="closed" className="text-xs sm:text-sm">
-                    Closed ({closedReferrals.length})
+                  <TabsTrigger value="sold" className="text-xs sm:text-sm">
+                    Sold ({soldReferrals.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="text-xs sm:text-sm">
+                    Completed ({completedReferrals.length})
                   </TabsTrigger>
                   <TabsTrigger value="rejected" className="text-xs sm:text-sm">
                     Rejected ({rejectedReferrals.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="text-xs sm:text-sm">
+                    All Leads ({allReferrals.length})
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

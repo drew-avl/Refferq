@@ -99,11 +99,13 @@ Click "Environment Variables" and add:
 # Required Variables
 DATABASE_URL=postgresql://user:pass@host:5432/db
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-EMAIL_FROM=ReferConnect <noreply@referconnect.com>
+SMTP_HOST=smtp.office365.com
+SMTP_PORT=587
+SMTP_USER=notifications@yourdomain.com
+SMTP_PASSWORD=your-mailbox-password-or-app-password
+SMTP_FROM_EMAIL=ReferConnect <notifications@yourdomain.com>
+ADMIN_EMAILS=admin@yourdomain.com
+SMS_ENABLED=false
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 
 # Optional: Payment Integration
@@ -116,10 +118,10 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...
 openssl rand -base64 32
 ```
 
-**For Gmail:**
-- Use App-Specific Password
-- Enable 2FA first
-- Create app password: https://myaccount.google.com/apppasswords
+**For Microsoft 365 SMTP:**
+- Use `smtp.office365.com` on port `587`
+- Confirm SMTP AUTH is enabled for the sending mailbox
+- Use a mailbox password or app password allowed by your tenant policy
 
 ### 3.4 Deploy
 
@@ -295,9 +297,9 @@ Solution: Add to `vercel.json`:
 
 **Error: Email sending failed**
 
-- Verify EMAIL_HOST and EMAIL_PORT
-- Check EMAIL_USER and EMAIL_PASSWORD
-- For Gmail: Use App-Specific Password
+- Verify `SMTP_HOST` and `SMTP_PORT`
+- Check `SMTP_USER` and `SMTP_PASSWORD`
+- For Microsoft 365: confirm SMTP AUTH is enabled for the mailbox
 
 ### Database Issues
 

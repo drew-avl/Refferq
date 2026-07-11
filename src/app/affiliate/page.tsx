@@ -51,7 +51,6 @@ import {
   Ban,
   TrendingUp,
   ArrowRight,
-  Banknote,
   ShoppingBag,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -67,15 +66,13 @@ const STATUS_PRIORITY: Record<string, number> = {
 type LeadTab = 'active' | 'closed' | 'rejected';
 
 interface AffiliateStats {
-  totalEarnings: number;
-  pendingEarnings: number;
+  totalNew: number;
+  totalPending: number;
   totalSold: number;
   totalLeads: number;
   totalReferredCustomers: number;
   totalConversions: number;
   conversionRate: number;
-  currencySymbol: string;
-  nextMaturesAt: string | null;
 }
 
 interface Program {
@@ -106,7 +103,6 @@ export default function AffiliateDashboard() {
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [leadTab, setLeadTab] = useState<LeadTab>('active');
@@ -145,20 +141,18 @@ export default function AffiliateDashboard() {
       const data = await response.json();
 
       if (data.success) {
+        const loadedReferrals = data.referrals || [];
         setStats({
-          totalEarnings: data.stats?.totalEarnings || 0,
-          pendingEarnings: data.stats?.pendingEarnings || 0,
+          totalNew: loadedReferrals.filter((r: Referral) => r.status === 'NEW').length,
+          totalPending: loadedReferrals.filter((r: Referral) => r.status === 'PENDING').length,
           totalSold: data.stats?.totalSold || 0,
-          totalLeads: data.referrals?.length || 0,
-          totalReferredCustomers: data.referrals?.filter((r: any) => r.status === 'COMPLETED').length || 0,
+          totalLeads: loadedReferrals.length,
+          totalReferredCustomers: loadedReferrals.filter((r: Referral) => r.status === 'COMPLETED').length,
           totalConversions: data.stats?.totalConversions || 0,
           conversionRate: data.stats?.conversionRate || 0,
-          currencySymbol: data.currencySymbol || '$',
-          nextMaturesAt: data.stats?.nextMaturesAt || null,
         });
-        setReferrals(data.referrals || []);
+        setReferrals(loadedReferrals);
         setPrograms(data.programs || []);
-        setCurrencySymbol(data.currencySymbol || '$');
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -220,9 +214,6 @@ export default function AffiliateDashboard() {
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-
-  const formatCurrency = (cents: number) =>
-    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
@@ -301,7 +292,7 @@ export default function AffiliateDashboard() {
         </Alert>
       )}
 
-      {/* Commission Banner */}
+      {/* Lead Banner */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -312,7 +303,7 @@ export default function AffiliateDashboard() {
           <CardContent className="relative z-10 flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
             <div className="flex items-center gap-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-inner">
-                <span className="text-2xl font-bold">{currencySymbol}</span>
+                <Target className="h-7 w-7" />
               </div>
               <div>
                 <p className="text-sm text-white/90 font-medium tracking-wide">Send a resident lead to the field team</p>
@@ -328,27 +319,12 @@ export default function AffiliateDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-6">
         {[
-          {
-            label: 'Available Balance',
-            value: formatCurrency(stats?.totalEarnings || 0),
-            icon: Banknote,
-            color: 'text-emerald-600',
-            bg: 'bg-emerald-500/10',
-            description: 'Ready for payout'
-          },
-          {
-            label: 'Pending Balance',
-            value: formatCurrency(stats?.pendingEarnings || 0),
-            icon: Clock,
-            color: 'text-amber-600',
-            bg: 'bg-amber-500/10',
-            description: stats?.nextMaturesAt
-              ? `Next maturity: ${new Date(stats.nextMaturesAt).toLocaleDateString()}`
-              : 'Held for refund period'
-          },
+          { label: 'New Leads', value: stats?.totalNew || 0, icon: Clock, color: 'text-slate-600', bg: 'bg-slate-500/10' },
+          { label: 'Pending', value: stats?.totalPending || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-500/10' },
           { label: 'Total Sold', value: stats?.totalSold || 0, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+          { label: 'Completed', value: stats?.totalReferredCustomers || 0, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
           { label: 'Total Leads', value: stats?.totalLeads || 0, icon: Target, color: 'text-rose-600', bg: 'bg-rose-500/10' },
           { label: 'Conv. Rate', value: `${stats?.conversionRate?.toFixed(1) || '0.0'}%`, icon: TrendingUp, color: 'text-violet-600', bg: 'bg-violet-500/10' },
         ].map((stat, i) => (
@@ -363,20 +339,13 @@ export default function AffiliateDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} backdrop-blur-sm transition-transform group-hover:scale-110`}>
-                    {stat.icon === Banknote ? (
-                      <span className={`text-lg font-bold ${stat.color}`}>{currencySymbol}</span>
-                    ) : (
-                      <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                    )}
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
                   </div>
                   <div>
                     <p className={`text-2xl font-bold ${stat.color}`}>
                       {stat.value}
                     </p>
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                    {stat.description && (
-                      <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic">{stat.description}</p>
-                    )}
                   </div>
                 </div>
               </CardContent>

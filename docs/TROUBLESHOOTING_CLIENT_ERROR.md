@@ -107,7 +107,8 @@ cat .env.local
 # Required variables:
 # DATABASE_URL
 # JWT_SECRET
-# RESEND_API_KEY
+# SMTP_USER
+# SMTP_PASSWORD
 # NEXT_PUBLIC_APP_URL
 ```
 

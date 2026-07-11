@@ -383,6 +383,19 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      const { smsService } = await import('@/lib/sms');
+      const smsResult = await smsService.sendAffiliateAlert(
+        payout.affiliate.payoutDetails,
+        `A payout has been initiated for ${payout.commissionCount} completed referral${payout.commissionCount === 1 ? '' : 's'}.`
+      );
+      if (!smsResult.success && smsResult.message !== 'SMS disabled') {
+        console.error('Failed to send payout created SMS:', smsResult.message);
+      }
+    } catch (smsError) {
+      console.error('Failed to send payout created SMS:', smsError);
+    }
+
+    try {
       await notifyPayoutChanged(payout.id, 'payout.requested');
     } catch (integrationError) {
       console.error('Failed to notify payout integrations:', integrationError);
@@ -494,6 +507,19 @@ export async function PUT(request: NextRequest) {
       } catch (emailError) {
         console.error('Failed to send payout completed email:', emailError);
         // Don't fail the update if email fails
+      }
+
+      try {
+        const { smsService } = await import('@/lib/sms');
+        const smsResult = await smsService.sendAffiliateAlert(
+          payout.affiliate.payoutDetails,
+          `Your payout for ${payout.commissionCount} completed referral${payout.commissionCount === 1 ? '' : 's'} has been completed.`
+        );
+        if (!smsResult.success && smsResult.message !== 'SMS disabled') {
+          console.error('Failed to send payout completed SMS:', smsResult.message);
+        }
+      } catch (smsError) {
+        console.error('Failed to send payout completed SMS:', smsError);
       }
     }
 

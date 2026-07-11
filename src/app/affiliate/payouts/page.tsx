@@ -30,7 +30,6 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
 
 interface Payout {
   id: string;
@@ -41,23 +40,11 @@ interface Payout {
   paidAt?: string;
 }
 
-interface PayoutSettings {
-  minPayoutCents: number;
-  maxPayoutCents: number;
-  source: 'PROGRAM' | 'GLOBAL';
-}
-
 export default function PayoutsPage() {
   const { user, loading: authLoading } = useAuth();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0);
   const [currencySymbol, setCurrencySymbol] = useState('$');
-  const [payoutSettings, setPayoutSettings] = useState<PayoutSettings>({
-    minPayoutCents: PROGRAM_DEFAULTS.minPayoutCents,
-    maxPayoutCents: PROGRAM_DEFAULTS.minPayoutCents,
-    source: 'GLOBAL',
-  });
 
   useEffect(() => {
     if (!authLoading && user) fetchPayouts();
@@ -74,11 +61,7 @@ export default function PayoutsPage() {
       const profileData = await profileRes.json();
       if (payData.success) setPayouts(payData.payouts || []);
       if (profileData.success) {
-        setBalance(profileData.affiliate?.balanceCents || 0);
         setCurrencySymbol(profileData.currencySymbol || '$');
-        if (profileData.payoutSettings) {
-          setPayoutSettings(profileData.payoutSettings);
-        }
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -92,20 +75,6 @@ export default function PayoutsPage() {
 
   const formatCurrency = (cents: number) =>
     `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const formatThresholdCurrency = (cents: number) =>
-    `${currencySymbol}${(cents / 100).toLocaleString(undefined, {
-      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-      maximumFractionDigits: 2,
-    })}`;
-
-  const getThresholdText = () => {
-    if (payoutSettings.minPayoutCents === payoutSettings.maxPayoutCents) {
-      return `Minimum payout threshold is ${formatThresholdCurrency(payoutSettings.minPayoutCents)}.`;
-    }
-
-    return `Minimum payout thresholds range from ${formatThresholdCurrency(payoutSettings.minPayoutCents)} to ${formatThresholdCurrency(payoutSettings.maxPayoutCents)}, depending on the lead source.`;
-  };
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
@@ -125,7 +94,8 @@ export default function PayoutsPage() {
   };
 
   const totalPaid = payouts.filter((p) => p.status === 'COMPLETED').reduce((sum, p) => sum + p.amount, 0);
-  const pendingPayout = payouts.filter((p) => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
+  const completedPayouts = payouts.filter((p) => p.status === 'COMPLETED').length;
+  const pendingPayouts = payouts.filter((p) => p.status === 'PENDING' || p.status === 'PROCESSING').length;
 
   const exportCSV = () => {
     const headers = ['Date', 'Method', 'Status', 'Amount'];
@@ -161,7 +131,7 @@ export default function PayoutsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Payouts</h1>
-          <p className="text-muted-foreground">Track your earnings and payout history</p>
+          <p className="text-muted-foreground">Track payout history after leads are completed or installed</p>
         </div>
         {payouts.length > 0 && (
           <Button variant="outline" onClick={exportCSV} className="gap-1.5">
@@ -171,7 +141,7 @@ export default function PayoutsPage() {
         )}
       </div>
 
-      {/* Earnings Summary */}
+      {/* Payout Summary */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-5">
@@ -180,8 +150,8 @@ export default function PayoutsPage() {
                 <span className="text-sm font-bold text-emerald-600">{currencySymbol}</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{formatCurrency(balance)}</p>
-                <p className="text-xs text-muted-foreground">Current Balance</p>
+                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPaid)}</p>
+                <p className="text-xs text-muted-foreground">Completed Paid</p>
               </div>
             </div>
           </CardContent>
@@ -193,8 +163,8 @@ export default function PayoutsPage() {
                 <CheckCircle2 className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalPaid)}</p>
-                <p className="text-xs text-muted-foreground">Total Paid</p>
+                <p className="text-2xl font-bold text-blue-600">{completedPayouts}</p>
+                <p className="text-xs text-muted-foreground">Completed Payouts</p>
               </div>
             </div>
           </CardContent>
@@ -206,8 +176,8 @@ export default function PayoutsPage() {
                 <Clock className="h-4 w-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600">{formatCurrency(pendingPayout)}</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-2xl font-bold text-amber-600">{pendingPayouts}</p>
+                <p className="text-xs text-muted-foreground">Pending Payouts</p>
               </div>
             </div>
           </CardContent>
@@ -234,7 +204,7 @@ export default function PayoutsPage() {
           <div>
             <p className="text-sm font-medium text-blue-900">Payout Schedule</p>
             <p className="text-sm text-blue-700">
-              Payouts are processed on the 1st of each month for the previous month&apos;s earnings. {getThresholdText()}
+              Payouts are processed on the 1st of each month after referred leads are completed or installed.
             </p>
           </div>
         </CardContent>
@@ -252,7 +222,7 @@ export default function PayoutsPage() {
               <Wallet className="h-12 w-12 text-muted-foreground/40 mb-3" />
               <p className="font-medium">No payouts yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Added leads that sell and complete will appear in your earnings
+                Completed leads that are approved for payout will appear here
               </p>
             </div>
           ) : (

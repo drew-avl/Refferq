@@ -7,7 +7,7 @@ This guide deploys ReferConnect as a Next.js 16 application backed by PostgreSQL
 - Node.js 20 or newer
 - npm 10 or newer
 - PostgreSQL database
-- Resend account/API key for transactional email
+- Microsoft 365 mailbox with SMTP AUTH enabled for transactional email
 - A 32+ character `JWT_SECRET`
 
 ## Required Environment Variables
@@ -17,8 +17,11 @@ Create `.env.local` for local builds or configure the same values in your hostin
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/referconnect?sslmode=require"
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="ReferConnect <noreply@yourdomain.com>"
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT="587"
+SMTP_USER="notifications@yourdomain.com"
+SMTP_PASSWORD="your-mailbox-password-or-app-password"
+SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
 ADMIN_EMAILS="admin@yourdomain.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ```
@@ -46,6 +49,14 @@ TWENTY_PARTNER_WEBHOOK_URL=""
 TWENTY_PAYOUT_WEBHOOK_URL=""
 TWENTY_WEBHOOK_SECRET=""
 TWENTY_WEBHOOK_TIMEOUT_MS="12000"
+SMS_ENABLED="false"
+SMS_PROVIDER="voipms"
+ADMIN_SMS_NUMBERS="+15551234567"
+VOIPMS_API_USERNAME=""
+VOIPMS_API_PASSWORD=""
+VOIPMS_SMS_DID=""
+THREECX_SMS_WEBHOOK_URL=""
+THREECX_SMS_WEBHOOK_TOKEN=""
 ```
 
 ## Local Production Check
@@ -113,8 +124,11 @@ Create a local `.env` file for Compose:
 
 ```env
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-RESEND_FROM_EMAIL="ReferConnect <onboarding@resend.dev>"
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT="587"
+SMTP_USER="notifications@yourdomain.com"
+SMTP_PASSWORD="your-mailbox-password-or-app-password"
+SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
 ADMIN_EMAILS="admin@example.com"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
@@ -155,9 +169,10 @@ WHERE email = 'admin@yourdomain.com';
 - `npm run build` completes successfully.
 - Prisma schema has been pushed to the production database.
 - `NEXT_PUBLIC_APP_URL` matches the production URL.
-- Resend sender domain is verified for production email.
+- Microsoft 365 SMTP client submission has been tested with `npm run test:email -- you@example.com`.
 - Admin account can sign in and access `/admin`.
 - Affiliate registration, referral submission, and email sending have been tested.
+- Text alerts are tested with `SMS_ENABLED="true"` if using VoIP.ms or 3CX.
 - Webhook endpoints use `WEBHOOK_SECRET` if external systems post conversions or refunds.
 - TwentyCRM sync is configured with `TWENTY_WEBHOOK_URL` or per-view webhook URLs if referrals, partners, and payouts should be pushed into Twenty.
 - Scheduled commission maturation uses `CRON_SECRET` if exposed to a scheduler.

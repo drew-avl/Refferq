@@ -68,8 +68,11 @@ NEXT_PUBLIC_APP_URL="https://app.referconnect.com"
 DATABASE_URL="postgresql://user:password@host:5432/referconnect"
 
 # Email
-RESEND_API_KEY="re_xxxxxxxxxxxxx"
-EMAIL_FROM="noreply@referconnect.com"
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT="587"
+SMTP_USER="notifications@referconnect.com"
+SMTP_PASSWORD="your-mailbox-password-or-app-password"
+SMTP_FROM_EMAIL="ReferConnect <notifications@referconnect.com>"
 
 # JWT
 JWT_SECRET="your-production-secret-min-32-chars"
@@ -118,9 +121,9 @@ Some documentation files still reference localhost for development purposes. The
 ### Pre-Deployment
 - [ ] Update `.env` with production values
 - [ ] Verify DATABASE_URL points to production database
-- [ ] Confirm RESEND_API_KEY is active
+- [ ] Confirm Microsoft 365 SMTP credentials are active
 - [ ] Set strong JWT_SECRET (32+ characters)
-- [ ] Update EMAIL_FROM to your domain
+- [ ] Update SMTP_FROM_EMAIL to your domain
 
 ### DNS & SSL
 - [ ] Configure DNS A/CNAME records
