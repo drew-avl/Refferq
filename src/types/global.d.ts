@@ -16,6 +16,9 @@ declare namespace NodeJs {
         SMS_ENABLED?: string;
         SMS_PROVIDER?: string;
         ADMIN_SMS_NUMBERS?: string;
+        SMS_RELAY_URL?: string;
+        SMS_RELAY_TOKEN?: string;
+        SMS_RELAY_TIMEOUT_MS?: string;
         VOIPMS_API_USERNAME?: string;
         VOIPMS_API_PASSWORD?: string;
         VOIPMS_SMS_DID?: string;

@@ -1,9 +1,15 @@
-type SmsProvider = 'voipms' | '3cx';
+type SmsProvider = 'voipms' | '3cx' | 'relay';
 
 interface VoipMsResponsePayload {
   status?: string;
   error?: string;
   message?: string;
+}
+
+interface SmsRelayResponsePayload {
+  success?: boolean;
+  message?: string;
+  provider?: string;
 }
 
 export interface SmsResult {
@@ -113,10 +119,21 @@ export function getAffiliateSmsRecipient(payoutDetails: unknown) {
 class SmsService {
   private getProviders(): SmsProvider[] {
     const configured = (process.env.SMS_PROVIDER || '').toLowerCase();
-    if (configured === 'both') return ['voipms', '3cx'];
-    if (configured === 'voipms' || configured === '3cx') return [configured];
+    const configuredProviders = splitList(configured)
+      .filter((provider): provider is SmsProvider | 'both' => (
+        provider === 'voipms' ||
+        provider === '3cx' ||
+        provider === 'relay' ||
+        provider === 'both'
+      ));
+
+    if (configuredProviders.includes('both')) return ['voipms', '3cx'];
+    if (configuredProviders.length > 0) return Array.from(new Set(configuredProviders)) as SmsProvider[];
 
     const providers: SmsProvider[] = [];
+    if (process.env.SMS_RELAY_URL && process.env.SMS_RELAY_TOKEN) {
+      providers.push('relay');
+    }
     if (process.env.VOIPMS_API_USERNAME && process.env.VOIPMS_API_PASSWORD && process.env.VOIPMS_SMS_DID) {
       providers.push('voipms');
     }
@@ -125,6 +142,56 @@ class SmsService {
     }
 
     return providers;
+  }
+
+  private async sendViaRelay(to: string, message: string): Promise<SmsResult> {
+    const url = process.env.SMS_RELAY_URL;
+    const token = process.env.SMS_RELAY_TOKEN;
+
+    if (!url || !token) {
+      return { success: false, provider: 'relay', message: 'SMS relay URL or token is not configured' };
+    }
+
+    const timeoutMs = Number(process.env.SMS_RELAY_TIMEOUT_MS || '10000');
+    const controller = new AbortController();
+    const timeout = Number.isFinite(timeoutMs) && timeoutMs > 0
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : null;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ to, message }),
+        signal: controller.signal,
+      });
+
+      const rawBody = await response.text().catch(() => '');
+      let payload: SmsRelayResponsePayload | null = null;
+      try {
+        payload = rawBody ? JSON.parse(rawBody) as SmsRelayResponsePayload : null;
+      } catch {
+        payload = null;
+      }
+
+      if (response.ok && payload?.success) {
+        return { success: true, provider: 'relay', message: payload.message || 'SMS sent through relay' };
+      }
+
+      const detail = compactProviderDetail(payload?.message || rawBody);
+      return {
+        success: false,
+        provider: 'relay',
+        message: detail
+          ? `SMS relay failed with HTTP ${response.status}: ${detail}`
+          : `SMS relay failed with HTTP ${response.status}`,
+      };
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   private async sendViaVoipMs(to: string, message: string): Promise<SmsResult> {
@@ -220,7 +287,9 @@ class SmsService {
       try {
         const result = provider === 'voipms'
           ? await this.sendViaVoipMs(recipient, message)
-          : await this.sendViaThreeCx(recipient, message);
+          : provider === '3cx'
+            ? await this.sendViaThreeCx(recipient, message)
+            : await this.sendViaRelay(recipient, message);
         if (result.success) return result;
         failures.push(result);
       } catch (error) {

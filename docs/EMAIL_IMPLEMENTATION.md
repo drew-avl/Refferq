@@ -31,8 +31,11 @@ New lead text alerts go to `ADMIN_SMS_NUMBERS`. Partner transaction and payout t
 
 ```env
 SMS_ENABLED="true"
-SMS_PROVIDER="voipms"
+SMS_PROVIDER="relay"
 ADMIN_SMS_NUMBERS="+15551234567"
+SMS_RELAY_URL="https://sms-relay.example.com/send-sms"
+SMS_RELAY_TOKEN=""
+SMS_RELAY_TIMEOUT_MS="10000"
 VOIPMS_API_USERNAME=""
 VOIPMS_API_PASSWORD=""
 VOIPMS_SMS_DID=""
@@ -42,7 +45,8 @@ THREECX_SMS_WEBHOOK_TOKEN=""
 THREECX_SMS_FROM=""
 ```
 
-`SMS_PROVIDER` accepts `voipms`, `3cx`, or `both`. When `both` is selected, VoIP.ms is attempted first and 3CX is used as fallback.
+`SMS_PROVIDER` accepts `relay`, `voipms`, `3cx`, `both`, or comma-separated providers such as `relay,3cx`. When `relay` is selected, the Vercel app posts to `SMS_RELAY_URL` with `SMS_RELAY_TOKEN`; the VPS relay keeps the VoIP.ms credentials and static IP.
+Use the standalone `referconnect-sms-relay` VPS service for Vercel deployments where VoIP.ms API IP restrictions must remain enabled.
 For VoIP.ms, API access must be enabled, any API IP restriction must allow the app server's outbound IP, and `VOIPMS_SMS_DID` must be an SMS-capable DID.
 
 ## Verification

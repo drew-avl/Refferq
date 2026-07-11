@@ -45,11 +45,37 @@ SMS delivery is disabled until explicitly enabled:
 
 ```env
 SMS_ENABLED="true"
-SMS_PROVIDER="voipms" # voipms, 3cx, or both
+SMS_PROVIDER="relay" # relay, voipms, 3cx, both, or comma-separated providers such as relay,3cx
 ADMIN_SMS_NUMBERS="+15551234567,+15557654321"
 ```
 
 New lead alerts go to `ADMIN_SMS_NUMBERS`. Partner payout and completed-order alerts go to the partner's Text Alert Phone in partner settings, stored as `payoutDetails.notificationPhone`.
+
+### Fixed-IP Relay for Vercel
+
+Use a standalone `referconnect-sms-relay` service when the app runs on Vercel and VoIP.ms requires API source IP allowlisting. Vercel sends SMS requests to the relay over HTTPS, and the relay calls VoIP.ms from your VPS static IP.
+
+Vercel environment:
+
+```env
+SMS_ENABLED="true"
+SMS_PROVIDER="relay"
+SMS_RELAY_URL="https://sms-relay.example.com/send-sms"
+SMS_RELAY_TOKEN="same-token-as-the-vps-relay"
+ADMIN_SMS_NUMBERS="+15551234567,+15557654321"
+```
+
+VPS relay environment:
+
+```env
+SMS_RELAY_TOKEN="same-token-as-vercel"
+VOIPMS_API_USERNAME="your-voipms-api-username"
+VOIPMS_API_PASSWORD="your-voipms-api-password"
+VOIPMS_SMS_DID="15551234567"
+VOIPMS_API_ENDPOINT="https://voip.ms/api/v1/rest.php"
+```
+
+Deploy the standalone relay bundle to the VPS and keep it outside the Vercel project.
 
 ### VoIP.ms
 
