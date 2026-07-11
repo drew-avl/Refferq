@@ -30,6 +30,7 @@ The Entra app must have Microsoft Graph `Mail.Send` as an application permission
 SMS delivery is implemented in `src/lib/sms.ts` and is disabled unless `SMS_ENABLED="true"`.
 
 New lead text alerts go to `ADMIN_SMS_NUMBERS`. Partner transaction and payout text alerts use the partner's `payoutDetails.notificationPhone`, surfaced as Text Alert Phone in affiliate settings.
+All outbound SMS bodies are compacted to 160 characters before provider delivery. Referral lead texts are composed to fit that limit before the central SMS service applies the final safety cap.
 
 ```env
 SMS_ENABLED="true"

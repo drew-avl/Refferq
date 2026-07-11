@@ -53,6 +53,8 @@ ADMIN_SMS_NUMBERS="+15551234567,+15557654321"
 
 New lead alerts go to `ADMIN_SMS_NUMBERS`. Partner payout and completed-order alerts go to the partner's Text Alert Phone in partner settings, stored as `payoutDetails.notificationPhone`.
 
+SMS message bodies are capped at 160 characters before delivery so VoIP.ms and the fixed-IP relay do not reject over-length messages. Referral lead texts prioritize lead name, phone/email, partner/source, and only include the admin review URL when it fits.
+
 ### Referral Follow-up Reminders
 
 ReferConnect can remind the team when a new lead has not been actioned. A lead is considered unactioned while it remains in `NEW` status with no `reviewedAt` value. The Vercel cron in `vercel.json` calls `/api/cron/referral-reminders` every 15 minutes; the route only counts elapsed time inside the configured Monday-Friday business window and stamps referral metadata after a reminder is sent so the same lead is not repeatedly notified.
@@ -105,7 +107,7 @@ VOIPMS_API_ENDPOINT="https://voip.ms/api/v1/rest.php"
 
 The sender DID must be SMS-capable in VoIP.ms. The app calls the VoIP.ms REST `sendSMS` method as a GET request with the configured DID, destination number, and message.
 
-If VoIP.ms returns HTTP 500, check the provider response detail in the app logs. A SOAP `Bad Request` fault usually means the API was called with the wrong HTTP shape. Other common configuration causes are disabled VoIP.ms API access, an API IP restriction that does not include the server's outbound IP, invalid API credentials, or a `VOIPMS_SMS_DID` that is not SMS-capable.
+If VoIP.ms returns HTTP 500, check the provider response detail in the app logs. A SOAP `Bad Request` fault usually means the API was called with the wrong HTTP shape. Other common configuration causes are disabled VoIP.ms API access, an API IP restriction that does not include the server's outbound IP, invalid API credentials, over-length SMS bodies, or a `VOIPMS_SMS_DID` that is not SMS-capable.
 
 ### 3CX
 

@@ -27,6 +27,7 @@ export interface SmsBatchResult {
 }
 
 const VOIPMS_ENDPOINT = 'https://voip.ms/api/v1/rest.php';
+export const SMS_MESSAGE_MAX_LENGTH = 160;
 const MAX_PROVIDER_DETAIL_LENGTH = 700;
 
 function isSmsEnabled() {
@@ -65,6 +66,12 @@ function compactProviderDetail(value: string | null | undefined) {
   return compact.length > MAX_PROVIDER_DETAIL_LENGTH
     ? `${compact.slice(0, MAX_PROVIDER_DETAIL_LENGTH)}...`
     : compact;
+}
+
+export function compactSmsMessage(value: string) {
+  const compact = (value || '').replace(/\s+/g, ' ').trim();
+  if (compact.length <= SMS_MESSAGE_MAX_LENGTH) return compact;
+  return compact.slice(0, SMS_MESSAGE_MAX_LENGTH).trimEnd();
 }
 
 function parseVoipMsResponse(rawBody: string): VoipMsResponsePayload | null {
@@ -282,14 +289,19 @@ class SmsService {
       return { success: false, message: 'No SMS provider is configured' };
     }
 
+    const smsMessage = compactSmsMessage(message);
+    if (!smsMessage) {
+      return { success: false, message: 'SMS message is empty' };
+    }
+
     const failures: SmsResult[] = [];
     for (const provider of providers) {
       try {
         const result = provider === 'voipms'
-          ? await this.sendViaVoipMs(recipient, message)
+          ? await this.sendViaVoipMs(recipient, smsMessage)
           : provider === '3cx'
-            ? await this.sendViaThreeCx(recipient, message)
-            : await this.sendViaRelay(recipient, message);
+            ? await this.sendViaThreeCx(recipient, smsMessage)
+            : await this.sendViaRelay(recipient, smsMessage);
         if (result.success) return result;
         failures.push(result);
       } catch (error) {

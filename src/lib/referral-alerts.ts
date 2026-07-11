@@ -1,4 +1,5 @@
 import { getPublicAppUrl } from './platform-defaults';
+import { SMS_MESSAGE_MAX_LENGTH, compactSmsMessage } from './sms';
 
 export interface ReferralAlertCopyData {
   referralId: string;
@@ -47,38 +48,44 @@ export function formatReferralTimestamp(date: Date, timeZone = process.env.REFER
   }).format(date);
 }
 
-function leadContext(data: ReferralAlertCopyData) {
-  const company = cleanPart(data.company);
-  const address = [data.address, data.address2].map(cleanPart).filter(Boolean).join(', ');
-  const context = [company, address].filter(Boolean).join(' - ');
-  return context ? ` (${truncate(context, 80)})` : '';
-}
-
 function leadDetailParts(data: ReferralAlertCopyData) {
   const address = [data.address, data.address2].map(cleanPart).filter(Boolean).join(', ');
   return [
-    cleanPart(data.leadPhone) ? `Phone: ${cleanPart(data.leadPhone)}` : '',
-    cleanPart(data.leadEmail) ? `Email: ${cleanPart(data.leadEmail)}` : '',
-    cleanPart(data.programName) ? `Source: ${cleanPart(data.programName)}` : '',
-    cleanPart(data.company) ? `Company: ${cleanPart(data.company)}` : '',
-    address ? `Address: ${truncate(address, 100)}` : '',
+    cleanPart(data.leadPhone) ? `P: ${cleanPart(data.leadPhone)}` : '',
+    cleanPart(data.leadEmail) ? `E: ${truncate(cleanPart(data.leadEmail), 42)}` : '',
+    cleanPart(data.affiliateName) ? `Partner: ${truncate(cleanPart(data.affiliateName), 28)}` : '',
+    cleanPart(data.programName) ? `Source: ${truncate(cleanPart(data.programName), 28)}` : '',
+    cleanPart(data.company) ? `Co: ${truncate(cleanPart(data.company), 32)}` : '',
+    address ? `Addr: ${truncate(address, 40)}` : '',
   ].filter(Boolean);
+}
+
+function appendIfFits(base: string, part: string) {
+  if (!part) return base;
+  const next = `${base}. ${part}`;
+  return next.length <= SMS_MESSAGE_MAX_LENGTH ? next : base;
+}
+
+function buildCompactReferralSms(base: string, details: string[], adminUrl: string) {
+  let message = details.reduce(appendIfFits, base);
+  message = appendIfFits(message, `Review: ${adminUrl}`);
+  return compactSmsMessage(message);
 }
 
 export function formatNewReferralSms(data: ReferralAlertCopyData) {
   const url = getAdminLeadUrl(data.referralId);
-  const details = leadDetailParts(data).join('. ');
-  return truncate(
-    `ReferConnect new lead: ${cleanPart(data.leadName)}${leadContext(data)}. Partner: ${cleanPart(data.affiliateName)}. ${details ? `${details}. ` : ''}Review: ${url}`,
-    480
+  return buildCompactReferralSms(
+    `RC new lead: ${truncate(cleanPart(data.leadName), 36)}`,
+    leadDetailParts(data),
+    url
   );
 }
 
 export function formatReferralReminderSms(data: ReferralAlertCopyData) {
   const url = getAdminLeadUrl(data.referralId);
-  const details = leadDetailParts(data).join('. ');
-  return truncate(
-    `ReferConnect follow-up: ${cleanPart(data.leadName)} has been New for ${data.ageLabel || 'over 1 hour'}. ${details ? `${details}. ` : ''}Review: ${url}`,
-    480
+  return buildCompactReferralSms(
+    `RC follow-up: ${truncate(cleanPart(data.leadName), 30)} new ${data.ageLabel || 'over 1h'}`,
+    leadDetailParts(data),
+    url
   );
 }
