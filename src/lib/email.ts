@@ -15,6 +15,13 @@ interface GraphTokenResponse {
   error_description?: string;
 }
 
+interface GraphErrorPayload {
+  error?: {
+    code?: string;
+    message?: string;
+  };
+}
+
 interface GraphEmailMessage {
   to: string;
   subject: string;
@@ -139,6 +146,45 @@ function toGraphAttachments(attachments?: EmailAttachment[]) {
   }));
 }
 
+function parseGraphError(detail: string): { code?: string; message?: string } {
+  try {
+    const payload = JSON.parse(detail) as GraphErrorPayload;
+    return {
+      code: payload.error?.code,
+      message: payload.error?.message,
+    };
+  } catch {
+    return {};
+  }
+}
+
+function formatGraphSendMailError(status: number, detail: string, sender: string): string {
+  const graphError = parseGraphError(detail);
+  const graphMessage = graphError.message || detail;
+
+  if (status === 404 && graphError.code === 'ErrorInvalidUser') {
+    return [
+      `Microsoft Graph sender mailbox "${sender}" is invalid.`,
+      'Set MICROSOFT_GRAPH_SENDER to a real Exchange Online mailbox in the tenant, or create/license that mailbox before sending.',
+      graphMessage ? `Graph detail: ${graphMessage}` : '',
+    ].filter(Boolean).join(' ');
+  }
+
+  if (status === 403) {
+    return [
+      `Microsoft Graph rejected sendMail for sender "${sender}" with 403 Forbidden.`,
+      'Confirm Mail.Send application permission, admin consent, and any Application Access Policy for this mailbox.',
+      graphMessage ? `Graph detail: ${graphMessage}` : '',
+    ].filter(Boolean).join(' ');
+  }
+
+  return `Microsoft Graph sendMail failed (${status}) for sender "${sender}": ${graphMessage || 'No response detail'}`;
+}
+
+function getEmailErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown email sending error';
+}
+
 export async function sendGraphEmail(message: GraphEmailMessage) {
   const config = getGraphConfig();
   const accessToken = await getGraphAccessToken(config);
@@ -175,7 +221,7 @@ export async function sendGraphEmail(message: GraphEmailMessage) {
 
   if (response.status !== 202) {
     const detail = await response.text().catch(() => response.statusText);
-    throw new Error(`Microsoft Graph sendMail failed (${response.status}): ${detail || response.statusText}`);
+    throw new Error(formatGraphSendMailError(response.status, detail || response.statusText, config.sender));
   }
 
   return { accepted: true, sender: config.sender, recipients: toRecipients.length };
@@ -354,8 +400,9 @@ class EmailService {
 
       return { success: true, message: 'Email sent successfully' };
     } catch (error) {
-      console.error('Email sending error:', error);
-      return { success: false, message: 'Failed to send email' };
+      const message = getEmailErrorMessage(error);
+      console.error('Email sending error:', message);
+      return { success: false, message };
     }
   }
 
@@ -1111,8 +1158,9 @@ class EmailService {
       console.log('Custom email sent:', result);
       return { success: true, message: 'Email sent successfully' };
     } catch (error) {
-      console.error('Failed to send custom email:', error);
-      return { success: false, message: 'Failed to send email' };
+      const message = getEmailErrorMessage(error);
+      console.error('Failed to send custom email:', message);
+      return { success: false, message };
     }
   }
 

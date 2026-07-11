@@ -78,15 +78,38 @@ export async function POST(request: Request) {
       testBody = testBody.replace(regex, value);
     });
 
-    // Actually send the test email via the configured Microsoft Graph transport
-    try {
-      await emailService.sendCustomEmail(
-        recipientEmail,
-        `[TEST] ${testSubject}`,
-        testBody
+    const emailResult = await emailService.sendCustomEmail(
+      recipientEmail,
+      `[TEST] ${testSubject}`,
+      testBody
+    );
+
+    if (!emailResult.success) {
+      const emailLog = await prisma.emailLog.create({
+        data: {
+          templateId: template.id,
+          recipientId: user.id,
+          recipientEmail: recipientEmail,
+          subject: `[TEST] ${testSubject}`,
+          body: testBody,
+          status: 'FAILED',
+          error: emailResult.message,
+          metadata: {
+            isTest: true,
+            sentBy: user.id,
+          } as any,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to send test email',
+          message: emailResult.message,
+          emailLog,
+        },
+        { status: 502 }
       );
-    } catch (emailError) {
-      console.error('Email send failed:', emailError);
     }
 
     // Log the test email

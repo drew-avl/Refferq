@@ -10,13 +10,15 @@ Create an Entra app registration for ReferConnect:
 2. Add an application client secret.
 3. API permissions -> Microsoft Graph -> Application permissions -> `Mail.Send`.
 4. Grant admin consent.
-5. Use a real Exchange Online mailbox as the sender, for example `noreply@n45tech.com`.
+5. Use a real Exchange Online mailbox as the sender, for example `notifications@yourdomain.com`.
+
+`MICROSOFT_GRAPH_SENDER` is used in the Graph endpoint `/users/{sender}/sendMail`. It must identify a mailbox that exists in the tenant. Do not set it to an unlicensed address, a distribution list, or an alias-only address. If you want to send from a shared mailbox, use that shared mailbox's actual Microsoft 365 mailbox identity and make sure the app is allowed to send as it.
 
 ```env
 MICROSOFT_TENANT_ID="your-tenant-id"
 MICROSOFT_CLIENT_ID="your-app-client-id"
 MICROSOFT_CLIENT_SECRET="your-app-client-secret"
-MICROSOFT_GRAPH_SENDER="noreply@n45tech.com"
+MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ADMIN_EMAILS="admin@yourdomain.com,support@yourdomain.com"
 ```
@@ -60,6 +62,8 @@ VOIPMS_API_ENDPOINT="https://voip.ms/api/v1/rest.php"
 
 The sender DID must be SMS-capable in VoIP.ms. The app calls the VoIP.ms REST `sendSMS` method with the configured DID, destination number, and message.
 
+If VoIP.ms returns HTTP 500, check the provider response detail in the app logs. Common configuration causes are disabled VoIP.ms API access, an API IP restriction that does not include the server's outbound IP, invalid API credentials, or a `VOIPMS_SMS_DID` that is not SMS-capable.
+
 ### 3CX
 
 3CX deployments vary by SMS provider and integration setup, so ReferConnect supports a configurable outbound webhook:
@@ -87,6 +91,8 @@ Use this endpoint with 3CX directly if your deployment exposes one, or with a sm
 - Confirm the Entra app has Microsoft Graph `Mail.Send` application permission.
 - Confirm admin consent has been granted after adding `Mail.Send`.
 - Confirm `MICROSOFT_GRAPH_SENDER` is a real Exchange Online mailbox.
+- If Graph returns `ErrorInvalidUser`, the configured sender mailbox does not resolve in that tenant. Create/license the mailbox or change `MICROSOFT_GRAPH_SENDER` to one that exists.
 - Check Microsoft Graph errors in server logs for token or `sendMail` failures.
+- Check VoIP.ms SMS errors in server logs for the provider response body, not just the HTTP status.
 - Leave `SMS_ENABLED="false"` until provider credentials are ready.
 - Use E.164 phone numbers, for example `+15551234567`.

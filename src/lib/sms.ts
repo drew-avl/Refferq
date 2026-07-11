@@ -1,5 +1,11 @@
 type SmsProvider = 'voipms' | '3cx';
 
+interface VoipMsResponsePayload {
+  status?: string;
+  error?: string;
+  message?: string;
+}
+
 export interface SmsResult {
   success: boolean;
   message: string;
@@ -15,6 +21,7 @@ export interface SmsBatchResult {
 }
 
 const VOIPMS_ENDPOINT = 'https://voip.ms/api/v1/rest.php';
+const MAX_PROVIDER_DETAIL_LENGTH = 700;
 
 function isSmsEnabled() {
   return process.env.SMS_ENABLED === 'true';
@@ -44,6 +51,36 @@ function normalizePhone(value: string | null | undefined) {
 
 function normalizeVoipMsNumber(value: string) {
   return value.replace(/\D/g, '');
+}
+
+function compactProviderDetail(value: string | null | undefined) {
+  if (!value) return '';
+  const compact = value.replace(/\s+/g, ' ').trim();
+  return compact.length > MAX_PROVIDER_DETAIL_LENGTH
+    ? `${compact.slice(0, MAX_PROVIDER_DETAIL_LENGTH)}...`
+    : compact;
+}
+
+function parseVoipMsResponse(rawBody: string): VoipMsResponsePayload | null {
+  if (!rawBody) return null;
+
+  try {
+    const payload = JSON.parse(rawBody) as VoipMsResponsePayload;
+    return payload && typeof payload === 'object' ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatVoipMsFailure(response: Response, rawBody: string, payload: VoipMsResponsePayload | null) {
+  const providerDetail = compactProviderDetail(
+    payload?.error || payload?.message || payload?.status || rawBody
+  );
+  const baseMessage = response.ok
+    ? 'VoIP.ms SMS request was rejected'
+    : `VoIP.ms SMS failed with HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+
+  return providerDetail ? `${baseMessage}: ${providerDetail}` : baseMessage;
 }
 
 export function getAdminSmsRecipients() {
@@ -115,7 +152,8 @@ class SmsService {
       body,
     });
 
-    const payload = await response.json().catch(() => null);
+    const rawBody = await response.text().catch(() => '');
+    const payload = parseVoipMsResponse(rawBody);
     const status = String(payload?.status || '').toLowerCase();
 
     if (response.ok && (status === 'success' || status === 'ok')) {
@@ -125,7 +163,7 @@ class SmsService {
     return {
       success: false,
       provider: 'voipms',
-      message: payload?.status || payload?.error || `VoIP.ms SMS failed with HTTP ${response.status}`,
+      message: formatVoipMsFailure(response, rawBody, payload),
     };
   }
 
