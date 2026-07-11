@@ -99,11 +99,10 @@ Click "Environment Variables" and add:
 # Required Variables
 DATABASE_URL=postgresql://user:pass@host:5432/db
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
-SMTP_HOST=smtp.office365.com
-SMTP_PORT=587
-SMTP_USER=notifications@yourdomain.com
-SMTP_PASSWORD=your-mailbox-password-or-app-password
-SMTP_FROM_EMAIL=ReferConnect <notifications@yourdomain.com>
+MICROSOFT_TENANT_ID=your-tenant-id
+MICROSOFT_CLIENT_ID=your-app-client-id
+MICROSOFT_CLIENT_SECRET=your-app-client-secret
+MICROSOFT_GRAPH_SENDER=notifications@yourdomain.com
 ADMIN_EMAILS=admin@yourdomain.com
 SMS_ENABLED=false
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
@@ -118,10 +117,11 @@ STRIPE_PUBLISHABLE_KEY=pk_live_...
 openssl rand -base64 32
 ```
 
-**For Microsoft 365 SMTP:**
-- Use `smtp.office365.com` on port `587`
-- Confirm SMTP AUTH is enabled for the sending mailbox
-- Use a mailbox password or app password allowed by your tenant policy
+**For Microsoft Graph email:**
+- Create an Entra app registration for ReferConnect
+- Add Microsoft Graph application permission `Mail.Send`
+- Grant admin consent
+- Set `MICROSOFT_GRAPH_SENDER` to a real Exchange Online mailbox
 
 ### 3.4 Deploy
 
@@ -297,9 +297,9 @@ Solution: Add to `vercel.json`:
 
 **Error: Email sending failed**
 
-- Verify `SMTP_HOST` and `SMTP_PORT`
-- Check `SMTP_USER` and `SMTP_PASSWORD`
-- For Microsoft 365: confirm SMTP AUTH is enabled for the mailbox
+- Verify `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, and `MICROSOFT_CLIENT_SECRET`
+- Confirm the Entra app has Microsoft Graph `Mail.Send` application permission
+- Confirm admin consent is granted and `MICROSOFT_GRAPH_SENDER` is a real mailbox
 
 ### Database Issues
 

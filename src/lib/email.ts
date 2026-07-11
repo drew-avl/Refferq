@@ -1,43 +1,184 @@
-import nodemailer from 'nodemailer';
-import type Mail from 'nodemailer/lib/mailer';
 import { getPublicAppUrl } from './platform-defaults';
 import { PayoutMethod } from './payout-methods';
 
-// Initialize SMTP with credentials only when needed (server-side)
-let smtpTransporter: nodemailer.Transporter | null = null;
-
-function getSmtpTransporter(): nodemailer.Transporter {
-  if (!smtpTransporter) {
-    const host = process.env.SMTP_HOST || 'smtp.office365.com';
-    const port = Number.parseInt(process.env.SMTP_PORT || '587', 10);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASSWORD;
-
-    if (!host) {
-      throw new Error('SMTP_HOST environment variable is not set');
-    }
-
-    if (!user || !pass) {
-      throw new Error('SMTP_USER and SMTP_PASSWORD environment variables are required');
-    }
-
-    smtpTransporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: process.env.SMTP_SECURE === 'true' || port === 465,
-      requireTLS: process.env.SMTP_REQUIRE_TLS !== 'false' && port !== 465,
-      auth: { user, pass },
-      tls: {
-        minVersion: 'TLSv1.2',
-      },
-    });
-  }
-
-  return smtpTransporter;
+export interface EmailAttachment {
+  filename?: string;
+  name?: string;
+  content?: string | Buffer | Uint8Array | ArrayBuffer;
+  contentType?: string;
 }
 
-export async function sendSmtpEmail(message: Mail.Options) {
-  return getSmtpTransporter().sendMail(message);
+interface GraphTokenResponse {
+  access_token?: string;
+  expires_in?: number;
+  error?: string;
+  error_description?: string;
+}
+
+interface GraphEmailMessage {
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: EmailAttachment[];
+}
+
+interface GraphConfig {
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  sender: string;
+  saveToSentItems: boolean;
+}
+
+let graphTokenCache: { accessToken: string; expiresAt: number } | null = null;
+
+function getGraphConfig(): GraphConfig {
+  const tenantId = process.env.MICROSOFT_TENANT_ID || process.env.AZURE_TENANT_ID;
+  const clientId = process.env.MICROSOFT_CLIENT_ID || process.env.AZURE_CLIENT_ID;
+  const clientSecret = process.env.MICROSOFT_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET;
+  const sender =
+    process.env.MICROSOFT_GRAPH_SENDER ||
+    process.env.MICROSOFT_365_SENDER ||
+    process.env.EMAIL_FROM_ADDRESS;
+
+  const missing = [
+    ['MICROSOFT_TENANT_ID', tenantId],
+    ['MICROSOFT_CLIENT_ID', clientId],
+    ['MICROSOFT_CLIENT_SECRET', clientSecret],
+    ['MICROSOFT_GRAPH_SENDER', sender],
+  ]
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Microsoft Graph email is not configured. Missing: ${missing.join(', ')}`);
+  }
+
+  return {
+    tenantId: tenantId!,
+    clientId: clientId!,
+    clientSecret: clientSecret!,
+    sender: sender!,
+    saveToSentItems: process.env.MICROSOFT_GRAPH_SAVE_TO_SENT_ITEMS !== 'false',
+  };
+}
+
+async function getGraphAccessToken(config: GraphConfig): Promise<string> {
+  if (graphTokenCache && graphTokenCache.expiresAt > Date.now() + 60_000) {
+    return graphTokenCache.accessToken;
+  }
+
+  const tokenUrl = `https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}/oauth2/v2.0/token`;
+  const body = new URLSearchParams({
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    grant_type: 'client_credentials',
+    scope: 'https://graph.microsoft.com/.default',
+  });
+
+  const response = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const payload = (await response.json().catch(() => ({}))) as GraphTokenResponse;
+
+  if (!response.ok || !payload.access_token) {
+    const detail = payload.error_description || payload.error || response.statusText;
+    throw new Error(`Microsoft Graph token request failed (${response.status}): ${detail}`);
+  }
+
+  graphTokenCache = {
+    accessToken: payload.access_token,
+    expiresAt: Date.now() + Math.max((payload.expires_in || 3600) - 120, 60) * 1000,
+  };
+
+  return payload.access_token;
+}
+
+function toGraphRecipients(to: string) {
+  return to
+    .split(/[;,]/)
+    .map((email) => email.trim())
+    .filter(Boolean)
+    .map((address) => ({
+      emailAddress: { address },
+    }));
+}
+
+function attachmentContentToBase64(attachment: EmailAttachment): string {
+  const { content } = attachment;
+
+  if (content === undefined || content === null) {
+    throw new Error(`Attachment ${attachment.filename || attachment.name || 'file'} is missing content`);
+  }
+
+  if (typeof content === 'string') {
+    return Buffer.from(content, 'utf8').toString('base64');
+  }
+
+  if (Buffer.isBuffer(content)) {
+    return content.toString('base64');
+  }
+
+  if (content instanceof ArrayBuffer) {
+    return Buffer.from(content).toString('base64');
+  }
+
+  return Buffer.from(content).toString('base64');
+}
+
+function toGraphAttachments(attachments?: EmailAttachment[]) {
+  if (!attachments || attachments.length === 0) return undefined;
+
+  return attachments.map((attachment) => ({
+    '@odata.type': '#microsoft.graph.fileAttachment',
+    name: attachment.filename || attachment.name || 'attachment',
+    contentType: attachment.contentType || 'application/octet-stream',
+    contentBytes: attachmentContentToBase64(attachment),
+  }));
+}
+
+export async function sendGraphEmail(message: GraphEmailMessage) {
+  const config = getGraphConfig();
+  const accessToken = await getGraphAccessToken(config);
+  const toRecipients = toGraphRecipients(message.to);
+
+  if (toRecipients.length === 0) {
+    throw new Error('At least one email recipient is required');
+  }
+
+  const graphPayload = {
+    message: {
+      subject: message.subject,
+      body: {
+        contentType: 'HTML',
+        content: message.html,
+      },
+      toRecipients,
+      attachments: toGraphAttachments(message.attachments),
+    },
+    saveToSentItems: config.saveToSentItems,
+  };
+
+  const response = await fetch(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(config.sender)}/sendMail`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(graphPayload),
+    }
+  );
+
+  if (response.status !== 202) {
+    const detail = await response.text().catch(() => response.statusText);
+    throw new Error(`Microsoft Graph sendMail failed (${response.status}): ${detail || response.statusText}`);
+  }
+
+  return { accepted: true, sender: config.sender, recipients: toRecipients.length };
 }
 
 export interface EmailTemplate {
@@ -45,7 +186,7 @@ export interface EmailTemplate {
   subject: string;
   html: string;
   from?: string;
-  attachments?: Mail.Attachment[];
+  attachments?: EmailAttachment[];
 }
 
 // Move private helper out of class if needed, or keep it. I'll keep it.
@@ -105,12 +246,6 @@ export interface CommissionNotificationData {
 }
 
 class EmailService {
-  private defaultFrom =
-    process.env.SMTP_FROM_EMAIL ||
-    process.env.SMTP_FROM ||
-    process.env.SMTP_USER ||
-    'ReferConnect <noreply@referconnect.com>';
-
   /** Escape HTML special characters to prevent XSS in email templates */
   private escapeHtml(str: string): string {
     return String(str)
@@ -207,11 +342,10 @@ class EmailService {
     to: string;
     subject: string;
     html: string;
-    attachments?: Mail.Attachment[];
+    attachments?: EmailAttachment[];
   }): Promise<{ success: boolean; message: string }> {
     try {
-      await sendSmtpEmail({
-        from: this.defaultFrom,
+      await sendGraphEmail({
         to: params.to,
         subject: params.subject,
         html: params.html,
@@ -964,11 +1098,10 @@ class EmailService {
     to: string,
     subject: string,
     html: string,
-    attachments?: Mail.Attachment[]
+    attachments?: EmailAttachment[]
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const result = await sendSmtpEmail({
-        from: this.defaultFrom,
+      const result = await sendGraphEmail({
         to,
         subject,
         html,

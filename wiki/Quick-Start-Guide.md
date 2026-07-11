@@ -55,12 +55,11 @@ DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 # JWT Secret (generate a random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-# Email (Microsoft 365 SMTP)
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+# Email (Microsoft Graph)
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -77,10 +76,11 @@ openssl rand -base64 32
 [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
 ```
 
-**Configure SMTP:**
-1. Use a licensed Microsoft 365 mailbox
-2. Confirm SMTP AUTH is enabled for that mailbox
-3. Run `npm run test:email -- you@example.com`
+**Configure Microsoft Graph email:**
+1. Create an Entra app registration
+2. Add Microsoft Graph application permission `Mail.Send` and grant admin consent
+3. Set `MICROSOFT_GRAPH_SENDER` to a real Exchange Online mailbox
+4. Run `npm run test:email -- you@example.com`
 
 ---
 
@@ -161,8 +161,8 @@ npm run test:email admin@example.com
 
 **Expected output:**
 ```
-✅ Email sent successfully!
-📬 Check your inbox for the test email.
+Email accepted by Microsoft Graph.
+Check your inbox for the test email.
 ```
 
 ---
@@ -247,10 +247,11 @@ npm run db:generate
 **Issue:** Welcome emails not arriving
 
 **Solution:**
-1. Check `SMTP_USER` and `SMTP_PASSWORD` in .env.local
-2. Confirm SMTP AUTH is enabled for the Microsoft 365 mailbox
-3. Check spam folder
-4. Run test: `npm run test:email your@email.com`
+1. Check `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, and `MICROSOFT_CLIENT_SECRET` in .env.local
+2. Confirm the Entra app has Microsoft Graph `Mail.Send` with admin consent
+3. Confirm `MICROSOFT_GRAPH_SENDER` is a real mailbox
+4. Check spam folder
+5. Run test: `npm run test:email your@email.com`
 
 ---
 
@@ -263,7 +264,7 @@ npm run dev
 - Hot reload enabled
 - Detailed error messages
 - Source maps available
-- Use your Microsoft 365 notification mailbox for emails
+- Use your Microsoft 365 notification mailbox through Microsoft Graph
 
 ### Production Build
 ```bash

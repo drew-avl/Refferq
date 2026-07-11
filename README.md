@@ -135,7 +135,7 @@
 - **Recharts** - Data visualization charts
 
 ### Email
-- **SMTP / Microsoft 365** - Transactional emails through Microsoft 365 SMTP client submission
+- **Microsoft Graph Email** - Transactional emails through Microsoft 365 Graph `sendMail`
 - **Email Templates** - Customizable HTML templates
 
 ### Development
@@ -181,12 +181,11 @@ DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"
 # JWT Secret (generate a secure random string)
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-# Email Configuration (Microsoft 365 SMTP)
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+# Email Configuration (Microsoft Graph)
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
 
 # Admin Notification Emails (comma-separated)
 ADMIN_EMAILS="admin@yourdomain.com"
@@ -237,20 +236,20 @@ npx prisma db seed
 
 ### Step 5: Email Configuration
 
-ReferConnect sends transactional emails through SMTP. For Microsoft 365, use SMTP client submission with `smtp.office365.com` on port `587` and STARTTLS.
+ReferConnect sends transactional emails through Microsoft Graph `sendMail`.
 
-1. **Prepare the Microsoft 365 mailbox**
-   - Use a licensed mailbox such as `notifications@yourdomain.com`
-   - Confirm SMTP AUTH is enabled for that mailbox
-   - Use a mailbox password or app password where your tenant policy requires one
+1. **Prepare Microsoft Graph**
+   - Create an Entra app registration
+   - Add Microsoft Graph application permission `Mail.Send`
+   - Grant admin consent
+   - Use a real Exchange Online mailbox such as `notifications@yourdomain.com`
 
 2. **Update .env.local**
    ```env
-   SMTP_HOST="smtp.office365.com"
-   SMTP_PORT="587"
-   SMTP_USER="notifications@yourdomain.com"
-   SMTP_PASSWORD="your-mailbox-password-or-app-password"
-   SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+   MICROSOFT_TENANT_ID="your-tenant-id"
+   MICROSOFT_CLIENT_ID="your-app-client-id"
+   MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+   MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
    ADMIN_EMAILS="admin@yourdomain.com"   # Optional extra recipients in addition to active admins/staff
    ```
 
@@ -259,7 +258,7 @@ ReferConnect sends transactional emails through SMTP. For Microsoft 365, use SMT
    npm run test:email -- test@example.com
    ```
 
-See [docs/EMAIL.md](./docs/EMAIL.md) for detailed SMTP and SMS configuration.
+See [docs/EMAIL.md](./docs/EMAIL.md) for detailed Microsoft Graph email and SMS configuration.
 
 ### Step 6: Run Development Server
 

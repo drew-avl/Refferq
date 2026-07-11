@@ -1,24 +1,33 @@
 # Email and Text Alert Configuration
 
-ReferConnect sends transactional email through SMTP. The default settings are for Microsoft 365 SMTP client submission.
+ReferConnect sends transactional email through Microsoft Graph `sendMail`, not SMTP AUTH. This avoids app passwords, SMTP AUTH mailbox toggles, and Basic Auth tenant policy issues.
 
-## Microsoft 365 SMTP
+## Microsoft Graph Email
 
-Use a licensed mailbox such as `notifications@yourdomain.com`.
+Create an Entra app registration for ReferConnect:
+
+1. Microsoft Entra admin center -> App registrations -> New registration.
+2. Add an application client secret.
+3. API permissions -> Microsoft Graph -> Application permissions -> `Mail.Send`.
+4. Grant admin consent.
+5. Use a real Exchange Online mailbox as the sender, for example `noreply@n45tech.com`.
 
 ```env
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="noreply@n45tech.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ADMIN_EMAILS="admin@yourdomain.com,support@yourdomain.com"
 ```
 
-Microsoft 365 usually requires SMTP AUTH to be enabled for the sending mailbox. Keep `SMTP_PORT="587"` and leave `SMTP_SECURE` unset so Nodemailer uses STARTTLS.
+Optional:
 
-Test SMTP from the command line:
+```env
+MICROSOFT_GRAPH_SAVE_TO_SENT_ITEMS="false"
+```
+
+Test Graph email from the command line:
 
 ```bash
 npm run test:email -- you@example.com
@@ -26,7 +35,7 @@ npm run test:email -- you@example.com
 
 ## Email Templates
 
-Automated email templates are still managed in the app under Admin -> Emails. The transport changed, but callers still use `emailService`, so existing welcome, new-lead, report, payout, and OTP email flows continue through the same service.
+Automated email templates are managed in the app under Admin -> Emails. Welcome, new-lead, report, payout, and OTP flows all use `emailService`, so they send through Microsoft Graph once the environment variables are set.
 
 ## Text Alerts
 
@@ -75,8 +84,9 @@ Use this endpoint with 3CX directly if your deployment exposes one, or with a sm
 
 ## Troubleshooting
 
-- Confirm `SMTP_USER` can send mail in Microsoft 365 and SMTP AUTH is enabled for that mailbox.
-- Confirm `SMTP_FROM_EMAIL` matches the mailbox or an allowed sender alias.
-- Check server logs for `Email sending error` or SMS provider errors.
+- Confirm the Entra app has Microsoft Graph `Mail.Send` application permission.
+- Confirm admin consent has been granted after adding `Mail.Send`.
+- Confirm `MICROSOFT_GRAPH_SENDER` is a real Exchange Online mailbox.
+- Check Microsoft Graph errors in server logs for token or `sendMail` failures.
 - Leave `SMS_ENABLED="false"` until provider credentials are ready.
 - Use E.164 phone numbers, for example `+15551234567`.

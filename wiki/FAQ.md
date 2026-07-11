@@ -38,7 +38,7 @@ ReferConnect is a comprehensive, open-source referral program management platfor
 Yes! ReferConnect is 100% free and open-source under the MIT License. You can use it commercially without any licensing fees. However, you'll need to pay for:
 - Server hosting (Vercel free tier available)
 - Database hosting (many free options)
-- Email service or mailbox for SMTP delivery
+- Microsoft 365 mailbox and Graph app registration for email delivery
 - Optional payment processing (Stripe fees)
 
 ### How is ReferConnect different from other referral program platforms?
@@ -162,7 +162,7 @@ Currently, email notifications are sent for key events. Email preference managem
 
 **Infrastructure:**
 - JWT authentication (jose)
-- SMTP / Microsoft 365 (email)
+- Microsoft Graph / Microsoft 365 (email)
 - Stripe (optional payments)
 
 ### Is ReferConnect production-ready?
@@ -205,10 +205,11 @@ No, ReferConnect requires an internet connection. It's a web application that ne
 ### Emails are not being sent
 
 **Check:**
-1. `SMTP_USER` and `SMTP_PASSWORD` in .env.local
-2. SMTP AUTH on the Microsoft 365 sending mailbox
-3. Spam/junk folder
-4. Run test: `npm run test:email your@email.com`
+1. `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, and `MICROSOFT_CLIENT_SECRET` in .env.local
+2. Microsoft Graph `Mail.Send` application permission with admin consent
+3. `MICROSOFT_GRAPH_SENDER` points to a real Exchange Online mailbox
+4. Spam/junk folder
+5. Run test: `npm run test:email your@email.com`
 
 See [Email System](Email-System) for detailed troubleshooting.
 

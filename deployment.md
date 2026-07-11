@@ -7,7 +7,7 @@ This guide deploys ReferConnect as a Next.js 16 application backed by PostgreSQL
 - Node.js 20 or newer
 - npm 10 or newer
 - PostgreSQL database
-- Microsoft 365 mailbox with SMTP AUTH enabled for transactional email
+- Entra app registration with Microsoft Graph `Mail.Send` application permission for transactional email
 - A 32+ character `JWT_SECRET`
 
 ## Required Environment Variables
@@ -17,11 +17,10 @@ Create `.env.local` for local builds or configure the same values in your hostin
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/referconnect?sslmode=require"
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
 ADMIN_EMAILS="admin@yourdomain.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ```
@@ -124,11 +123,10 @@ Create a local `.env` file for Compose:
 
 ```env
 JWT_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="notifications@yourdomain.com"
 ADMIN_EMAILS="admin@example.com"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
@@ -169,7 +167,7 @@ WHERE email = 'admin@yourdomain.com';
 - `npm run build` completes successfully.
 - Prisma schema has been pushed to the production database.
 - `NEXT_PUBLIC_APP_URL` matches the production URL.
-- Microsoft 365 SMTP client submission has been tested with `npm run test:email -- you@example.com`.
+- Microsoft Graph email has been tested with `npm run test:email -- you@example.com`.
 - Admin account can sign in and access `/admin`.
 - Affiliate registration, referral submission, and email sending have been tested.
 - Text alerts are tested with `SMS_ENABLED="true"` if using VoIP.ms or 3CX.

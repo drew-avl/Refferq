@@ -2,14 +2,16 @@ declare namespace NodeJs {
     interface ProcessEnv {
         JWT_SECRET: string;
         DATABASE_URL: string;
-        SMTP_HOST?: string;
-        SMTP_PORT?: string;
-        SMTP_USER?: string;
-        SMTP_PASSWORD?: string;
-        SMTP_FROM_EMAIL?: string;
-        SMTP_FROM?: string;
-        SMTP_SECURE?: string;
-        SMTP_REQUIRE_TLS?: string;
+        MICROSOFT_TENANT_ID?: string;
+        MICROSOFT_CLIENT_ID?: string;
+        MICROSOFT_CLIENT_SECRET?: string;
+        MICROSOFT_GRAPH_SENDER?: string;
+        MICROSOFT_365_SENDER?: string;
+        MICROSOFT_GRAPH_SAVE_TO_SENT_ITEMS?: string;
+        AZURE_TENANT_ID?: string;
+        AZURE_CLIENT_ID?: string;
+        AZURE_CLIENT_SECRET?: string;
+        EMAIL_FROM_ADDRESS?: string;
         ADMIN_EMAILS?: string;
         SMS_ENABLED?: string;
         SMS_PROVIDER?: string;

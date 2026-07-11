@@ -90,7 +90,7 @@
 - **Backend:** Next.js App Router, API Routes
 - **Database:** PostgreSQL with Prisma ORM
 - **Authentication:** JWT with OTP verification
-- **Email:** SMTP / Microsoft 365
+- **Email:** Microsoft Graph / Microsoft 365
 - **Payouts:** PayPal and Zelle
 
 ---

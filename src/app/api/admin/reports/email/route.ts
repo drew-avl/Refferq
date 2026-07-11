@@ -98,26 +98,14 @@ export async function POST(request: NextRequest) {
         contentType: 'text/csv',
       },
     ];
-    const fromEmail =
-      process.env.SMTP_FROM_EMAIL ||
-      process.env.SMTP_FROM ||
-      process.env.SMTP_USER ||
-      'ReferConnect <noreply@referconnect.com>';
-    const reportEmailSender = {
-      emails: {
-        send: (message: any) =>
-          emailService.sendCustomEmail(message.to, message.subject, message.html, message.attachments),
-      },
-    };
     const results = await Promise.allSettled(
       recipients.map((email: string) =>
-        reportEmailSender.emails.send({
-          from: fromEmail,
-          to: email.trim(),
-          subject: `[ReferConnect] ${reportData.type || 'Report'} — ${reportDate}`,
+        emailService.sendCustomEmail(
+          email.trim(),
+          `[ReferConnect] ${reportData.type || 'Report'} — ${reportDate}`,
           html,
-          attachments,
-        })
+          attachments
+        )
       )
     );
 

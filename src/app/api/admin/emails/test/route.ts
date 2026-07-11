@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       testBody = testBody.replace(regex, value);
     });
 
-    // Actually send the test email via the configured SMTP transport
+    // Actually send the test email via the configured Microsoft Graph transport
     try {
       await emailService.sendCustomEmail(
         recipientEmail,

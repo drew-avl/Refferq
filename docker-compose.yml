@@ -10,11 +10,10 @@ services:
     environment:
       - DATABASE_URL=postgresql://referconnect:referconnect@db:5432/referconnect
       - JWT_SECRET=${JWT_SECRET:-change-me-to-a-random-string-min-32-chars}
-      - SMTP_HOST=${SMTP_HOST:-smtp.office365.com}
-      - SMTP_PORT=${SMTP_PORT:-587}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
-      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-}
+      - MICROSOFT_TENANT_ID=${MICROSOFT_TENANT_ID:-}
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID:-}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET:-}
+      - MICROSOFT_GRAPH_SENDER=${MICROSOFT_GRAPH_SENDER:-}
       - ADMIN_EMAILS=${ADMIN_EMAILS:-}
       - SMS_ENABLED=${SMS_ENABLED:-false}
       - SMS_PROVIDER=${SMS_PROVIDER:-voipms}

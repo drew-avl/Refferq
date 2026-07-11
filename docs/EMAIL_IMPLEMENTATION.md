@@ -1,25 +1,26 @@
 # Email and Text Alert Implementation
 
-ReferConnect now sends transactional email through SMTP using Nodemailer. The default deployment target is Microsoft 365 SMTP client submission.
+ReferConnect sends transactional email through Microsoft Graph `sendMail` using app-only client credentials.
 
 ## Runtime Wiring
 
-- `src/lib/email.ts` owns SMTP transport creation and the public `emailService` methods.
+- `src/lib/email.ts` owns Graph token retrieval, `sendMail` calls, recipient parsing, and CSV/report attachment conversion.
 - `src/lib/otp.ts` sends login codes through `emailService.sendCustomEmail`.
-- `src/app/api/admin/reports/email/route.ts` sends report emails through the same SMTP-backed service, including CSV attachments.
-- `scripts/test-email.js` verifies SMTP credentials from `.env.local`.
+- `src/app/api/admin/reports/email/route.ts` sends report emails through the same Graph-backed service, including CSV attachments.
+- `scripts/test-email.js` verifies Graph credentials from `.env.local`.
 
 ## Required Email Environment
 
 ```env
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@yourdomain.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@yourdomain.com>"
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="noreply@n45tech.com"
 NEXT_PUBLIC_APP_URL="https://app.yourdomain.com"
 ADMIN_EMAILS="admin@yourdomain.com"
 ```
+
+The Entra app must have Microsoft Graph `Mail.Send` as an application permission with admin consent.
 
 ## Text Alerts
 

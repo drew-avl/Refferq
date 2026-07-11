@@ -68,11 +68,10 @@ NEXT_PUBLIC_APP_URL="https://app.referconnect.com"
 DATABASE_URL="postgresql://user:password@host:5432/referconnect"
 
 # Email
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT="587"
-SMTP_USER="notifications@referconnect.com"
-SMTP_PASSWORD="your-mailbox-password-or-app-password"
-SMTP_FROM_EMAIL="ReferConnect <notifications@referconnect.com>"
+MICROSOFT_TENANT_ID="your-tenant-id"
+MICROSOFT_CLIENT_ID="your-app-client-id"
+MICROSOFT_CLIENT_SECRET="your-app-client-secret"
+MICROSOFT_GRAPH_SENDER="notifications@referconnect.com"
 
 # JWT
 JWT_SECRET="your-production-secret-min-32-chars"
@@ -121,9 +120,9 @@ Some documentation files still reference localhost for development purposes. The
 ### Pre-Deployment
 - [ ] Update `.env` with production values
 - [ ] Verify DATABASE_URL points to production database
-- [ ] Confirm Microsoft 365 SMTP credentials are active
+- [ ] Confirm Microsoft Graph `Mail.Send` app credentials are active
 - [ ] Set strong JWT_SECRET (32+ characters)
-- [ ] Update SMTP_FROM_EMAIL to your domain
+- [ ] Update MICROSOFT_GRAPH_SENDER to your domain mailbox
 
 ### DNS & SSL
 - [ ] Configure DNS A/CNAME records

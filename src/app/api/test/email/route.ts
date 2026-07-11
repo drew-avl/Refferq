@@ -62,8 +62,17 @@ export async function GET(request: NextRequest) {
     success: true,
     message: 'Email test endpoint is working',
     config: {
-      smtpConfigured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD),
-      smtpHost: process.env.SMTP_HOST || 'smtp.office365.com',
+      graphConfigured: !!(
+        (process.env.MICROSOFT_TENANT_ID || process.env.AZURE_TENANT_ID) &&
+        (process.env.MICROSOFT_CLIENT_ID || process.env.AZURE_CLIENT_ID) &&
+        (process.env.MICROSOFT_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET) &&
+        (process.env.MICROSOFT_GRAPH_SENDER || process.env.MICROSOFT_365_SENDER || process.env.EMAIL_FROM_ADDRESS)
+      ),
+      graphSender:
+        process.env.MICROSOFT_GRAPH_SENDER ||
+        process.env.MICROSOFT_365_SENDER ||
+        process.env.EMAIL_FROM_ADDRESS ||
+        null,
       environment: process.env.NODE_ENV,
     },
   });
