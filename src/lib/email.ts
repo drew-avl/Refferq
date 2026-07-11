@@ -263,6 +263,15 @@ export interface ReferralNotificationData {
   ageLabel?: string;
 }
 
+export interface PartnerNewsletterEmailData {
+  subject: string;
+  headline: string;
+  body: string;
+  recipientName?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}
+
 export interface ApprovalEmailData {
   affiliateName: string;
   referralId: string;
@@ -394,6 +403,22 @@ class EmailService {
     });
   }
 
+  private formatNewsletterBody(body: string): string {
+    return body
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+      .map((paragraph) => {
+        const html = paragraph
+          .split(/\n/)
+          .map((line) => this.escapeHtml(line.trim()))
+          .filter(Boolean)
+          .join('<br>');
+        return `<p>${html}</p>`;
+      })
+      .join('\n');
+  }
+
   private async sendEmail(params: {
     to: string;
     subject: string;
@@ -423,17 +448,8 @@ class EmailService {
     variables: Record<string, any>;
     generateFallbackHtml: () => Promise<string> | string;
   }): Promise<{ success: boolean; message: string }> {
-    const dbTemplate = await this.getTemplateFromDb(params.templateType);
-
-    let subject = params.fallbackSubject;
-    let html = '';
-
-    if (dbTemplate) {
-      subject = this.replaceVariables(dbTemplate.subject, params.variables);
-      html = this.replaceVariables(dbTemplate.body, params.variables);
-    } else {
-      html = await Promise.resolve(params.generateFallbackHtml());
-    }
+    const subject = params.fallbackSubject;
+    const html = await Promise.resolve(params.generateFallbackHtml());
 
     return this.sendEmail({
       to: params.to,
@@ -608,6 +624,50 @@ class EmailService {
         </div>
 
         <p>ReferConnect</p>
+      </div>
+    </body>
+    </html>
+    `;
+  }
+
+  private generatePartnerNewsletterHTML(data: PartnerNewsletterEmailData): string {
+    const headline = data.headline.trim() || data.subject.trim();
+    const bodyHtml = this.formatNewsletterBody(data.body);
+    const recipientName = data.recipientName?.trim();
+    const ctaUrl = data.ctaUrl?.trim();
+    const ctaLabel = data.ctaLabel?.trim() || 'Open ReferConnect';
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>${this.escapeHtml(data.subject)}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 680px; margin: 0 auto; padding: 20px; background: #f3f4f6; }
+        .header { background: #0f766e; color: white; padding: 30px 34px; border-radius: 8px 8px 0 0; }
+        .content { background: #ffffff; padding: 34px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none; }
+        .body p { margin: 0 0 18px; }
+        .button { display: inline-block; background: #0f766e; color: white; padding: 13px 22px; text-decoration: none; border-radius: 6px; margin: 12px 0 20px; font-weight: bold; }
+        .footer { color: #6b7280; font-size: 13px; margin-top: 28px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1 style="margin: 0; font-size: 24px; line-height: 1.25;">${this.escapeHtml(headline)}</h1>
+      </div>
+      <div class="content">
+        ${recipientName ? `<p>Hi ${this.escapeHtml(recipientName)},</p>` : ''}
+        <div class="body">
+          ${bodyHtml || '<p></p>'}
+        </div>
+        ${ctaUrl ? `
+        <div>
+          <a href="${this.escapeHtml(ctaUrl)}" class="button">${this.escapeHtml(ctaLabel)}</a>
+        </div>
+        ` : ''}
+        <p>ReferConnect</p>
+        <p class="footer">You are receiving this message because you are a referral partner.</p>
       </div>
     </body>
     </html>
@@ -860,13 +920,11 @@ class EmailService {
 
     const results = await Promise.all(
       adminEmails.map(email =>
-        this.sendTemplatedEmail({
-          to: email.trim(),
-          templateType: 'NEW_REFERRAL',
-          fallbackSubject: `New lead: ${data.leadName} from ${data.affiliateName}`,
-          variables: { ...data, symbol },
-          generateFallbackHtml: () => this.generateReferralNotificationHTML(data, symbol),
-        })
+        this.sendCustomEmail(
+          email.trim(),
+          `New lead: ${data.leadName} from ${data.affiliateName}`,
+          this.generateReferralNotificationHTML(data, symbol)
+        )
       )
     );
 
@@ -899,6 +957,17 @@ class EmailService {
       success,
       message: success ? 'Referral follow-up notifications sent' : 'Some follow-up notifications failed'
     };
+  }
+
+  async sendPartnerNewsletterEmail(
+    to: string,
+    data: PartnerNewsletterEmailData
+  ): Promise<{ success: boolean; message: string }> {
+    return this.sendCustomEmail(
+      to,
+      data.subject,
+      this.generatePartnerNewsletterHTML(data)
+    );
   }
 
   async sendApprovalEmail(affiliateEmail: string, data: ApprovalEmailData): Promise<{ success: boolean; message: string }> {

@@ -47,10 +47,6 @@ export function formatReferralTimestamp(date: Date, timeZone = process.env.REFER
   }).format(date);
 }
 
-function contactLine(data: ReferralAlertCopyData) {
-  return cleanPart(data.leadPhone) || cleanPart(data.leadEmail) || 'no contact provided';
-}
-
 function leadContext(data: ReferralAlertCopyData) {
   const company = cleanPart(data.company);
   const address = [data.address, data.address2].map(cleanPart).filter(Boolean).join(', ');
@@ -58,18 +54,31 @@ function leadContext(data: ReferralAlertCopyData) {
   return context ? ` (${truncate(context, 80)})` : '';
 }
 
+function leadDetailParts(data: ReferralAlertCopyData) {
+  const address = [data.address, data.address2].map(cleanPart).filter(Boolean).join(', ');
+  return [
+    cleanPart(data.leadPhone) ? `Phone: ${cleanPart(data.leadPhone)}` : '',
+    cleanPart(data.leadEmail) ? `Email: ${cleanPart(data.leadEmail)}` : '',
+    cleanPart(data.programName) ? `Source: ${cleanPart(data.programName)}` : '',
+    cleanPart(data.company) ? `Company: ${cleanPart(data.company)}` : '',
+    address ? `Address: ${truncate(address, 100)}` : '',
+  ].filter(Boolean);
+}
+
 export function formatNewReferralSms(data: ReferralAlertCopyData) {
   const url = getAdminLeadUrl(data.referralId);
+  const details = leadDetailParts(data).join('. ');
   return truncate(
-    `New lead: ${cleanPart(data.leadName)}${leadContext(data)}. Contact: ${contactLine(data)}. Partner: ${cleanPart(data.affiliateName)}. Review: ${url}`,
+    `ReferConnect new lead: ${cleanPart(data.leadName)}${leadContext(data)}. Partner: ${cleanPart(data.affiliateName)}. ${details ? `${details}. ` : ''}Review: ${url}`,
     480
   );
 }
 
 export function formatReferralReminderSms(data: ReferralAlertCopyData) {
   const url = getAdminLeadUrl(data.referralId);
+  const details = leadDetailParts(data).join('. ');
   return truncate(
-    `Follow-up needed: ${cleanPart(data.leadName)} has been New for ${data.ageLabel || 'over 1 hour'}. Contact: ${contactLine(data)}. Review: ${url}`,
+    `ReferConnect follow-up: ${cleanPart(data.leadName)} has been New for ${data.ageLabel || 'over 1 hour'}. ${details ? `${details}. ` : ''}Review: ${url}`,
     480
   );
 }

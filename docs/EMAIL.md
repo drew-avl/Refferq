@@ -35,9 +35,11 @@ Test Graph email from the command line:
 npm run test:email -- you@example.com
 ```
 
-## Email Templates
+## Admin Newsletters
 
-Automated email templates are managed in the app under Admin -> Emails. Welcome, new-lead, report, payout, and OTP flows all use `emailService`, so they send through Microsoft Graph once the environment variables are set.
+Admin -> Emails sends newsletter-style messages to all active referral agents. Use the composer to write a subject, headline, message body, and optional button. Test sends go to the admin user; live sends are delivered individually to active referral partners so recipients do not see each other's addresses.
+
+Automated welcome, new-lead, report, payout, and OTP flows use code-rendered system emails through `emailService`, so stale database templates do not override production copy.
 
 ## Text Alerts
 

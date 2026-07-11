@@ -6,6 +6,8 @@ ReferConnect sends transactional email through Microsoft Graph `sendMail` using 
 
 - `src/lib/email.ts` owns Graph token retrieval, `sendMail` calls, recipient parsing, and CSV/report attachment conversion.
 - `src/lib/otp.ts` sends login codes through `emailService.sendCustomEmail`.
+- `src/app/admin/emails/page.tsx` is a newsletter composer for active referral agents.
+- `src/app/api/admin/emails/route.ts` lists active referral-agent recipients and sends newsletter emails individually.
 - `src/app/api/admin/reports/email/route.ts` sends report emails through the same Graph-backed service, including CSV attachments.
 - `scripts/test-email.js` verifies Graph credentials from `.env.local`.
 
