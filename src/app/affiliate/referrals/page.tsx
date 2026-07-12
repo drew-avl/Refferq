@@ -52,12 +52,18 @@ import {
 
 interface Referral {
   id: string;
+  customerType: 'RESIDENTIAL' | 'BUSINESS';
+  businessName?: string | null;
   leadName: string;
   leadEmail: string;
   leadPhone: string | null;
   address: string;
   address2: string;
   moveInDate: string;
+  desiredInstallDate: string;
+  requestedServices: string[];
+  orderConsent: boolean;
+  marketingSmsConsent: boolean;
   program?: Program | null;
   company?: string;
   notes?: string | null;
@@ -96,6 +102,8 @@ export default function ReferralsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [leadTab, setLeadTab] = useState<LeadTab>('new');
   const [submitForm, setSubmitForm] = useState({
+    customerType: 'RESIDENTIAL' as 'RESIDENTIAL' | 'BUSINESS',
+    businessName: '',
     leadName: '',
     leadEmail: '',
     leadPhone: '',
@@ -103,9 +111,15 @@ export default function ReferralsPage() {
     address: '',
     address2: '',
     moveInDate: '',
+    desiredInstallDate: '',
+    requestedServices: [] as string[],
+    orderConsent: false,
+    marketingSmsConsent: false,
     notes: '',
   });
   const [editForm, setEditForm] = useState({
+    customerType: 'RESIDENTIAL' as 'RESIDENTIAL' | 'BUSINESS',
+    businessName: '',
     leadName: '',
     leadEmail: '',
     leadPhone: '',
@@ -113,6 +127,10 @@ export default function ReferralsPage() {
     address: '',
     address2: '',
     moveInDate: '',
+    desiredInstallDate: '',
+    requestedServices: [] as string[],
+    orderConsent: false,
+    marketingSmsConsent: false,
     notes: '',
   });
 
@@ -151,6 +169,8 @@ export default function ReferralsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          customerType: submitForm.customerType,
+          businessName: submitForm.businessName,
           leadName: submitForm.leadName,
           leadEmail: submitForm.leadEmail,
           leadPhone: submitForm.leadPhone,
@@ -158,6 +178,10 @@ export default function ReferralsPage() {
           address: submitForm.address,
           address2: submitForm.address2,
           moveInDate: submitForm.moveInDate,
+          desiredInstallDate: submitForm.desiredInstallDate,
+          requestedServices: submitForm.requestedServices,
+          orderConsent: submitForm.orderConsent,
+          marketingSmsConsent: submitForm.marketingSmsConsent,
           notes: submitForm.notes,
         }),
       });
@@ -166,6 +190,8 @@ export default function ReferralsPage() {
         showNotification('success', 'Lead added successfully.');
         setShowSubmitModal(false);
         setSubmitForm({
+          customerType: 'RESIDENTIAL',
+          businessName: '',
           leadName: '',
           leadEmail: '',
           leadPhone: '',
@@ -173,6 +199,10 @@ export default function ReferralsPage() {
           address: '',
           address2: '',
           moveInDate: '',
+          desiredInstallDate: '',
+          requestedServices: [],
+          orderConsent: false,
+          marketingSmsConsent: false,
           notes: '',
         });
         fetchReferrals();
@@ -254,6 +284,8 @@ export default function ReferralsPage() {
   const openEditLead = (referral: Referral) => {
     setEditingReferral(referral);
     setEditForm({
+      customerType: referral.customerType || 'RESIDENTIAL',
+      businessName: referral.businessName || referral.company || '',
       leadName: referral.leadName,
       leadEmail: referral.leadEmail,
       leadPhone: referral.leadPhone || '',
@@ -261,6 +293,10 @@ export default function ReferralsPage() {
       address: referral.address || '',
       address2: referral.address2 || '',
       moveInDate: referral.moveInDate || '',
+      desiredInstallDate: referral.desiredInstallDate || '',
+      requestedServices: referral.requestedServices || [],
+      orderConsent: referral.orderConsent || false,
+      marketingSmsConsent: referral.marketingSmsConsent || false,
       notes: referral.notes || '',
     });
     setShowEditModal(true);
@@ -276,6 +312,8 @@ export default function ReferralsPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          customerType: editForm.customerType,
+          businessName: editForm.businessName,
           id: editingReferral.id,
           leadName: editForm.leadName,
           leadEmail: editForm.leadEmail,
@@ -284,6 +322,10 @@ export default function ReferralsPage() {
           address: editForm.address,
           address2: editForm.address2,
           moveInDate: editForm.moveInDate,
+          desiredInstallDate: editForm.desiredInstallDate,
+          requestedServices: editForm.requestedServices,
+          orderConsent: editForm.orderConsent,
+          marketingSmsConsent: editForm.marketingSmsConsent,
           notes: editForm.notes,
         }),
       });
@@ -304,8 +346,10 @@ export default function ReferralsPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Program', 'Address', 'Unit / Apartment', 'Move-In Date', 'Notes', 'Status', 'Date'];
+    const headers = ['Customer Type', 'Business', 'Name', 'Email', 'Phone', 'Program', 'Address', 'Unit / Apartment', 'Move-In Date', 'Desired Install Date', 'Requested Services', 'Notes', 'Status', 'Date'];
     const rows = filteredReferrals.map((r) => [
+      r.customerType,
+      r.businessName || '',
       r.leadName,
       r.leadEmail,
       r.leadPhone || '',
@@ -313,6 +357,8 @@ export default function ReferralsPage() {
       r.address || '',
       r.address2 || '',
       r.moveInDate || '',
+      r.desiredInstallDate || '',
+      (r.requestedServices || []).join('; '),
       r.notes || '',
       r.status,
       formatDate(r.createdAt),
@@ -546,6 +592,19 @@ export default function ReferralsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitLead} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Customer Type *</Label>
+              <Select
+                value={submitForm.customerType}
+                onValueChange={(value: 'RESIDENTIAL' | 'BUSINESS') => setSubmitForm({ ...submitForm, customerType: value })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="RESIDENTIAL">Residential</SelectItem>
+                  <SelectItem value="BUSINESS">Business</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {programs.length > 0 && (
               <div className="space-y-2">
                 <Label>Lead Source *</Label>
@@ -566,6 +625,12 @@ export default function ReferralsPage() {
                 </Select>
               </div>
             )}
+            {submitForm.customerType === 'BUSINESS' && (
+              <div className="space-y-2">
+                <Label>Business Name *</Label>
+                <Input required value={submitForm.businessName} onChange={(e) => setSubmitForm({ ...submitForm, businessName: e.target.value })} />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Lead&apos;s Name *</Label>
               <Input
@@ -576,20 +641,18 @@ export default function ReferralsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Contact Email *</Label>
+              <Label>Contact Email</Label>
               <Input
                 type="email"
-                required
                 value={submitForm.leadEmail}
                 onChange={(e) => setSubmitForm({ ...submitForm, leadEmail: e.target.value })}
                 placeholder="email@example.com"
               />
             </div>
             <div className="space-y-2">
-              <Label>Phone Number *</Label>
+              <Label>Phone Number</Label>
               <Input
                 type="tel"
-                required
                 value={submitForm.leadPhone}
                 onChange={(e) => setSubmitForm({ ...submitForm, leadPhone: e.target.value })}
                 placeholder="(555) 123-4567"
@@ -614,14 +677,52 @@ export default function ReferralsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Move-In Date *</Label>
+                <Label>{submitForm.customerType === 'BUSINESS' ? 'Desired Install Date' : 'Move-In Date'}</Label>
                 <Input
                   type="date"
-                  required
-                  value={submitForm.moveInDate}
-                  onChange={(e) => setSubmitForm({ ...submitForm, moveInDate: e.target.value })}
+                  value={submitForm.customerType === 'BUSINESS' ? submitForm.desiredInstallDate : submitForm.moveInDate}
+                  onChange={(e) => setSubmitForm(submitForm.customerType === 'BUSINESS'
+                    ? { ...submitForm, desiredInstallDate: e.target.value }
+                    : { ...submitForm, moveInDate: e.target.value })}
                 />
               </div>
+            </div>
+            {submitForm.customerType === 'BUSINESS' && (
+              <div className="space-y-2">
+                <Label>Requested Services</Label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    ['PRIMARY_INTERNET', 'Primary internet'],
+                    ['BACKUP_INTERNET', 'Backup internet'],
+                    ['VOICE', 'Voice'],
+                  ].map(([value, label]) => (
+                    <label key={value} className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={submitForm.requestedServices.includes(value)}
+                        onChange={(event) => setSubmitForm({
+                          ...submitForm,
+                          requestedServices: event.target.checked
+                            ? [...submitForm.requestedServices, value]
+                            : submitForm.requestedServices.filter((item) => item !== value),
+                        })}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="space-y-2 rounded-md border p-3">
+              <Label>Consent</Label>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" checked={submitForm.orderConsent} onChange={(e) => setSubmitForm({ ...submitForm, orderConsent: e.target.checked })} />
+                Customer consented to order-related contact.
+              </label>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" checked={submitForm.marketingSmsConsent} onChange={(e) => setSubmitForm({ ...submitForm, marketingSmsConsent: e.target.checked })} />
+                Customer consented to marketing SMS messages.
+              </label>
             </div>
             <div className="space-y-2">
               <Label>Lead Notes</Label>
@@ -653,6 +754,16 @@ export default function ReferralsPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateLead} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Customer Type *</Label>
+              <Select value={editForm.customerType} onValueChange={(value: 'RESIDENTIAL' | 'BUSINESS') => setEditForm({ ...editForm, customerType: value })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="RESIDENTIAL">Residential</SelectItem>
+                  <SelectItem value="BUSINESS">Business</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {programs.length > 0 && (
               <div className="space-y-2">
                 <Label>Lead Source *</Label>
@@ -673,6 +784,12 @@ export default function ReferralsPage() {
                 </Select>
               </div>
             )}
+            {editForm.customerType === 'BUSINESS' && (
+              <div className="space-y-2">
+                <Label>Business Name *</Label>
+                <Input required value={editForm.businessName} onChange={(e) => setEditForm({ ...editForm, businessName: e.target.value })} />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Lead&apos;s Name *</Label>
               <Input
@@ -683,20 +800,18 @@ export default function ReferralsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Contact Email *</Label>
+              <Label>Contact Email</Label>
               <Input
                 type="email"
-                required
                 value={editForm.leadEmail}
                 onChange={(e) => setEditForm({ ...editForm, leadEmail: e.target.value })}
                 placeholder="email@example.com"
               />
             </div>
             <div className="space-y-2">
-              <Label>Phone Number *</Label>
+              <Label>Phone Number</Label>
               <Input
                 type="tel"
-                required
                 value={editForm.leadPhone}
                 onChange={(e) => setEditForm({ ...editForm, leadPhone: e.target.value })}
                 placeholder="(555) 123-4567"
@@ -721,14 +836,52 @@ export default function ReferralsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Move-In Date *</Label>
+                <Label>{editForm.customerType === 'BUSINESS' ? 'Desired Install Date' : 'Move-In Date'}</Label>
                 <Input
                   type="date"
-                  required
-                  value={editForm.moveInDate}
-                  onChange={(e) => setEditForm({ ...editForm, moveInDate: e.target.value })}
+                  value={editForm.customerType === 'BUSINESS' ? editForm.desiredInstallDate : editForm.moveInDate}
+                  onChange={(e) => setEditForm(editForm.customerType === 'BUSINESS'
+                    ? { ...editForm, desiredInstallDate: e.target.value }
+                    : { ...editForm, moveInDate: e.target.value })}
                 />
               </div>
+            </div>
+            {editForm.customerType === 'BUSINESS' && (
+              <div className="space-y-2">
+                <Label>Requested Services</Label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    ['PRIMARY_INTERNET', 'Primary internet'],
+                    ['BACKUP_INTERNET', 'Backup internet'],
+                    ['VOICE', 'Voice'],
+                  ].map(([value, label]) => (
+                    <label key={value} className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={editForm.requestedServices.includes(value)}
+                        onChange={(event) => setEditForm({
+                          ...editForm,
+                          requestedServices: event.target.checked
+                            ? [...editForm.requestedServices, value]
+                            : editForm.requestedServices.filter((item) => item !== value),
+                        })}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="space-y-2 rounded-md border p-3">
+              <Label>Consent</Label>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" checked={editForm.orderConsent} onChange={(e) => setEditForm({ ...editForm, orderConsent: e.target.checked })} />
+                Customer consented to order-related contact.
+              </label>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" checked={editForm.marketingSmsConsent} onChange={(e) => setEditForm({ ...editForm, marketingSmsConsent: e.target.checked })} />
+                Customer consented to marketing SMS messages.
+              </label>
             </div>
             <div className="space-y-2">
               <Label>Lead Notes</Label>

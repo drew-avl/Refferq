@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
 import crypto from 'crypto';
+import { createCommissionAdjustment } from '@/lib/referral-payouts';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 // ─── Webhook Signature Verification ────────────────────────────
 function verifyWebhookSignature(payload: string, signature: string | null, secret: string): boolean {
@@ -123,6 +125,14 @@ export async function POST(request: NextRequest) {
                             clawbackNote: `Refund: ${reason}. External ID: ${external_id || 'N/A'}`,
                         },
                     });
+                    await createCommissionAdjustment({
+                        commissionId: commission.id,
+                        type: 'REVERSAL',
+                        amountCents: 0,
+                        reason,
+                        externalEventId: `refund:${external_id || crypto.createHash('sha256').update(rawBody).digest('hex')}:${commission.id}`,
+                        createdBy: 'system-webhook',
+                    });
 
                     results.push({ commissionId: commission.id, action: 'cancelled_pending', amountCents: commission.amountCents });
 
@@ -131,17 +141,17 @@ export async function POST(request: NextRequest) {
                     await prisma.commission.update({
                         where: { id: commission.id },
                         data: {
-                            status: 'CANCELLED',
+                            status: 'CLAWBACK',
                             clawbackNote: `Refund clawback: ${reason}. External ID: ${external_id || 'N/A'}`,
                         },
                     });
-
-                    // Deduct from affiliate balance
-                    await prisma.affiliate.update({
-                        where: { id: commission.affiliateId },
-                        data: {
-                            balanceCents: { decrement: commission.amountCents },
-                        },
+                    await createCommissionAdjustment({
+                        commissionId: commission.id,
+                        type: 'CLAWBACK',
+                        amountCents: -commission.amountCents,
+                        reason,
+                        externalEventId: `refund:${external_id || crypto.createHash('sha256').update(rawBody).digest('hex')}:${commission.id}`,
+                        createdBy: 'system-webhook',
                     });
 
                     results.push({ commissionId: commission.id, action: 'clawback_approved', amountCents: commission.amountCents });
@@ -156,12 +166,13 @@ export async function POST(request: NextRequest) {
                         },
                     });
 
-                    // Create negative balance to offset next payout
-                    await prisma.affiliate.update({
-                        where: { id: commission.affiliateId },
-                        data: {
-                            balanceCents: { decrement: commission.amountCents },
-                        },
+                    await createCommissionAdjustment({
+                        commissionId: commission.id,
+                        type: 'CLAWBACK',
+                        amountCents: -commission.amountCents,
+                        reason,
+                        externalEventId: `refund:${external_id || crypto.createHash('sha256').update(rawBody).digest('hex')}:${commission.id}`,
+                        createdBy: 'system-webhook',
                     });
 
                     results.push({ commissionId: commission.id, action: 'clawback_paid', amountCents: commission.amountCents });
@@ -194,6 +205,14 @@ export async function POST(request: NextRequest) {
                 results,
             },
         });
+
+        for (const affiliateId of new Set(conversions.map((conversion) => conversion.affiliateId))) {
+            try {
+                await notifyReferralPartnerChanged(affiliateId, 'affiliate.updated');
+            } catch (integrationError) {
+                console.error('Failed to enqueue refunded partner balance:', integrationError);
+            }
+        }
 
         // ─── Send email notification to affected affiliates ────────
         try {

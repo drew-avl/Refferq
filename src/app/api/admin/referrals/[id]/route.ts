@@ -5,6 +5,13 @@ import { canTransitionReferralStatus, isReferralStatus, referralStatusFromAction
 import { recordReferralStatusChange } from '@/lib/referral-audit';
 import { canAccessReferral, getAdminActor } from '@/lib/admin-access';
 import { notifyReferralChanged } from '@/lib/referral-integrations';
+import { normalizePhone } from '@/lib/integrations/twenty/normalize';
+
+function referralDate(value: unknown) {
+  if (typeof value !== 'string' || !value) return null;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
 
 export async function PUT(
@@ -138,12 +145,18 @@ export async function PATCH(
     const body = await request.json();
     const {
       action,
+      customerType,
+      businessName,
       leadName,
       leadEmail,
       leadPhone,
       address,
       address2,
       moveInDate,
+      desiredInstallDate,
+      requestedServices,
+      orderConsent,
+      marketingSmsConsent,
       estimatedValue,
       company,
       notes,
@@ -234,7 +247,16 @@ export async function PATCH(
     
     if (leadName !== undefined) updateData.leadName = leadName;
     if (leadEmail !== undefined) updateData.leadEmail = leadEmail;
-    if (leadPhone !== undefined) updateData.leadPhone = leadPhone;
+    if (leadPhone !== undefined) updateData.leadPhone = normalizePhone(leadPhone) || null;
+    if (customerType !== undefined) updateData.customerType = customerType;
+    if (businessName !== undefined) updateData.businessName = businessName || null;
+    if (address !== undefined) updateData.addressLine1 = address || null;
+    if (address2 !== undefined) updateData.addressLine2 = address2 || null;
+    if (moveInDate !== undefined) updateData.moveInDate = referralDate(moveInDate);
+    if (desiredInstallDate !== undefined) updateData.desiredInstallDate = referralDate(desiredInstallDate);
+    if (requestedServices !== undefined) updateData.requestedServices = Array.isArray(requestedServices) ? requestedServices : [];
+    if (orderConsent !== undefined) updateData.orderConsent = Boolean(orderConsent);
+    if (marketingSmsConsent !== undefined) updateData.marketingSmsConsent = Boolean(marketingSmsConsent);
     if (notes !== undefined) updateData.notes = notes || null;
     if (status !== undefined) {
       if (!isReferralStatus(status)) {
@@ -252,6 +274,9 @@ export async function PATCH(
     if (address !== undefined) metadataUpdates.address = address;
     if (address2 !== undefined) metadataUpdates.address2 = address2;
     if (moveInDate !== undefined) metadataUpdates.move_in_date = moveInDate;
+    if (customerType !== undefined) metadataUpdates.customer_type = customerType;
+    if (desiredInstallDate !== undefined) metadataUpdates.desired_install_date = desiredInstallDate;
+    if (requestedServices !== undefined) metadataUpdates.requested_services = requestedServices;
     if (estimatedValue !== undefined) metadataUpdates.estimated_value = Number(estimatedValue) || 0;
     if (company !== undefined) metadataUpdates.company = company;
     if (notes !== undefined) metadataUpdates.notes = notes;

@@ -30,11 +30,14 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:upgrade:connectpath": "prisma db execute --file prisma/migrations/20260711000000_connectpath_twenty_foundation/migration.sql --schema prisma/schema.prisma",
     "db:seed": "tsx scripts/seed.ts",
     "test:email": "node scripts/test-email.js",
-    "twenty:prepare": "tsx scripts/twenty-prepare.ts"
+    "twenty:prepare": "tsx scripts/twenty-prepare.ts",
+    "twenty:inventory": "tsx scripts/twenty-prepare.ts --inventory --json"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

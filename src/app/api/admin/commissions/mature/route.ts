@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 /**
  * POST /api/admin/commissions/mature
@@ -86,6 +87,11 @@ export async function POST(request: NextRequest) {
                     balanceCents: { increment: totalCents },
                 },
             });
+            try {
+                await notifyReferralPartnerChanged(affiliateId, 'affiliate.updated');
+            } catch (integrationError) {
+                console.error('Failed to enqueue matured partner balance:', integrationError);
+            }
         }
 
         // Log audit

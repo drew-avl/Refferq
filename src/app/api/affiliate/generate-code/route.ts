@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 function generateReferralCode(name: string): string {
   const cleanName = name.replace(/[^a-zA-Z]/g, '').toUpperCase();
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
           balanceCents: 0
         }
       });
+      await notifyReferralPartnerChanged(affiliate.id, 'affiliate.created');
 
       return NextResponse.json({
         success: true,
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
         where: { id: affiliate.id },
         data: { referralCode }
       });
+      await notifyReferralPartnerChanged(affiliate.id, 'affiliate.updated');
 
       return NextResponse.json({
         success: true,

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrencySettings } from '@/lib/currency';
 import { getReferralMetadataDetails } from '@/lib/referrals';
-import { notifyReferralSubmitted } from '@/lib/referral-integrations';
+import { notifyReferralChanged, notifyReferralSubmitted } from '@/lib/referral-integrations';
+import { normalizePhone } from '@/lib/integrations/twenty/normalize';
 import {
   formatNewReferralSms,
   formatReferralTimestamp,
@@ -11,17 +12,34 @@ import {
 
 function normalizeReferralBody(body: any) {
   return {
+    customerType: body.customerType ?? body.customer_type ?? 'RESIDENTIAL',
     leadName: body.leadName ?? body.lead_name,
     leadEmail: body.leadEmail ?? body.lead_email,
     leadPhone: body.leadPhone ?? body.lead_phone,
     address: body.address,
     address2: body.address2 ?? body.address_2 ?? '',
-    moveInDate: body.moveInDate ?? body.move_in_date,
+    city: body.city ?? '',
+    state: body.state ?? '',
+    postalCode: body.postalCode ?? body.postal_code ?? '',
+    countryCode: body.countryCode ?? body.country_code ?? 'US',
+    moveInDate: body.moveInDate ?? body.move_in_date ?? '',
+    desiredInstallDate: body.desiredInstallDate ?? body.desired_install_date ?? '',
     programId: body.programId ?? body.program_id,
     company: body.company,
+    businessName: body.businessName ?? body.business_name ?? body.company,
+    requestedServices: body.requestedServices ?? body.requested_services ?? [],
+    orderConsent: body.orderConsent ?? body.order_consent ?? false,
+    marketingSmsConsent: body.marketingSmsConsent ?? body.marketing_sms_consent ?? false,
+    consentSource: body.consentSource ?? body.consent_source ?? 'partner-portal',
     notes: body.notes,
     estimatedValue: body.estimatedValue ?? body.estimated_value ?? 0,
   };
+}
+
+function referralDate(value: string | undefined) {
+  if (!value) return null;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 async function getAssignedPrograms(affiliateId: string) {
@@ -93,7 +111,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { leadName, leadEmail, leadPhone, address, address2, moveInDate, programId, company, notes, estimatedValue } = data;
+    const {
+      customerType, leadName, leadEmail, leadPhone, address, address2, city, state,
+      postalCode, countryCode, moveInDate, desiredInstallDate, programId, company,
+      businessName, requestedServices, orderConsent, marketingSmsConsent, consentSource,
+      notes, estimatedValue,
+    } = data;
 
     const [activeProgramCount, assignedPrograms] = await Promise.all([
       prisma.program.count({ where: { isActive: true } }),
@@ -133,7 +156,22 @@ export async function POST(request: NextRequest) {
         programId: selectedProgramId,
         leadName: leadName.trim(),
         leadEmail: leadEmail.toLowerCase().trim(),
-        leadPhone: leadPhone.trim(),
+        leadPhone: normalizePhone(leadPhone) || null,
+        customerType,
+        businessName: customerType === 'BUSINESS' ? (businessName || company || '').trim() : null,
+        addressLine1: address.trim(),
+        addressLine2: address2?.trim() || null,
+        city: city?.trim() || null,
+        state: state?.trim() || null,
+        postalCode: postalCode?.trim() || null,
+        countryCode,
+        moveInDate: referralDate(moveInDate),
+        desiredInstallDate: referralDate(desiredInstallDate),
+        requestedServices,
+        orderConsent,
+        marketingSmsConsent,
+        consentCapturedAt: orderConsent || marketingSmsConsent ? new Date() : null,
+        consentSource: orderConsent || marketingSmsConsent ? consentSource : null,
         status: 'NEW',
         notes: notes?.trim() || null,
         metadata: {
@@ -145,6 +183,26 @@ export async function POST(request: NextRequest) {
           address: address.trim(),
           address2: address2?.trim() || '',
           move_in_date: moveInDate,
+          customer_type: customerType,
+          desired_install_date: desiredInstallDate || '',
+          requested_services: requestedServices,
+        },
+        submittedSnapshot: {
+          contractVersion: 1,
+          customerType,
+          leadName: leadName.trim(),
+          leadEmail: leadEmail.toLowerCase().trim(),
+          leadPhone: normalizePhone(leadPhone),
+          businessName: customerType === 'BUSINESS' ? (businessName || company || '').trim() : null,
+          address, address2, city, state, postalCode, countryCode,
+          moveInDate: moveInDate || null,
+          desiredInstallDate: desiredInstallDate || null,
+          requestedServices,
+          orderConsent,
+          marketingSmsConsent,
+          programId: selectedProgramId,
+          notes: notes?.trim() || '',
+          submittedAt: new Date().toISOString(),
         },
       }
     });
@@ -278,12 +336,16 @@ export async function GET(request: NextRequest) {
       const metadata = getReferralMetadataDetails(ref.metadata);
       return {
         ...ref,
+        customerType: ref.customerType || metadata.customerType,
+        businessName: ref.businessName || metadata.company,
         estimatedValue: metadata.estimatedValue,
         company: metadata.company,
         notes: ref.notes || metadata.notes,
-        address: metadata.address,
-        address2: metadata.address2,
-        moveInDate: metadata.moveInDate,
+        address: ref.addressLine1 || metadata.address,
+        address2: ref.addressLine2 || metadata.address2,
+        moveInDate: ref.moveInDate?.toISOString().slice(0, 10) || metadata.moveInDate,
+        desiredInstallDate: ref.desiredInstallDate?.toISOString().slice(0, 10) || metadata.desiredInstallDate,
+        requestedServices: Array.isArray(ref.requestedServices) ? ref.requestedServices : metadata.requestedServices,
         program: ref.program,
       };
     });
@@ -361,9 +423,9 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (referral.status === 'COMPLETED' || referral.status === 'REJECTED') {
+    if (referral.status === 'SOLD' || referral.status === 'COMPLETED' || referral.status === 'REJECTED') {
       return NextResponse.json(
-        { error: 'Completed or rejected leads can no longer be edited' },
+        { error: 'Ordered, completed, or rejected leads can no longer be edited' },
         { status: 400 }
       );
     }
@@ -378,7 +440,12 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { leadName, leadEmail, leadPhone, address, address2, moveInDate, programId, company, notes, estimatedValue } = data;
+    const {
+      customerType, leadName, leadEmail, leadPhone, address, address2, city, state,
+      postalCode, countryCode, moveInDate, desiredInstallDate, programId, company,
+      businessName, requestedServices, orderConsent, marketingSmsConsent, consentSource,
+      notes, estimatedValue,
+    } = data;
 
     const [activeProgramCount, assignedPrograms] = await Promise.all([
       prisma.program.count({ where: { isActive: true } }),
@@ -413,7 +480,22 @@ export async function PATCH(request: NextRequest) {
         programId: selectedProgramId,
         leadName: leadName.trim(),
         leadEmail: leadEmail.toLowerCase().trim(),
-        leadPhone: leadPhone.trim(),
+        leadPhone: normalizePhone(leadPhone) || null,
+        customerType,
+        businessName: customerType === 'BUSINESS' ? (businessName || company || '').trim() : null,
+        addressLine1: address.trim(),
+        addressLine2: address2?.trim() || null,
+        city: city?.trim() || null,
+        state: state?.trim() || null,
+        postalCode: postalCode?.trim() || null,
+        countryCode,
+        moveInDate: referralDate(moveInDate),
+        desiredInstallDate: referralDate(desiredInstallDate),
+        requestedServices,
+        orderConsent,
+        marketingSmsConsent,
+        consentCapturedAt: orderConsent || marketingSmsConsent ? referral.consentCapturedAt || new Date() : null,
+        consentSource: orderConsent || marketingSmsConsent ? consentSource : null,
         notes: notes?.trim() || null,
         metadata: {
           ...((referral.metadata as Record<string, unknown>) || {}),
@@ -424,9 +506,18 @@ export async function PATCH(request: NextRequest) {
           address: address.trim(),
           address2: address2?.trim() || '',
           move_in_date: moveInDate,
+          customer_type: customerType,
+          desired_install_date: desiredInstallDate || '',
+          requested_services: requestedServices,
         },
       }
     });
+
+    try {
+      await notifyReferralChanged(updatedReferral.id, 'referral.updated');
+    } catch (integrationError) {
+      console.error('Failed to enqueue updated referral for TwentyCRM:', integrationError);
+    }
 
     return NextResponse.json({
       success: true,

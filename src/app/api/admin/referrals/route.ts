@@ -88,6 +88,8 @@ export async function GET(request: NextRequest) {
         
         return {
           id: referral.id,
+          customerType: referral.customerType || metadata.customerType,
+          businessName: referral.businessName || metadata.company,
           affiliateId: referral.affiliateId,
           leadEmail: referral.leadEmail,
           leadName: referral.leadName,
@@ -97,9 +99,13 @@ export async function GET(request: NextRequest) {
           createdAt: referral.createdAt,
           estimatedValue: metadata.estimatedValue,
           company: metadata.company,
-          address: metadata.address,
-          address2: metadata.address2,
-          moveInDate: metadata.moveInDate,
+          address: referral.addressLine1 || metadata.address,
+          address2: referral.addressLine2 || metadata.address2,
+          moveInDate: referral.moveInDate?.toISOString().slice(0, 10) || metadata.moveInDate,
+          desiredInstallDate: referral.desiredInstallDate?.toISOString().slice(0, 10) || metadata.desiredInstallDate,
+          requestedServices: Array.isArray(referral.requestedServices) ? referral.requestedServices : metadata.requestedServices,
+          orderConsent: referral.orderConsent,
+          marketingSmsConsent: referral.marketingSmsConsent,
           program: referral.program,
           referralPayoutCents: referral.program?.referralPayoutCents ?? null,
           statusHistory: (auditLogsByReferral[referral.id] || []).map((log) => {

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { canAccessReferral, getAdminActor } from '@/lib/admin-access';
-import { REFERRAL_EVENT_INCLUDE } from '@/lib/referral-event-payload';
-import { sendReferralToTwenty } from '@/lib/twenty-referrals';
+import { notifyReferralChanged } from '@/lib/referral-integrations';
 
 export async function POST(
   request: NextRequest,
@@ -27,26 +25,13 @@ export async function POST(
       );
     }
 
-    const referral = await prisma.referral.findUnique({
-      where: { id: params.id },
-      include: REFERRAL_EVENT_INCLUDE,
-    });
-
-    if (!referral) {
-      return NextResponse.json(
-        { error: 'Referral not found' },
-        { status: 404 }
-      );
-    }
-
-    const result = await sendReferralToTwenty(referral, 'referral.updated');
+    const result = await notifyReferralChanged(params.id, 'referral.updated');
 
     return NextResponse.json({
-      success: result.status === 'success',
+      success: true,
+      queued: true,
       result,
-    }, {
-      status: result.status === 'failed' ? 502 : 200,
-    });
+    }, { status: 202 });
   } catch (error) {
     console.error('Send referral to TwentyCRM error:', error);
     return NextResponse.json(

@@ -48,6 +48,7 @@ import {
   Layers,
   HelpCircle,
   LockKeyhole,
+  HeartPulse,
 } from 'lucide-react';
 
 type NavItem = {
@@ -71,6 +72,7 @@ const marketingNavItems: NavItem[] = [
 ];
 
 const configNavItems: NavItem[] = [
+  { title: 'Integration Health', url: '/admin/integrations', icon: HeartPulse, adminOnly: true },
   { title: 'Portal FAQ', url: '/admin/faqs', icon: HelpCircle, adminOnly: true },
   { title: 'Portal Settings', url: '/admin/program-settings', icon: Sliders, adminOnly: true },
   { title: 'Team Members', url: '/admin/team', icon: UsersRound, adminOnly: true },

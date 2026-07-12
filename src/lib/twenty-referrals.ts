@@ -184,7 +184,7 @@ async function postTwentyWebhook(
 
   const body = JSON.stringify(payload);
   const timestamp = new Date().toISOString();
-  const secret = process.env.TWENTY_WEBHOOK_SECRET?.trim();
+  const secret = process.env.TWENTY_WORKFLOW_SIGNING_SECRET?.trim() || process.env.TWENTY_WEBHOOK_SECRET?.trim();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), getTimeoutMs());
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createCommissionAdjustment } from '@/lib/referral-payouts';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 
 async function verifyAdmin(request: NextRequest) {
@@ -71,26 +73,25 @@ export async function POST(request: NextRequest) {
     // 2. Reverse associated commission (mark as CANCELLED)
     if (commissions.length > 0) {
       const matchingCommission = commissions[0]; // Take most recent matching
+      const balanceImpact = matchingCommission.status === 'APPROVED' ? -matchingCommission.amountCents : 0;
+      await createCommissionAdjustment({
+        commissionId: matchingCommission.id,
+        type: matchingCommission.status === 'PENDING' ? 'REVERSAL' : 'CLAWBACK',
+        amountCents: balanceImpact,
+        reason: reason || 'Admin transaction refund',
+        externalEventId: `admin-refund:${transactionId}:${matchingCommission.id}`,
+        createdBy: admin.id,
+      });
       await prisma.commission.update({
         where: { id: matchingCommission.id },
-        data: { status: 'CANCELLED' },
+        data: { status: matchingCommission.status === 'PENDING' ? 'CANCELLED' : 'CLAWBACK' },
       });
       results.commissionReversed = true;
       results.reversedCommissionId = matchingCommission.id;
       results.reversedAmountCents = matchingCommission.amountCents;
 
       // 3. Deduct from affiliate balance if applicable
-      const affiliate = await prisma.affiliate.findUnique({
-        where: { id: transaction.affiliateId },
-      });
-
-      if (affiliate && affiliate.balanceCents >= matchingCommission.amountCents) {
-        await prisma.affiliate.update({
-          where: { id: transaction.affiliateId },
-          data: {
-            balanceCents: { decrement: matchingCommission.amountCents },
-          },
-        });
+      if (balanceImpact < 0) {
         results.balanceDeducted = true;
         results.deductedAmountCents = matchingCommission.amountCents;
       }
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+    await notifyReferralPartnerChanged(transaction.affiliateId, 'affiliate.updated');
 
     return NextResponse.json({
       success: true,

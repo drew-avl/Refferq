@@ -38,6 +38,13 @@ STRIPE_PUBLISHABLE_KEY=""
 STRIPE_WEBHOOK_SECRET=""
 TWENTY_API_BASE_URL="https://api.twenty.com"
 TWENTY_API_KEY="tk_..."
+TWENTY_WORKSPACE_ID="workspace-id"
+TWENTY_SYNC_MODE="api"
+TWENTY_OUTBOUND_WEBHOOK_SECRET=""
+TWENTY_OUTBOX_BATCH_SIZE="20"
+TWENTY_OUTBOX_CONCURRENCY="4"
+TWENTY_OUTBOX_MAX_ATTEMPTS="10"
+# Legacy workflow rollback only:
 TWENTY_SYNC_ENABLED="true"
 TWENTY_REFERRAL_SYNC_ENABLED="true"
 TWENTY_PARTNER_SYNC_ENABLED="true"
@@ -46,7 +53,7 @@ TWENTY_WEBHOOK_URL=""
 TWENTY_REFERRAL_WEBHOOK_URL=""
 TWENTY_PARTNER_WEBHOOK_URL=""
 TWENTY_PAYOUT_WEBHOOK_URL=""
-TWENTY_WEBHOOK_SECRET=""
+TWENTY_WORKFLOW_SIGNING_SECRET=""
 TWENTY_WEBHOOK_TIMEOUT_MS="12000"
 SMS_ENABLED="false"
 SMS_PROVIDER="voipms"
@@ -162,6 +169,19 @@ SET role = 'ADMIN', status = 'ACTIVE'
 WHERE email = 'admin@yourdomain.com';
 ```
 
+## TwentyCRM Production Integration
+
+1. Back up PostgreSQL and export Twenty metadata/records.
+2. This repository historically used `prisma db push` and has no prior migration history. For an existing database, apply the additive upgrade with `npm run db:upgrade:connectpath`, verify it, then record it with `npx prisma migrate resolve --applied 20260711000000_connectpath_twenty_foundation`. For a new empty database, run `npm run db:push` against the current schema and then record the same migration as applied. Do not run `prisma migrate deploy` against a non-empty legacy database before baselining it.
+3. Configure `TWENTY_API_BASE_URL`, a least-privilege `TWENTY_API_KEY`, `TWENTY_WORKSPACE_ID`, `TWENTY_SYNC_MODE=api`, `TWENTY_OUTBOUND_WEBHOOK_SECRET`, and `CRON_SECRET`.
+4. Run `npm run twenty:prepare -- --dry-run --json` and review drift.
+5. Apply only against a non-production workspace first with `--apply --confirm-workspace <id>`; rerun with `--verify`.
+6. Point the Twenty outbound webhook to `/api/integrations/twenty/webhook`.
+7. Confirm the scheduler calls `/api/cron/twenty-integration` with `Authorization: Bearer $CRON_SECRET`.
+8. Use `/admin/integrations` for a dry-run reconciliation before enabling direct API delivery in production.
+
+Rollback is application-only: set `TWENTY_SYNC_MODE=off` and deploy the prior release, but retain the outbox, inbox, mapping, attempt, reconciliation, and adjustment tables. Those rows are required to resume without duplicate delivery. Full runbooks are in `docs/TWENTYCRM_INTEGRATION.md`.
+
 ## Post-Deployment Checklist
 
 - `npm run build` completes successfully.
@@ -172,5 +192,5 @@ WHERE email = 'admin@yourdomain.com';
 - Affiliate registration, referral submission, and email sending have been tested.
 - Text alerts are tested with `SMS_ENABLED="true"` if using VoIP.ms or 3CX.
 - Webhook endpoints use `WEBHOOK_SECRET` if external systems post conversions or refunds.
-- TwentyCRM sync is configured with `TWENTY_WEBHOOK_URL` or per-view webhook URLs if referrals, partners, and payouts should be pushed into Twenty.
+- TwentyCRM schema verify passes, direct API credentials are least-privilege, the signed outbound webhook is configured, and `/admin/integrations` reports a healthy queue.
 - Scheduled commission maturation uses `CRON_SECRET` if exposed to a scheduler.

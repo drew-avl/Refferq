@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getAdminActor, isFullAdmin } from '@/lib/admin-access';
-import { PAYOUT_EVENT_INCLUDE } from '@/lib/referral-event-payload';
-import { sendPayoutToTwenty } from '@/lib/twenty-referrals';
+import { notifyPayoutChanged } from '@/lib/referral-integrations';
 
 export async function POST(
   request: NextRequest,
@@ -19,26 +17,13 @@ export async function POST(
       );
     }
 
-    const payout = await prisma.payout.findUnique({
-      where: { id: params.id },
-      include: PAYOUT_EVENT_INCLUDE,
-    });
-
-    if (!payout) {
-      return NextResponse.json(
-        { error: 'Payout not found' },
-        { status: 404 }
-      );
-    }
-
-    const result = await sendPayoutToTwenty(payout, 'payout.updated');
+    const result = await notifyPayoutChanged(params.id, 'payout.updated');
 
     return NextResponse.json({
-      success: result.status === 'success',
+      success: true,
+      queued: true,
       result,
-    }, {
-      status: result.status === 'failed' ? 502 : 200,
-    });
+    }, { status: 202 });
   } catch (error) {
     console.error('Send payout to TwentyCRM error:', error);
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 import { getReferralMetadataDetails } from '@/lib/referrals';
 import { isSoldReferralStatus } from '@/lib/referral-status';
 import { PROGRAM_DEFAULTS } from '@/lib/program-defaults';
@@ -264,6 +265,11 @@ export async function PUT(request: NextRequest) {
           payoutDetails: payoutDetails
         }
       });
+      try {
+        await notifyReferralPartnerChanged(user.affiliate.id, 'affiliate.updated');
+      } catch (integrationError) {
+        console.error('Failed to enqueue referral partner profile update:', integrationError);
+      }
     }
 
     return NextResponse.json({

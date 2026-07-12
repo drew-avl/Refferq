@@ -12,7 +12,7 @@ export function buildReferralStatusAuditPayload({
   fromStatus: ReferralStatus | string;
   toStatus: ReferralStatus | string;
   reviewNotes?: string | null;
-  source: 'single' | 'batch' | 'direct';
+  source: 'single' | 'batch' | 'direct' | 'twenty-webhook';
 }) {
   return {
     fromStatus,
@@ -37,7 +37,7 @@ export async function recordReferralStatusChange({
   fromStatus: ReferralStatus | string;
   toStatus: ReferralStatus | string;
   reviewNotes?: string | null;
-  source: 'single' | 'batch' | 'direct';
+  source: 'single' | 'batch' | 'direct' | 'twenty-webhook';
 }) {
   await tx.auditLog.create({
     data: {

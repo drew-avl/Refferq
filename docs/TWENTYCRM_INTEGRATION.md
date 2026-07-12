@@ -1,228 +1,99 @@
-# TwentyCRM Sync
+# TwentyCRM integration
 
-ReferConnect can push the three operational datasets needed for Twenty views:
+Refferq uses a transactional outbox and the authenticated Twenty API for production synchronization. Twenty sends selected operational milestones back through its signed outbound webhooks. The old workflow-trigger delivery remains available only as `TWENTY_SYNC_MODE=workflow` rollback compatibility.
 
-- Referral List
-- Referral Partners
-- Payouts
+The versioned ownership, object, status, dedupe, and security contract is in [connectpath-twenty-data-contract.md](./connectpath-twenty-data-contract.md). The executable schema source is `src/lib/integrations/twenty/schema-manifest.ts`.
 
-The integration is webhook-first because Twenty workspaces can have custom object and field names. Create the objects/views in Twenty, then use Twenty workflow webhook triggers to upsert incoming records into those objects.
-
-## Twenty Objects and Views
-
-Create one custom object and default list view for each dataset:
-
-| Twenty view | Suggested object | Stable external key |
-| --- | --- | --- |
-| Referral List | `referConnectReferral` | `referralId` |
-| Referral Partners | `referConnectReferralPartner` | `referralPartnerId` |
-| Payouts | `referConnectPayout` | `payoutId` |
-
-At minimum, add the fields listed in the payload sections below. Twenty custom objects automatically receive system fields such as `id`, `name`, `createdAt`, and `updatedAt`; add only the ReferConnect-specific fields you need for filtering and reporting.
-
-## Prepare Twenty Schema
-
-You can bootstrap the schema directly through Twenty metadata APIs before you configure webhooks:
+## Configure
 
 ```env
 TWENTY_API_BASE_URL="https://api.twenty.com"
 TWENTY_API_KEY="tk_..."
+TWENTY_WORKSPACE_ID="expected-workspace-id"
+TWENTY_SYNC_MODE="api"
+TWENTY_OUTBOUND_WEBHOOK_SECRET="secret-copied-from-twenty"
+CRON_SECRET="long-random-value"
 ```
 
-Run from the Refferq repo:
+Create a Twenty API key assigned to a least-privilege role with read/write access only to People, Companies, Opportunities, and the ConnectPath custom objects. Payout mirrors must be restricted to the appropriate CRM roles. Never place bank details, identity documents, tax identifiers, or credentials in Twenty.
+
+## Inventory and prepare the workspace
+
+Inventory is read-only and redacts secret-shaped fields:
 
 ```bash
-npm run twenty:prepare
+npm run twenty:inventory
 ```
 
-To add relationship fields used for partner-to-person matching, use:
+Offline/connected dry-run:
 
 ```bash
-npm run twenty:prepare -- --with-relations
+npm run twenty:prepare -- --dry-run --json
 ```
 
-Note: if relation-field creation fails in your tenant, keep `--with-relations` off and implement "match/create Person in workflow" with plain text keys (`partnerEmail` + `referralPartnerId`) first, then re-run relation sync later.
-
-Helpful options:
+Apply requires an explicit workspace confirmation and never deletes metadata:
 
 ```bash
-npm run twenty:prepare -- --dry-run       # show what would be created
-npm run twenty:prepare -- --skip-fields   # create only custom objects
-npm run twenty:prepare -- --with-relations # create relation fields too
+npm run twenty:prepare -- --apply --confirm-workspace "$TWENTY_WORKSPACE_ID" --json
+npm run twenty:prepare -- --verify --confirm-workspace "$TWENTY_WORKSPACE_ID" --json
 ```
 
-The script reads `.env.local` (or `.env`) and is idempotent: if the object or field already exists, it will not re-create it.
+An incompatible existing field type is blocking drift. The command exits nonzero and recommends a separately reviewed field migration. A second apply should report zero changes.
 
-## Configure Twenty
+## Outbound delivery
 
-For each view, create a workflow with an external webhook trigger:
+Referral, partner, and payout mutations enqueue immutable events. `/api/cron/twenty-integration` leases a bounded batch, upserts records in dependency order, records remote IDs, and writes an immutable delivery attempt. 429/5xx/timeouts retry with exponential backoff and jitter. Exhausted events move to `DEAD_LETTER`.
 
-1. In Twenty, create a workflow.
-2. Use an external webhook trigger.
-3. Define the expected POST body fields for the matching payload below.
-4. Add an upsert/create action against the matching custom object.
-5. Key upserts by `referralId`, `referralPartnerId`, or `payoutId` to avoid duplicates.
-6. Copy the workflow webhook URL.
+Configure the Vercel cron with `Authorization: Bearer $CRON_SECRET`. Business mutations remain successful while Twenty is unavailable; the queue drains after recovery.
 
-If you created relationship fields, we recommend this workflow branch pattern:
-- search `Person` by `email` (use `partnerEmail` from the incoming payload).
-- if found, set the relation on `referConnectReferralPartner.person`.
-- if not found, create a `Person` first, then set that relation.
-- then upsert the `referConnectReferralPartner` record using `referralPartnerId`.
-
-You can use one shared workflow URL and branch on `view`, or use separate workflow URLs per view.
-
-## Configure ReferConnect
-
-Shared webhook setup:
+Temporary rollback mode:
 
 ```env
-TWENTY_SYNC_ENABLED="true"
-TWENTY_WEBHOOK_URL="https://your-shared-twenty-webhook-url"
-TWENTY_WEBHOOK_SECRET=""
-TWENTY_WEBHOOK_TIMEOUT_MS="12000"
+TWENTY_SYNC_MODE="workflow"
+TWENTY_WEBHOOK_URL="https://..."
+TWENTY_WORKFLOW_SIGNING_SECRET=""
 ```
 
-Per-view webhook setup:
+`TWENTY_WORKFLOW_SIGNING_SECRET` only signs Refferq's legacy request. Twenty workflow-trigger ingress does not currently enforce that signature, so the workflow URL remains a credential. Do not describe this as authenticated transport.
 
-```env
-TWENTY_SYNC_ENABLED="true"
-TWENTY_REFERRAL_SYNC_ENABLED="true"
-TWENTY_PARTNER_SYNC_ENABLED="true"
-TWENTY_PAYOUT_SYNC_ENABLED="true"
-TWENTY_REFERRAL_WEBHOOK_URL="https://your-referral-list-workflow-webhook"
-TWENTY_PARTNER_WEBHOOK_URL="https://your-referral-partners-workflow-webhook"
-TWENTY_PAYOUT_WEBHOOK_URL="https://your-payouts-workflow-webhook"
-TWENTY_WEBHOOK_SECRET=""
-TWENTY_WEBHOOK_TIMEOUT_MS="12000"
+## Inbound delivery
+
+Create a Twenty outbound webhook targeting:
+
+```text
+POST https://your-refferq-host/api/integrations/twenty/webhook
 ```
 
-`TWENTY_WEBHOOK_URL` is the fallback when a per-view URL is blank. `TWENTY_WEBHOOK_SECRET` is optional. When set, ReferConnect adds `X-ReferConnect-Signature` using HMAC SHA-256 over `{timestamp}:{payload}` and sends the timestamp in `X-ReferConnect-Timestamp`.
+Copy its signing secret to `TWENTY_OUTBOUND_WEBHOOK_SECRET`. Refferq verifies the raw body using `X-Twenty-Webhook-Signature` and `X-Twenty-Webhook-Timestamp`, applies a short replay window, and inserts one inbox row per event before returning `202`.
 
-## Referral List Payload
+Supported milestones:
 
-Sent on new lead submission and later lead updates.
-
-```json
-{
-  "event": "referral.submitted",
-  "source": "referconnect",
-  "view": "referral_list",
-  "entity": "referral",
-  "referralId": "clx...",
-  "leadName": "Jane Smith",
-  "leadEmail": "jane@example.com",
-  "leadPhone": "555-123-4567",
-  "leadCompany": "Acme",
-  "leadAddress": "100 Main St",
-  "unitOrApartment": "4B",
-  "moveInDate": "2026-08-01",
-  "notes": "Interested in a tour",
-  "status": "NEW",
-  "partnerName": "Drew Partner",
-  "partnerEmail": "partner@example.com",
-  "programName": "Property A",
-  "referral": {},
-  "partner": {},
-  "program": {}
-}
-```
-
-Recommended columns: `referralId`, `leadName`, `leadEmail`, `leadPhone`, `status`, `programName`, `partnerName`, `moveInDate`, `notes`, `createdAt`.
-
-## Referral Partners Payload
-
-Sent on partner creation, partner profile/status changes, payment detail changes, and batch status/group updates.
-
-```json
-{
-  "event": "referral_partner.updated",
-  "source": "referconnect",
-  "view": "referral_partners",
-  "entity": "referral_partner",
-  "referralPartnerId": "clx...",
-  "name": "Drew Partner",
-  "email": "partner@example.com",
-  "status": "ACTIVE",
-  "company": "Partner Co",
-  "payoutMethod": "ZELLE",
-  "payoutEmail": "partner@example.com",
-  "balanceCents": 25000,
-  "referralCount": 12,
-  "partnerGroupName": "Preferred",
-  "programNames": "Property A, Property B",
-  "referralPartner": {},
-  "partnerGroup": {},
-  "programs": [],
-  "assignedStaff": []
-}
-```
-
-Recommended columns: `referralPartnerId`, `name`, `email`, `status`, `company`, `partnerGroupName`, `programNames`, `payoutMethod`, `balanceCents`, `referralCount`.
-
-## Payouts Payload
-
-Sent on payout creation, payout status changes, and manual resync.
-
-```json
-{
-  "event": "payout.requested",
-  "source": "referconnect",
-  "view": "payouts",
-  "entity": "payout",
-  "payoutId": "clx...",
-  "referralPartnerId": "clx...",
-  "affiliateName": "Drew Partner",
-  "affiliateEmail": "partner@example.com",
-  "amountCents": 25000,
-  "amount": 250,
-  "currency": "USD",
-  "commissionCount": 3,
-  "status": "PENDING",
-  "method": "ZELLE",
-  "processedAt": null,
-  "payout": {},
-  "partner": {},
-  "commissions": []
-}
-```
-
-Recommended columns: `payoutId`, `affiliateName`, `affiliateEmail`, `amount`, `currency`, `commissionCount`, `status`, `method`, `createdAt`, `processedAt`.
-
-## Events
-
-ReferConnect sends these events to Twenty:
-
-| View | Events |
+| Twenty evidence | Refferq result |
 | --- | --- |
-| Referral List | `referral.submitted`, `referral.updated`, `referral.rejected` |
-| Referral Partners | `referral_partner.created`, `referral_partner.updated`, `referral_partner.approved`, `referral_partner.rejected` |
-| Payouts | `payout.requested`, `payout.updated`, `payout.completed`, `payout.failed` |
+| Order confirmed / ConnectPath stage `ORDER` | `SOLD` |
+| `activationVerified=true` | `COMPLETED` and one commission/balance increment |
+| ConnectPath stage `CLOSED_LOST` plus reason | `REJECTED` |
+| Activation reversed / chargeback | Append-only commission adjustment |
 
-The existing ReferConnect webhook system also exposes matching internal events such as `affiliate.updated`, `referral.updated`, and `payout.updated` for non-Twenty integrations.
+Generic CRM edits cannot overwrite balances, payouts, portal identity, or program assignments. Echo records with `syncOrigin=refferq` are ignored.
 
-## Backfill and Manual Resend
+## Reconciliation and operations
 
-Initial sync for all three Twenty views:
+Admins use **Admin → Integration Health** to inspect queue depth, last success, inbox failures, dead letters, and reconciliation jobs. Dead letters can be replayed without database access after the cause is fixed.
 
-```bash
-curl -X POST https://app.example.com/api/admin/twenty/sync \
-  -H "Content-Type: application/json" \
-  -H "Cookie: your-session-cookie" \
-  -d "{\"views\":[\"referral_list\",\"referral_partners\",\"payouts\"],\"limit\":500}"
-```
+Reconciliation modes: `dry-run`, `missing-only`, `changed-since`, `full`, `entity-specific`, and `verify-only`. Jobs use keyset pagination and checkpoints; more than 500 records continue across cron runs. Counts distinguish created, updated, unchanged, ambiguous, failed, skipped, and retried.
 
-Manual resend endpoints:
+Manual referral, partner, and payout resend endpoints now enqueue durable events and return `202`; they do not call Twenty inline.
 
-```bash
-curl -X POST https://app.example.com/api/admin/referrals/{referralId}/twenty \
-  -H "Cookie: your-session-cookie"
+## Rollout and recovery
 
-curl -X POST https://app.example.com/api/admin/affiliates/{affiliateId}/twenty \
-  -H "Cookie: your-session-cookie"
+1. Back up Refferq and export Twenty metadata/records.
+2. Apply the additive database upgrade with `npm run db:upgrade:connectpath`, verify the data backfill, and baseline it as described in `deployment.md`.
+3. Apply and verify schema in a non-production Twenty workspace.
+4. Run contract tests with `npm test`.
+5. Run reconciliation in `dry-run`, then `missing-only`/shadow mode.
+6. Resolve ambiguous matches and count differences.
+7. Enable signed inbound status writes.
+8. Observe one full operating cycle before retiring workflow mode.
 
-curl -X POST https://app.example.com/api/admin/payouts/{payoutId}/twenty \
-  -H "Cookie: your-session-cookie"
-```
-
-The endpoint returns `success: true` when Twenty accepts the webhook with a 2xx response. A missing webhook URL returns a skipped result instead of failing the Refferq workflow.
+To pause delivery without losing events, set `TWENTY_SYNC_MODE=off`. To rotate the API key, pause, replace the least-privilege key, verify inventory, restore `api` mode, and let the worker drain. To roll back application code, preserve the integration tables; do not drop outbox, inbox, maps, attempts, adjustments, or reconciliation jobs. The additive database migration leaves legacy referral metadata intact.

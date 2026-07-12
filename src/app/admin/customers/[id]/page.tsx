@@ -47,12 +47,16 @@ import {
 
 interface Referral {
   id: string;
+  customerType: 'RESIDENTIAL' | 'BUSINESS';
+  businessName: string | null;
   leadEmail: string;
   leadName: string;
   leadPhone: string | null;
   address: string;
   address2: string;
   moveInDate: string;
+  desiredInstallDate: string;
+  requestedServices: string[];
   status: string;
   notes: string | null;
   createdAt: string;
@@ -387,10 +391,10 @@ export default function CustomerDetailPage() {
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label>Company</Label>
+                  <Label>{referral.customerType === 'BUSINESS' ? 'Business' : 'Customer Type'}</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" value={referral.company || '—'} readOnly disabled />
+                    <Input className="pl-9" value={referral.customerType === 'BUSINESS' ? (referral.businessName || referral.company || '—') : 'Residential'} readOnly disabled />
                   </div>
                 </div>
               </div>
@@ -413,12 +417,13 @@ export default function CustomerDetailPage() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="moveInDate">Move-In Date</Label>
+                <Label htmlFor="moveInDate">{referral.customerType === 'BUSINESS' ? 'Desired Install Date' : 'Move-In Date'}</Label>
                 <Input
                   id="moveInDate"
                   type="date"
-                  value={editMoveInDate}
-                  onChange={(e) => setEditMoveInDate(e.target.value)}
+                  value={referral.customerType === 'BUSINESS' ? referral.desiredInstallDate || '' : editMoveInDate}
+                  onChange={(e) => referral.customerType !== 'BUSINESS' && setEditMoveInDate(e.target.value)}
+                  readOnly={referral.customerType === 'BUSINESS'}
                 />
               </div>
               {referral.notes && (

@@ -207,9 +207,14 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
 
-# Optional: sync Referral List, Referral Partners, and Payouts to TwentyCRM workflow webhooks
+# Optional: durable ConnectPath synchronization with TwentyCRM
 TWENTY_API_BASE_URL="https://api.twenty.com"
 TWENTY_API_KEY="tk_..."
+TWENTY_WORKSPACE_ID="workspace-id"
+TWENTY_SYNC_MODE="api"
+TWENTY_OUTBOUND_WEBHOOK_SECRET=""
+
+# Legacy workflow rollback only
 TWENTY_SYNC_ENABLED="true"
 TWENTY_REFERRAL_SYNC_ENABLED="true"
 TWENTY_PARTNER_SYNC_ENABLED="true"
@@ -218,7 +223,7 @@ TWENTY_WEBHOOK_URL=""
 TWENTY_REFERRAL_WEBHOOK_URL=""
 TWENTY_PARTNER_WEBHOOK_URL=""
 TWENTY_PAYOUT_WEBHOOK_URL=""
-TWENTY_WEBHOOK_SECRET=""
+TWENTY_WORKFLOW_SIGNING_SECRET=""
 ```
 
 ### Step 4: Database Setup
@@ -360,6 +365,21 @@ referconnect/
 ```
 
 ---
+
+## ConnectPath / TwentyCRM
+
+Production synchronization uses a transactional outbox, authenticated Twenty API upserts, signed outbound webhooks from Twenty, and resumable reconciliation. Start with:
+
+- [Twenty integration operations](./docs/TWENTYCRM_INTEGRATION.md)
+- [ConnectPath data contract](./docs/connectpath-twenty-data-contract.md)
+
+Schema planning works without credentials:
+
+```bash
+npm run twenty:prepare -- --dry-run --json
+```
+
+Use **Admin → Integration Health** after deployment to monitor queue depth, dead letters, inbound failures, and reconciliation jobs.
 
 ## 🔧 Configuration
 

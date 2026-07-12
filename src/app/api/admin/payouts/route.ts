@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
 import { getAllowedPayoutMethod } from '@/lib/payout-methods';
-import { notifyPayoutChanged } from '@/lib/referral-integrations';
+import { notifyPayoutChanged, notifyReferralPartnerChanged } from '@/lib/referral-integrations';
 
 
 // Helper: Verify admin auth from DB (not just JWT payload)
@@ -397,6 +397,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await notifyPayoutChanged(payout.id, 'payout.requested');
+      await notifyReferralPartnerChanged(payout.affiliateId, 'affiliate.updated');
     } catch (integrationError) {
       console.error('Failed to notify payout integrations:', integrationError);
     }
@@ -531,6 +532,7 @@ export async function PUT(request: NextRequest) {
 
     try {
       await notifyPayoutChanged(payout.id, payoutEventType);
+      await notifyReferralPartnerChanged(payout.affiliateId, 'affiliate.updated');
     } catch (integrationError) {
       console.error('Failed to notify payout integrations:', integrationError);
     }

@@ -38,12 +38,16 @@ import {
 
 interface Referral {
   id: string;
+  customerType: 'RESIDENTIAL' | 'BUSINESS';
+  businessName: string | null;
   leadEmail: string;
   leadName: string;
   leadPhone: string | null;
   address: string;
   address2: string;
   moveInDate: string;
+  desiredInstallDate: string;
+  requestedServices: string[];
   status: string;
   notes: string | null;
   createdAt: string;
@@ -150,7 +154,8 @@ export default function CustomersPage() {
     r.leadEmail.toLowerCase().includes(searchTerm) ||
     (r.leadPhone || '').toLowerCase().includes(searchTerm) ||
     r.address.toLowerCase().includes(searchTerm) ||
-    r.company.toLowerCase().includes(searchTerm);
+    r.company.toLowerCase().includes(searchTerm) ||
+    (r.businessName || '').toLowerCase().includes(searchTerm);
   const sortedReferrals = [...referrals].sort((a, b) => {
     const statusDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
     if (statusDiff !== 0) {
@@ -342,6 +347,7 @@ export default function CustomersPage() {
                             </Avatar>
                             <div>
                               <p className="font-medium text-sm">{referral.leadName}</p>
+                              <Badge variant="outline" className="mt-1 text-[10px]">{referral.customerType === 'BUSINESS' ? 'Business' : 'Residential'}</Badge>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Mail className="h-3 w-3" />
                                 {referral.leadEmail}
@@ -356,16 +362,16 @@ export default function CustomersPage() {
                                 {[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}
+                                {referral.customerType === 'BUSINESS' ? 'Desired install' : 'Move-in'}: {(referral.customerType === 'BUSINESS' ? referral.desiredInstallDate : referral.moveInDate) ? new Date(referral.customerType === 'BUSINESS' ? referral.desiredInstallDate : referral.moveInDate).toLocaleDateString() : 'not set'}
                               </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          {referral.company ? (
+                          {referral.businessName || referral.company ? (
                             <div className="flex items-center gap-1 text-sm">
                               <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                              {referral.company}
+                              {referral.businessName || referral.company}
                             </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">-</span>
@@ -428,7 +434,7 @@ export default function CustomersPage() {
                     </div>
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <p>{[referral.address, referral.address2].filter(Boolean).join(', ') || 'No address'}</p>
-                      <p>Move-in: {referral.moveInDate ? new Date(referral.moveInDate).toLocaleDateString() : 'not set'}</p>
+                      <p>{referral.customerType === 'BUSINESS' ? 'Desired install' : 'Move-in'}: {(referral.customerType === 'BUSINESS' ? referral.desiredInstallDate : referral.moveInDate) ? new Date(referral.customerType === 'BUSINESS' ? referral.desiredInstallDate : referral.moveInDate).toLocaleDateString() : 'not set'}</p>
                       <p>Source: {referral.program?.name || referral.company || 'No source'}</p>
                       <p>Referred by {referral.affiliate.name}</p>
                     </div>

@@ -41,9 +41,20 @@ declare namespace NodeJs {
         TWENTY_PARTNER_WEBHOOK_URL?: string;
         TWENTY_PAYOUT_WEBHOOK_URL?: string;
         TWENTY_WEBHOOK_SECRET?: string;
+        TWENTY_WORKFLOW_SIGNING_SECRET?: string;
         TWENTY_WEBHOOK_TIMEOUT_MS?: string;
         TWENTY_API_BASE_URL?: string;
         TWENTY_API_KEY?: string;
+        TWENTY_API_TIMEOUT_MS?: string;
+        TWENTY_WORKSPACE_ID?: string;
+        TWENTY_WORKSPACE_NAME?: string;
+        TWENTY_SYNC_MODE?: string;
+        TWENTY_OUTBOX_BATCH_SIZE?: string;
+        TWENTY_OUTBOX_CONCURRENCY?: string;
+        TWENTY_OUTBOX_MAX_ATTEMPTS?: string;
+        TWENTY_OUTBOUND_WEBHOOK_SECRET?: string;
+        TWENTY_WEBHOOK_REPLAY_WINDOW_SECONDS?: string;
+        TWENTY_INTEGRATION_ACTOR_ID?: string;
     }
 }
 

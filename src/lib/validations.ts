@@ -5,16 +5,34 @@ export const payoutMethodSchema = z.enum(PAYOUT_METHODS);
 
 // Referral Validation
 export const referralSchema = z.object({
+    customerType: z.enum(['RESIDENTIAL', 'BUSINESS']).default('RESIDENTIAL'),
     leadName: z.string().min(2, 'Name must be at least 2 characters'),
-    leadEmail: z.string().email('Invalid email address'),
-    leadPhone: z.string().min(7, 'Phone number is required').max(30, 'Phone number is too long'),
+    leadEmail: z.union([z.string().email('Invalid email address'), z.literal('')]).default(''),
+    leadPhone: z.string().max(30, 'Phone number is too long').default(''),
     address: z.string().min(5, 'Address is required'),
     address2: z.string().optional(),
-    moveInDate: z.string().min(1, 'Move-in date is required'),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    postalCode: z.string().optional(),
+    countryCode: z.string().length(2).default('US'),
+    moveInDate: z.string().optional(),
+    desiredInstallDate: z.string().optional(),
     programId: z.string().optional(),
     company: z.string().optional(),
+    businessName: z.string().optional(),
+    requestedServices: z.array(z.enum(['PRIMARY_INTERNET', 'BACKUP_INTERNET', 'VOICE'])).default([]),
+    orderConsent: z.boolean().default(false),
+    marketingSmsConsent: z.boolean().default(false),
+    consentSource: z.string().optional(),
     notes: z.string().optional(),
     estimatedValue: z.coerce.number().min(0).max(999999999).optional(),
+}).superRefine((data, context) => {
+    if (!data.leadEmail.trim() && data.leadPhone.replace(/\D/g, '').length < 7) {
+        context.addIssue({ code: 'custom', path: ['leadEmail'], message: 'Provide an email address or phone number' });
+    }
+    if (data.customerType === 'BUSINESS' && !(data.businessName || data.company)?.trim()) {
+        context.addIssue({ code: 'custom', path: ['businessName'], message: 'Business name is required' });
+    }
 });
 
 // Affiliate Creation Validation (Admin)

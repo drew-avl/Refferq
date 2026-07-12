@@ -14,7 +14,11 @@ export async function proxy(request: NextRequest) {
     pathname === '/admin/emails' ||
     pathname.startsWith('/admin/emails/') ||
     pathname === '/api/admin/emails' ||
-    pathname.startsWith('/api/admin/emails/');
+    pathname.startsWith('/api/admin/emails/') ||
+    pathname === '/admin/integrations' ||
+    pathname.startsWith('/admin/integrations/') ||
+    pathname === '/api/admin/twenty' ||
+    pathname.startsWith('/api/admin/twenty/');
   const isProtectedRoute = isAdminRoute || isAffiliateRoute || isAuthMeRoute;
 
   if (!isProtectedRoute) {
