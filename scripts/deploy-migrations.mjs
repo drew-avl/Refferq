@@ -16,6 +16,8 @@ const LEGACY_MIGRATION_PATH = path.join(
 const PRISMA_CLI_PATH = path.join(process.cwd(), 'node_modules', 'prisma', 'build', 'index.js');
 const MIGRATION_LOCK_KEY = 'refferq-production-migrations';
 const legacyBaseTables = ['users', 'affiliates', 'referrals', 'conversions', 'commissions'];
+const truncatedLegacyIndexName = 'integration_object_maps_provider_local_entity_type_local_entity';
+const expectedLegacyIndexName = 'integration_object_maps_provider_local_entity_type_local_en_key';
 
 const expectedColumns = [
   ['referrals', 'customer_type'],
@@ -146,6 +148,24 @@ async function applyLegacyMigration(client) {
   }
 }
 
+async function normalizeLegacyIndexNames(client) {
+  const result = await client.query(
+    `SELECT indexname
+       FROM pg_indexes
+      WHERE schemaname = 'public'
+        AND indexname = ANY($1::text[])`,
+    [[truncatedLegacyIndexName, expectedLegacyIndexName]]
+  );
+  const indexNames = new Set(result.rows.map((row) => row.indexname));
+
+  if (indexNames.has(truncatedLegacyIndexName) && !indexNames.has(expectedLegacyIndexName)) {
+    console.log('Normalizing the legacy integration object-map index name.');
+    await client.query(
+      `ALTER INDEX "${truncatedLegacyIndexName}" RENAME TO "${expectedLegacyIndexName}"`
+    );
+  }
+}
+
 async function main() {
   if (!process.env.DATABASE_URL?.trim()) {
     throw new Error('DATABASE_URL is required for production migrations');
@@ -184,6 +204,7 @@ async function main() {
         );
       }
 
+      await normalizeLegacyIndexNames(client);
       runPrisma([
         'migrate',
         'diff',

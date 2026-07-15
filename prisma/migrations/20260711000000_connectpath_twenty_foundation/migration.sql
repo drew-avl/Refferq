@@ -161,7 +161,7 @@ CREATE INDEX "integration_outbox_events_provider_status_available_at_idx" ON "in
 CREATE INDEX "integration_outbox_events_entity_type_entity_id_created_at_idx" ON "integration_outbox_events"("entity_type", "entity_id", "created_at");
 CREATE UNIQUE INDEX "integration_delivery_attempts_outbox_id_attempt_key" ON "integration_delivery_attempts"("outbox_id", "attempt");
 CREATE INDEX "integration_delivery_attempts_status_started_at_idx" ON "integration_delivery_attempts"("status", "started_at");
-CREATE UNIQUE INDEX "integration_object_maps_provider_local_entity_type_local_entity_id_remote_object_key" ON "integration_object_maps"("provider", "local_entity_type", "local_entity_id", "remote_object");
+CREATE UNIQUE INDEX "integration_object_maps_provider_local_entity_type_local_en_key" ON "integration_object_maps"("provider", "local_entity_type", "local_entity_id", "remote_object");
 CREATE UNIQUE INDEX "integration_object_maps_provider_remote_object_remote_id_key" ON "integration_object_maps"("provider", "remote_object", "remote_id");
 CREATE INDEX "integration_object_maps_local_entity_type_local_entity_id_idx" ON "integration_object_maps"("local_entity_type", "local_entity_id");
 CREATE UNIQUE INDEX "inbound_integration_events_provider_event_id_key" ON "inbound_integration_events"("provider", "event_id");
