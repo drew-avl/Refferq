@@ -52,15 +52,26 @@ const expectedTables = [
   'commission_adjustments',
 ];
 
-function runPrisma(args) {
+function runPrisma(args, options = {}) {
+  const captureOutput = Boolean(options.allowErrorCode);
   const result = spawnSync(process.execPath, [PRISMA_CLI_PATH, ...args], {
     cwd: process.cwd(),
     env: process.env,
-    stdio: 'inherit',
+    stdio: captureOutput ? 'pipe' : 'inherit',
+    encoding: captureOutput ? 'utf8' : undefined,
   });
 
   if (result.error) throw result.error;
+  if (captureOutput) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+  }
   if (result.status !== 0) {
+    const output = `${result.stdout || ''}\n${result.stderr || ''}`;
+    if (options.allowErrorCode && output.includes(options.allowErrorCode)) {
+      console.log(`Prisma reported ${options.allowErrorCode}; another deploy already completed this step.`);
+      return;
+    }
     throw new Error(`Prisma command failed: prisma ${args.join(' ')}`);
   }
 }
@@ -138,14 +149,7 @@ async function applyLegacyMigration(client) {
   const sql = await readFile(LEGACY_MIGRATION_PATH, 'utf8');
 
   console.log(`Applying legacy additive migration ${LEGACY_MIGRATION}...`);
-  await client.query('BEGIN');
-  try {
-    await client.query(sql);
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  }
+  await client.query(sql);
 }
 
 async function normalizeLegacyIndexNames(client) {
@@ -173,9 +177,11 @@ async function main() {
 
   const client = new Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
+  let migrationNeedsBaseline = false;
 
   try {
-    await client.query('SELECT pg_advisory_lock(hashtext($1))', [MIGRATION_LOCK_KEY]);
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [MIGRATION_LOCK_KEY]);
 
     const migrationApplied = await hasAppliedMigration(client, LEGACY_MIGRATION);
     if (!migrationApplied) {
@@ -205,26 +211,38 @@ async function main() {
       }
 
       await normalizeLegacyIndexNames(client);
-      runPrisma([
-        'migrate',
-        'diff',
-        '--from-schema-datasource',
-        'prisma/schema.prisma',
-        '--to-schema-datamodel',
-        'prisma/schema.prisma',
-        '--exit-code',
-      ]);
-      runPrisma(['migrate', 'resolve', '--applied', LEGACY_MIGRATION]);
+      migrationNeedsBaseline = true;
     }
 
-    runPrisma(['migrate', 'deploy']);
-  } finally {
+    await client.query('COMMIT');
+  } catch (error) {
     try {
-      await client.query('SELECT pg_advisory_unlock(hashtext($1))', [MIGRATION_LOCK_KEY]);
-    } finally {
-      await client.end();
+      await client.query('ROLLBACK');
+    } catch {
+      // Preserve the original migration error if the connection has already closed.
     }
+    throw error;
+  } finally {
+    await client.end();
   }
+
+  if (migrationNeedsBaseline) {
+    runPrisma([
+      'migrate',
+      'diff',
+      '--from-schema-datasource',
+      'prisma/schema.prisma',
+      '--to-schema-datamodel',
+      'prisma/schema.prisma',
+      '--exit-code',
+    ]);
+    runPrisma(
+      ['migrate', 'resolve', '--applied', LEGACY_MIGRATION],
+      { allowErrorCode: 'P3008' }
+    );
+  }
+
+  runPrisma(['migrate', 'deploy']);
 }
 
 main().catch((error) => {
