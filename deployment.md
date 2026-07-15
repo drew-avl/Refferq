@@ -90,14 +90,18 @@ $env:DATABASE_URL="postgresql://user:password@localhost:5432/referconnect"; npx 
 
 ## Database Setup
 
-ReferConnect currently uses Prisma `db push` rather than checked-in migration files.
+Refferq uses checked-in Prisma migrations for production. `db push` is retained
+only for disposable local development databases.
 
 ```bash
 npm run db:generate
 npm run db:push
 ```
 
-For production, run `npm run db:push` against the production `DATABASE_URL` before sending real traffic to the app. Back up existing production data first.
+For production, set the `DATABASE_URL` GitHub secret and let the Deploy workflow
+run `npm run db:migrate:deploy`. The command includes a one-time safe bootstrap
+for the legacy database and then uses `prisma migrate deploy` for every later
+release.
 
 To seed sample data for development only:
 
@@ -110,16 +114,20 @@ npm run db:seed
 1. Import the repository into Vercel.
 2. Use the included `vercel.json` defaults:
    - Install command: `npm ci`
-   - Build command: `npm run build`
+   - Build command: `npm run vercel:build`
    - Framework: Next.js
 3. Add all required environment variables in Vercel Project Settings.
 4. Create or attach a PostgreSQL database and set `DATABASE_URL`.
-5. Deploy the project.
-6. From a machine with production env access, run:
+5. Add the same production `DATABASE_URL` as a GitHub Actions repository secret.
+6. Push to `main`. The GitHub workflow migrates and verifies the database before
+   its build, and the production-only Vercel build gate refuses to promote a
+   deployment if pending migrations cannot be applied.
+
+For an intentional manual recovery, run:
 
 ```bash
 npm ci
-npm run db:push
+npm run db:migrate:deploy
 ```
 
 Set `NEXT_PUBLIC_APP_URL` to the final production URL, such as `https://app.yourdomain.com`.
@@ -172,7 +180,9 @@ WHERE email = 'admin@yourdomain.com';
 ## TwentyCRM Production Integration
 
 1. Back up PostgreSQL and export Twenty metadata/records.
-2. This repository historically used `prisma db push` and has no prior migration history. For an existing database, apply the additive upgrade with `npm run db:upgrade:connectpath`, verify it, then record it with `npx prisma migrate resolve --applied 20260711000000_connectpath_twenty_foundation`. For a new empty database, run `npm run db:push` against the current schema and then record the same migration as applied. Do not run `prisma migrate deploy` against a non-empty legacy database before baselining it.
+2. Run `npm run db:migrate:deploy`. It detects the non-empty legacy database,
+   applies the additive ConnectPath migration atomically, records the baseline,
+   and then delegates all pending work to `prisma migrate deploy`.
 3. Configure `TWENTY_API_BASE_URL`, a least-privilege `TWENTY_API_KEY`, `TWENTY_WORKSPACE_ID`, `TWENTY_SYNC_MODE=api`, `TWENTY_OUTBOUND_WEBHOOK_SECRET`, and `CRON_SECRET`.
 4. Run `npm run twenty:prepare -- --dry-run --json` and review drift.
 5. Apply only against a non-production workspace first with `--apply --confirm-workspace <id>`; rerun with `--verify`.
@@ -185,7 +195,7 @@ Rollback is application-only: set `TWENTY_SYNC_MODE=off` and deploy the prior re
 ## Post-Deployment Checklist
 
 - `npm run build` completes successfully.
-- Prisma schema has been pushed to the production database.
+- `npm run db:migrate:deploy` and the schema-diff verification pass against production.
 - `NEXT_PUBLIC_APP_URL` matches the production URL.
 - Microsoft Graph email has been tested with `npm run test:email -- you@example.com`.
 - Admin account can sign in and access `/admin`.

@@ -152,7 +152,7 @@ vercel link
 # Run Prisma commands
 vercel env pull .env.local
 npx prisma generate
-npx prisma db push
+npm run db:migrate:deploy
 ```
 
 **Option B: GitHub Actions**
@@ -169,13 +169,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - run: npm install
+          node-version: '22'
+          cache: npm
+      - run: npm ci
       - run: npx prisma generate
-      - run: npx prisma db push
+      - run: npm run db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 ```
@@ -303,11 +307,12 @@ Solution: Add to `vercel.json`:
 
 ### Database Issues
 
-**Error: Table doesn't exist**
+**Error: Table or column doesn't exist**
 
-Run:
+Run the tracked production migrations; do not reset a database that contains
+real leads or users:
 ```bash
-npx prisma db push --force-reset
+npm run db:migrate:deploy
 ```
 
 **Error: Connection pool exhausted**
