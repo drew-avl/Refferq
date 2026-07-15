@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import pg from 'pg';
@@ -52,11 +52,27 @@ const expectedTables = [
   'commission_adjustments',
 ];
 
+function getMigrationDatabaseUrl() {
+  const configuredDirectUrl = process.env.DATABASE_URL_UNPOOLED?.trim();
+  if (configuredDirectUrl) return configuredDirectUrl;
+
+  const configuredUrl = process.env.DATABASE_URL?.trim();
+  if (!configuredUrl) throw new Error('DATABASE_URL is required for production migrations');
+
+  const parsed = new URL(configuredUrl);
+  if (parsed.hostname.includes('-pooler.')) {
+    parsed.hostname = parsed.hostname.replace('-pooler.', '.');
+    return parsed.toString();
+  }
+
+  return configuredUrl;
+}
+
 function runPrisma(args, options = {}) {
   const captureOutput = Boolean(options.allowErrorCode);
   const result = spawnSync(process.execPath, [PRISMA_CLI_PATH, ...args], {
     cwd: process.cwd(),
-    env: process.env,
+    env: { ...process.env, DATABASE_URL: getMigrationDatabaseUrl() },
     stdio: captureOutput ? 'pipe' : 'inherit',
     encoding: captureOutput ? 'utf8' : undefined,
   });
@@ -170,12 +186,44 @@ async function normalizeLegacyIndexNames(client) {
   }
 }
 
+async function findPendingMigrations(connectionString) {
+  const entries = await readdir(path.join(process.cwd(), 'prisma', 'migrations'), {
+    withFileTypes: true,
+  });
+  const migrationNames = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  if (migrationNames.length === 0) return [];
+
+  const client = new Client({ connectionString });
+  await client.connect();
+  try {
+    const tableResult = await client.query(
+      `SELECT to_regclass('public._prisma_migrations')::text AS table_name`
+    );
+    if (!tableResult.rows[0]?.table_name) return migrationNames;
+
+    const appliedResult = await client.query(
+      `SELECT migration_name
+         FROM "_prisma_migrations"
+        WHERE finished_at IS NOT NULL
+          AND rolled_back_at IS NULL`
+    );
+    const appliedNames = new Set(appliedResult.rows.map((row) => row.migration_name));
+    return migrationNames.filter((name) => !appliedNames.has(name));
+  } finally {
+    await client.end();
+  }
+}
+
 async function main() {
   if (!process.env.DATABASE_URL?.trim()) {
     throw new Error('DATABASE_URL is required for production migrations');
   }
 
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  const migrationDatabaseUrl = getMigrationDatabaseUrl();
+  const client = new Client({ connectionString: migrationDatabaseUrl });
   await client.connect();
   let migrationNeedsBaseline = false;
 
@@ -242,7 +290,13 @@ async function main() {
     );
   }
 
-  runPrisma(['migrate', 'deploy']);
+  const pendingMigrations = await findPendingMigrations(migrationDatabaseUrl);
+  if (pendingMigrations.length > 0) {
+    console.log(`Applying ${pendingMigrations.length} pending Prisma migration(s).`);
+    runPrisma(['migrate', 'deploy']);
+  } else {
+    console.log('No pending Prisma migrations.');
+  }
 }
 
 main().catch((error) => {
